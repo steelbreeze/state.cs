@@ -1,0 +1,63 @@
+﻿v1.4.1 - 2013-04
+Fixed minor bug where PseudoState is not properly exited when source of an external transition.
+Added IsSimple, IsComposite and IsOrthogonal properties to State.
+Renamed Node to StateMachineBase.
+Moved IsActive from Region and StateBase to StateMachineBase (even though PseudoState is transient, it is briefly active).
+
+v1.4.0 - 2013-04-23
+Initial Open Source release
+
+v1.3 - 2013-04-03
+
+Breaking changes
+- removed Alamo from the namespace
+
+Bug fixes
+- minor adjustment to v1.2 region entry; when entereing and active node, the node is exited prior to entry
+- exiting PseudoState resets parent region curent state to null (caters for an edge case where external transition from pseudo state leaves history as a pseudo state)
+
+Performance:
+- more performance improvements (small, but they'll add up)
+
+
+v1.2 - 2013-03-26
+
+Bug fixes
+- When entering an already active region, the current active state it exited prior to entering the new state
+  - solves orthogonal region / external transition issue raised in v1.1 release notes and more
+- Set IsActive to false on PseudoStates after transitioning out under all scenarios.
+
+Non-breaking API changes:
+- Changed Region.Current from StateBase to Vertex to facilitate IsActive bug fix
+- Added assertions to validate public API constructor parameters
+- Removed PseudoStateKind.ToString method as it was redundant
+
+
+v1.1 - 2013-03-25
+
+Breaking API changes
+- Merged CompositeState into State; provides simpler API and facilitates performance improvements
+
+Non-breaking API changes
+- Made PseudoState.Else readonly
+- Changed PseudoStateKind from enum to class with public static members; facilitates performance improvements 
+
+Bug Fixes:
+- XmlDeserializer now works
+- Use of PseudoState.Else in Junction or Choice now works
+
+Performance improvements:
+- many optimisations
+
+Examples:
+- base examples on a cassette player controller
+
+Notes:
+With the combination of orthogonal regions and external transtitions, it is possible to enter an already active state. This will result in entry actions being called multiple times.
+Designers need to consider this when implementing orthogonal regions; the UML spec does not provide any guidance of the expected behaviour in this situation.
+The behaviour of the Alamo state machine on any transition is as follows:
+   0. view the entire state machine as tree composed of nodes of types States and Regions (in alternating layers)
+   1. determine the common ancestor tree node between the source and target nodes
+   2. exit all nodes from the source up to, but not including the common ancestor
+   3. perform any traversal actions
+   4. enter all nodes below the common ancestor on the direct path to the target vertex.
