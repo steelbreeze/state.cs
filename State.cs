@@ -147,7 +147,7 @@ namespace Steelbreeze.Behavior
 		{
 			context = visitor.Visit( this, base.Accept( visitor, context ) );
 
-			if( IsComplete )
+			if( IsComposite )
 				foreach( var region in regions )
 					region.Accept( visitor, context );
 
