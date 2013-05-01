@@ -21,7 +21,7 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// /// The base class and factory for transactions.
 	/// </summary>
-	public interface TransactionBase
+	public interface ITransaction
 	{
 		/// <summary>
 		/// Returns the uncommitted current state of a region

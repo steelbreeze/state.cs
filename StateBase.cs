@@ -46,14 +46,14 @@ namespace Steelbreeze.Behavior
 				Trace.Assert( parent.vertices.OfType<StateBase>().Where( v => v.Name.Equals( name ) ).Count() == 1, "State/FinalState names must be unique within a Region." );
 		}
 
-		internal override void OnExit( TransactionBase transaction )
+		internal override void OnExit( ITransaction transaction )
 		{
 			transaction.SetActive( this, false );
 
 			base.OnExit( transaction );
 		}
 
-		internal override void BeginEnter( TransactionBase transaction )
+		internal override void BeginEnter( ITransaction transaction )
 		{
 			if( transaction.GetActive( this ) )
 				OnExit( transaction );
@@ -72,7 +72,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="message">The message to process.</param>
 		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
 		/// <returns>A Boolean indicating if the message was processed.</returns>
-		virtual public Boolean Process( Object message, TransactionBase transaction = null ) { return false; }
+		virtual public Boolean Process( Object message, ITransaction transaction = null ) { return false; }
 
 		/// <summary>
 		/// Accepts a Visitor object and visits all child Regions.

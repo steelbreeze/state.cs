@@ -25,9 +25,9 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public abstract class TransitionBase
 	{
-		readonly internal Action<TransactionBase> exit;
-		readonly internal Action<TransactionBase> enter;
-		readonly internal Action<TransactionBase, Boolean> complete;
+		readonly internal Action<ITransaction> exit;
+		readonly internal Action<ITransaction> enter;
+		readonly internal Action<ITransaction, Boolean> complete;
 
 		internal TransitionBase( Vertex source, Vertex target )
 		{

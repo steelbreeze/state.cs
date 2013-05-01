@@ -74,7 +74,7 @@ namespace Steelbreeze.Behavior
 		/// Initialises a node to its initial state.
 		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
 		/// </summary>
-		public void Initialise( TransactionBase transaction = null )
+		public void Initialise( ITransaction transaction = null )
 		{
 			Boolean transactionOwner = transaction == null;
 
@@ -87,7 +87,7 @@ namespace Steelbreeze.Behavior
 				transaction.Commit();
 		}
 
-		internal void Initialise( TransactionBase transaction, Boolean deepHistory )
+		internal void Initialise( ITransaction transaction, Boolean deepHistory )
 		{
 			BeginEnter( transaction );
 
@@ -96,7 +96,7 @@ namespace Steelbreeze.Behavior
 			vertex.Initialise( transaction, deepHistory || ( initial.Kind == PseudoStateKind.DeepHistory ) );
 		}
 
-		override internal void OnExit( TransactionBase transaction )
+		override internal void OnExit( ITransaction transaction )
 		{
 			if( transaction.GetCurrent( this ) != null )
 				Current.OnExit( transaction );
@@ -106,7 +106,7 @@ namespace Steelbreeze.Behavior
 			base.OnExit( transaction );
 		}
 
-		internal override void BeginEnter( TransactionBase transaction )
+		internal override void BeginEnter( ITransaction transaction )
 		{
 			if( transaction.GetActive( this ) )
 				OnExit( transaction );
@@ -122,7 +122,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="message">The message to process.</param>
 		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
 		/// <returns>A Boolean indicating if the message was processed.</returns>
-		public Boolean Process( Object message, TransactionBase transaction = null )
+		public Boolean Process( Object message, ITransaction transaction = null )
 		{
 			var transactionOwner = transaction == null;
 

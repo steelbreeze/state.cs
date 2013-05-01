@@ -66,7 +66,7 @@ namespace Steelbreeze.Behavior
 			( source.completions ?? ( source.completions = new HashSet<Transition>() ) ).Add( this );
 		}
 
-		internal void Traverse( TransactionBase transaction, Boolean deepHistory )
+		internal void Traverse( ITransaction transaction, Boolean deepHistory )
 		{
 			if( exit != null )
 				exit( transaction );
@@ -122,7 +122,7 @@ namespace Steelbreeze.Behavior
 				return guard( typed );
 		}
 
-		override internal void Traverse( TransactionBase transaction, Object message )
+		override internal void Traverse( ITransaction transaction, Object message )
 		{
 			if( exit != null )
 				exit( transaction );

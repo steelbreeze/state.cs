@@ -36,13 +36,13 @@ namespace Steelbreeze.Behavior
 				parent.vertices.Add( this );
 		}
 		
-		internal void Initialise( TransactionBase transaction, Boolean deepHistory )
+		internal void Initialise( ITransaction transaction, Boolean deepHistory )
 		{
 			BeginEnter( transaction );
 			EndEnter( transaction, deepHistory );
 		}
 
-		virtual internal void EndEnter( TransactionBase transaction, Boolean deepHistory ) { }
+		virtual internal void EndEnter( ITransaction transaction, Boolean deepHistory ) { }
 
 		/// <summary>
 		/// Accepts a Visitor object and visits all child Regions.

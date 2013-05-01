@@ -32,7 +32,7 @@ namespace Steelbreeze.Behavior
 		/// The default transaction factory creates deferred transactions for safety.
 		/// This attribute can be set to Deferred or a custom delegate that creates custom transactions.
 		/// </remarks>
-		public static Func<TransactionBase> Default = Deferred;
+		public static Func<ITransaction> Default = Deferred;
 
 		/// <summary>
 		/// Creates a deferred transaction.
@@ -42,7 +42,7 @@ namespace Steelbreeze.Behavior
 		/// Deferred transactions update all States and Regions only on Commit.
 		/// Deffered transactions are the safest transactions.
 		/// </remarks>
-		public static TransactionBase Deferred()
+		public static ITransaction Deferred()
 		{
 			return new DeferredTransaction();
 		}
@@ -55,12 +55,12 @@ namespace Steelbreeze.Behavior
 		/// Null transactions update states and regions in real time.
 		/// Null transactions are the most performant transactions.
 		/// </remarks>
-		public static TransactionBase Null()
+		public static ITransaction Null()
 		{
 			return nullTransaction;
 		}
 
-		private sealed class DeferredTransaction : TransactionBase
+		private sealed class DeferredTransaction : ITransaction
 		{
 			private class UncommittedStateBase
 			{
@@ -159,7 +159,7 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
-		private sealed class NullTransaction : TransactionBase
+		private sealed class NullTransaction : ITransaction
 		{
 			public StateBase GetCurrent( Region region )
 			{

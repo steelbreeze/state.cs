@@ -23,12 +23,12 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public abstract class StateMachineBase
 	{
-		virtual internal void OnExit( TransactionBase transaction )
+		virtual internal void OnExit( ITransaction transaction )
 		{
 			Debug.WriteLine( this, "Leave" );
 		}
 
-		virtual internal void BeginEnter( TransactionBase transaction )
+		virtual internal void BeginEnter( ITransaction transaction )
 		{
 			Debug.WriteLine( this, "Enter" );
 		}
