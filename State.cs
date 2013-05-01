@@ -78,41 +78,58 @@ namespace Steelbreeze.Behavior
 		/// <param name="parent">The parent Region or the State.</param>
 		public State( String name, Region parent = null ) : base( name, parent ) { }
 
-		override internal void OnExit()
+		/// <summary>
+		/// Initialises a node to its initial state.
+		/// </summary>
+		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
+		public void Initialise( TransactionBase transaction = null )
+		{
+			var transactionOwner = transaction == null;
+
+			if( transactionOwner )
+				transaction = TransactionManager.Default();
+
+			Initialise( transaction, false );
+
+			if( transactionOwner )
+				transaction.Commit();
+		}
+
+		override internal void OnExit( TransactionBase transaction )
 		{
 			if( IsComposite )
 				foreach( var region in regions.Where( r => r.IsActive ) )
-					region.OnExit();
+					region.OnExit( transaction );
 
 			if( Exit != null )
 				Exit();
 
-			base.OnExit();
+			base.OnExit( transaction );
 		}
 
-		override internal void OnEnter()
+		override internal void BeginEnter( TransactionBase transaction )
 		{
-			base.OnEnter();
+			base.BeginEnter( transaction );
 
 			if( Entry != null )
 				Entry();
 		}
 
-		override internal void CascadeEnter( Boolean deepHistory )
+		internal override void EndEnter( TransactionBase transaction, bool deepHistory )
 		{
 			if( IsComposite )
 				foreach( var region in regions )
-					region.Initialise( deepHistory );
-		}
+					region.Initialise( transaction, deepHistory );
 
-		internal override void CompleteEnter( bool deepHistory )
-		{
-			if( ( completions != null ) && IsComplete ) // is complete is more expensive than testing completions for null
+			if( completions != null )
 			{
-				var completion = completions.SingleOrDefault( c => c.guard() );
+				if( IsSimple || regions.All( r => transaction.GetCurrent( r ) is FinalState ) ) // IsComplete for in-flight transactions
+				{
+					var completion = completions.SingleOrDefault( c => c.guard() );
 
-				if( completion != null )
-					completion.Traverse( deepHistory );
+					if( completion != null )
+						completion.Traverse( transaction, deepHistory );
+				}
 			}
 		}
 
@@ -120,18 +137,33 @@ namespace Steelbreeze.Behavior
 		/// Attempts to process a message.
 		/// </summary>
 		/// <param name="message">The message to process.</param>
+		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
 		/// <returns>A Boolean indicating if the message was processed.</returns>
-		override public Boolean Process( Object message )
+		override public Boolean Process( Object message, TransactionBase transaction = null )
 		{
+			var transactionOwner = transaction == null;
+
+			if( transactionOwner )
+				transaction = TransactionManager.Default();
+
 			var transition = transitions == null ? null : transitions.SingleOrDefault( t => t.Guard( message ) );
 			var processed = transition != null;
 
 			if( processed )
-				transition.Traverse( message );
+			{
+				transition.Traverse( transaction, message );
+
+				transaction.Commit();
+			}
 			else
+			{
 				if( IsComposite )
 					foreach( var region in regions.Where( r => r.IsActive ) )
 						processed |= region.Process( message );
+			}
+
+			if( transactionOwner )
+				transaction.Commit();
 
 			return processed;
 		}

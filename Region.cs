@@ -38,6 +38,11 @@ namespace Steelbreeze.Behavior
 		public String Name { get; private set; }
 
 		/// <summary>
+		/// A flag indicating that the Region is active (entered, but not yet exited)
+		/// </summary>
+		public Boolean IsActive { get; internal set; }
+
+		/// <summary>
 		/// The current state of the region.
 		/// </summary>
 		/// <remarks>
@@ -67,33 +72,69 @@ namespace Steelbreeze.Behavior
 
 		/// <summary>
 		/// Initialises a node to its initial state.
+		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
 		/// </summary>
-		/// <param name="deepHistory">Internal use only; denotes deep history was present in a parent node.</param>
-		public void Initialise( Boolean deepHistory = false )
+		public void Initialise( TransactionBase transaction = null )
 		{
-			OnEnter();
+			Boolean transactionOwner = transaction == null;
 
-			var vertex = deepHistory || initial.Kind.IsHistory ? Current as Vertex ?? initial : initial;
+			if( transactionOwner )
+				transaction = TransactionManager.Default();
+			
+			Initialise( transaction, false );
 
-			vertex.Initialise( deepHistory || ( initial.Kind == PseudoStateKind.DeepHistory ) );
+			if( transactionOwner )
+				transaction.Commit();
 		}
 
-		override internal void OnExit()
+		internal void Initialise( TransactionBase transaction, Boolean deepHistory )
 		{
-			if( Current != null ) // some mid composite transition scenarios may cause a region to be enterd / exited without setting current
-				Current.OnExit();
+			BeginEnter( transaction );
 
-			base.OnExit();
+			var vertex = deepHistory || initial.Kind.IsHistory ? transaction.GetCurrent( this ) as Vertex ?? initial : initial;
+
+			vertex.Initialise( transaction, deepHistory || ( initial.Kind == PseudoStateKind.DeepHistory ) );
+		}
+
+		override internal void OnExit( TransactionBase transaction )
+		{
+			if( transaction.GetCurrent( this ) != null )
+				Current.OnExit( transaction );
+
+			transaction.SetActive( this, false );
+
+			base.OnExit( transaction );
+		}
+
+		internal override void BeginEnter( TransactionBase transaction )
+		{
+			if( transaction.GetActive( this ) )
+				OnExit( transaction );
+
+			base.BeginEnter( transaction );
+
+			transaction.SetActive( this, true );
 		}
 
 		/// <summary>
-		/// Attempts to process a message.
+		/// Attempts to process a message to facilitate state transitions
 		/// </summary>
 		/// <param name="message">The message to process.</param>
+		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
 		/// <returns>A Boolean indicating if the message was processed.</returns>
-		public Boolean Process( Object message )
+		public Boolean Process( Object message, TransactionBase transaction = null )
 		{
-			return Current.Process( message );
+			var transactionOwner = transaction == null;
+
+			if( transactionOwner )
+				transaction = TransactionManager.Default();
+
+			var processed = Current.Process( message );
+
+			if( transactionOwner )
+				transaction.Commit();
+
+			return processed;
 		}
 
 		/// <summary>

@@ -35,16 +35,6 @@ namespace Steelbreeze.Behavior
 		}
 
 		/// <summary>
-		/// Attempts to process a message.
-		/// </summary>
-		/// <param name="message">The message to process.</param>
-		/// <returns>A Boolean indicating if the message was processed.</returns>
-		/// <remarks>
-		/// Final states will never process a message as they have no outbound transitions or child regions.
-		/// </remarks>
-		override public Boolean Process( Object message ) { return false; }
-
-		/// <summary>
 		/// Accepts a Visitor object.
 		/// </summary>
 		/// <typeparam name="TContext">The type of the context to pass to the visitor.</typeparam>

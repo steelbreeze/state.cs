@@ -25,9 +25,9 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public abstract class TransitionBase
 	{
-		readonly internal Action exit;
-		readonly internal Action beginEnter;
-		readonly internal Action<Boolean> endEnter;
+		readonly internal Action<TransactionBase> exit;
+		readonly internal Action<TransactionBase> enter;
+		readonly internal Action<TransactionBase, Boolean> complete;
 
 		internal TransitionBase( Vertex source, Vertex target )
 		{
@@ -43,10 +43,9 @@ namespace Steelbreeze.Behavior
 
 				exit += sourceAncestors.Current.OnExit;
 
-				do { beginEnter += targetAncestors.Current.OnEnter; } while( targetAncestors.MoveNext() );
+				do { enter += targetAncestors.Current.BeginEnter; } while( targetAncestors.MoveNext() );
 
-				endEnter += target.CascadeEnter; // NOTE: these are split to enable code to be injected inbetween later
-				endEnter += target.CompleteEnter;
+				complete += target.EndEnter;
 			}
 		}
 

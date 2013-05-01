@@ -30,6 +30,11 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		public String Name { get; private set; }
 
+		/// <summary>
+		/// A flag indicating that the State is active (entered, but not yet exited)
+		/// </summary>
+		public Boolean IsActive { get; internal set; }
+
 		internal StateBase( String name, Region parent ) 
 			: base( parent ) 
 		{
@@ -41,23 +46,33 @@ namespace Steelbreeze.Behavior
 				Trace.Assert( parent.vertices.OfType<StateBase>().Where( v => v.Name.Equals( name ) ).Count() == 1, "State/FinalState names must be unique within a Region." );
 		}
 
-		// NOTE: there is not corresponding OnExit as the parent region's current state it retained to facilitate history
-		//       the parent region's IsActive will however get set to false in StateMachine.OnExit
-
-		override internal void OnEnter()
+		internal override void OnExit( TransactionBase transaction )
 		{
-			base.OnEnter();
+			transaction.SetActive( this, false );
+
+			base.OnExit( transaction );
+		}
+
+		internal override void BeginEnter( TransactionBase transaction )
+		{
+			if( transaction.GetActive( this ) )
+				OnExit( transaction );
+
+			base.BeginEnter( transaction );
+
+			transaction.SetActive( this, true );
 
 			if( Parent != null )
-				Parent.Current = this;
+				transaction.SetCurrent( Parent, this );
 		}
 
 		/// <summary>
 		/// Attempts to process a message.
 		/// </summary>
 		/// <param name="message">The message to process.</param>
+		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
 		/// <returns>A Boolean indicating if the message was processed.</returns>
-		abstract public Boolean Process( Object message );
+		virtual public Boolean Process( Object message, TransactionBase transaction = null ) { return false; }
 
 		/// <summary>
 		/// Accepts a Visitor object and visits all child Regions.

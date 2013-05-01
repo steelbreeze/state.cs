@@ -23,26 +23,14 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public abstract class StateMachineBase
 	{
-		/// <summary>
-		/// A flag indicating that the Region is active (entered, but not yet exited)
-		/// </summary>
-		public Boolean IsActive { get; internal set; } // internal set lets deserializers restore current active state
-
-		virtual internal void OnExit()
+		virtual internal void OnExit( TransactionBase transaction )
 		{
-			IsActive = false;
-
 			Debug.WriteLine( this, "Leave" );
 		}
 
-		virtual internal void OnEnter()
+		virtual internal void BeginEnter( TransactionBase transaction )
 		{
-			if( IsActive )
-				OnExit();
-
 			Debug.WriteLine( this, "Enter" );
-
-			IsActive = true;
 		}
 
 		/// <summary>

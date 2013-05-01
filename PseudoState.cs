@@ -50,9 +50,9 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
-		internal override void CompleteEnter( bool deepHistory )
+		internal override void EndEnter( TransactionBase transaction, bool deepHistory )
 		{
-			Kind.GetCompletion( completions ).Traverse( deepHistory );
+			Kind.GetCompletion( completions ).Traverse( transaction, deepHistory );
 		}
 
 		/// <summary>

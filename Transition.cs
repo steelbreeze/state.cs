@@ -66,19 +66,19 @@ namespace Steelbreeze.Behavior
 			( source.completions ?? ( source.completions = new HashSet<Transition>() ) ).Add( this );
 		}
 
-		internal void Traverse( Boolean deepHistory )
+		internal void Traverse( TransactionBase transaction, Boolean deepHistory )
 		{
 			if( exit != null )
-				exit();
+				exit( transaction );
 
 			if( Effect != null )
 				Effect();
 
-			if( beginEnter != null )
-				beginEnter();
+			if( enter != null )
+				enter( transaction );
 
-			if( endEnter != null )
-				endEnter( deepHistory );
+			if( complete != null )
+				complete( transaction, deepHistory );
 		}
 	}
 
@@ -122,19 +122,19 @@ namespace Steelbreeze.Behavior
 				return guard( typed );
 		}
 
-		override internal void Traverse( Object message )
+		override internal void Traverse( TransactionBase transaction, Object message )
 		{
 			if( exit != null )
-				exit();
+				exit( transaction );
 
 			if( Effect != null )
-				Effect( message as TMessage ); // traverse is only called if the guard was true so type will cast
+				Effect( message as TMessage );
 
-			if( beginEnter != null )
-				beginEnter();
+			if( enter != null )
+				enter( transaction );
 
-			if( endEnter != null )
-				endEnter( false );
+			if( complete != null )
+				complete( transaction, false );
 		}
 	}
 }

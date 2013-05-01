@@ -35,20 +35,14 @@ namespace Steelbreeze.Behavior
 			if( ( this.Parent = parent ) != null )
 				parent.vertices.Add( this );
 		}
-
-		/// <summary>
-		/// Initialises a node to its initial state.
-		/// </summary>
-		/// <param name="deepHistory">Internal use only; denotes deep history was present in a parent node.</param>
-		public void Initialise( Boolean deepHistory = false )
+		
+		internal void Initialise( TransactionBase transaction, Boolean deepHistory )
 		{
-			OnEnter();
-			CascadeEnter( deepHistory );
-			CompleteEnter( deepHistory );
+			BeginEnter( transaction );
+			EndEnter( transaction, deepHistory );
 		}
 
-		virtual internal void CascadeEnter( Boolean deepHistory ) { }
-		virtual internal void CompleteEnter( Boolean deepHistory ) { }
+		virtual internal void EndEnter( TransactionBase transaction, Boolean deepHistory ) { }
 
 		/// <summary>
 		/// Accepts a Visitor object and visits all child Regions.
