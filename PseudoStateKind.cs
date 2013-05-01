@@ -24,7 +24,7 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public sealed class PseudoStateKind
 	{
-		private static Random random = new Random();
+		private static readonly Random random = new Random();
 
 		private static Transition RandomOrDefault( IEnumerable<Transition> items )
 		{
