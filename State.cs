@@ -35,6 +35,7 @@ namespace Steelbreeze.Behavior
 		internal HashSet<TypedTransition> transitions = null;
 		internal HashSet<Region> regions = null;
 		private Region defaultRegion = null;
+		private Object sync = new Object();
 
 		/// <summary>
 		/// The default region used for composite states when no region is explicitly referenced.
@@ -84,15 +85,18 @@ namespace Steelbreeze.Behavior
 		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
 		public void Initialise( ITransaction transaction = null )
 		{
-			var transactionOwner = transaction == null;
+			lock( sync )
+			{
+				var transactionOwner = transaction == null;
 
-			if( transactionOwner )
-				transaction = TransactionManager.Default();
+				if( transactionOwner )
+					transaction = TransactionManager.Default();
 
-			Initialise( transaction, false );
+				Initialise( transaction, false );
 
-			if( transactionOwner )
-				transaction.Commit();
+				if( transactionOwner )
+					transaction.Commit();
+			}
 		}
 
 		override internal void OnExit( ITransaction transaction )
@@ -141,31 +145,34 @@ namespace Steelbreeze.Behavior
 		/// <returns>A Boolean indicating if the message was processed.</returns>
 		override public Boolean Process( Object message, ITransaction transaction = null )
 		{
-			var transactionOwner = transaction == null;
-
-			if( transactionOwner )
-				transaction = TransactionManager.Default();
-
-			var transition = transitions == null ? null : transitions.SingleOrDefault( t => t.Guard( message ) );
-			var processed = transition != null;
-
-			if( processed )
+			lock( sync )
 			{
-				transition.Traverse( transaction, message );
+				var transactionOwner = transaction == null;
 
-				transaction.Commit();
+				if( transactionOwner )
+					transaction = TransactionManager.Default();
+
+				var transition = transitions == null ? null : transitions.SingleOrDefault( t => t.Guard( message ) );
+				var processed = transition != null;
+
+				if( processed )
+				{
+					transition.Traverse( transaction, message );
+
+					transaction.Commit();
+				}
+				else
+				{
+					if( IsComposite )
+						foreach( var region in regions.Where( r => r.IsActive ) )
+							processed |= region.Process( message );
+				}
+
+				if( transactionOwner )
+					transaction.Commit();
+
+				return processed;
 			}
-			else
-			{
-				if( IsComposite )
-					foreach( var region in regions.Where( r => r.IsActive ) )
-						processed |= region.Process( message );
-			}
-
-			if( transactionOwner )
-				transaction.Commit();
-
-			return processed;
 		}
 		
 		/// <summary>

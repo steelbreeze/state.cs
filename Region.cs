@@ -26,6 +26,7 @@ namespace Steelbreeze.Behavior
 	{
 		internal HashSet<Vertex> vertices = new HashSet<Vertex>();
 		internal PseudoState initial = null;
+		private Object sync = new Object();
 
 		/// <summary>
 		/// The Region's parent State
@@ -76,15 +77,18 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		public void Initialise( ITransaction transaction = null )
 		{
-			Boolean transactionOwner = transaction == null;
+			lock( sync )
+			{
+				Boolean transactionOwner = transaction == null;
 
-			if( transactionOwner )
-				transaction = TransactionManager.Default();
-			
-			Initialise( transaction, false );
+				if( transactionOwner )
+					transaction = TransactionManager.Default();
 
-			if( transactionOwner )
-				transaction.Commit();
+				Initialise( transaction, false );
+
+				if( transactionOwner )
+					transaction.Commit();
+			}
 		}
 
 		internal void Initialise( ITransaction transaction, Boolean deepHistory )
@@ -124,17 +128,20 @@ namespace Steelbreeze.Behavior
 		/// <returns>A Boolean indicating if the message was processed.</returns>
 		public Boolean Process( Object message, ITransaction transaction = null )
 		{
-			var transactionOwner = transaction == null;
+			lock( sync )
+			{
+				var transactionOwner = transaction == null;
 
-			if( transactionOwner )
-				transaction = TransactionManager.Default();
+				if( transactionOwner )
+					transaction = TransactionManager.Default();
 
-			var processed = Current.Process( message );
+				var processed = Current.Process( message );
 
-			if( transactionOwner )
-				transaction.Commit();
+				if( transactionOwner )
+					transaction.Commit();
 
-			return processed;
+				return processed;
+			}
 		}
 
 		/// <summary>

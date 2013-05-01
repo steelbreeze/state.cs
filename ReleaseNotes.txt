@@ -1,5 +1,11 @@
 v1.4.3
-Added transactions
+Provided thread safety following run-to-completion semantics
+- the state machine is locked from the point of entry (user call to Initialise or Process) and each Region or State that processing cascades to is also locked
+- therefore, there can be orthogonal run to completion steps if the user is using multiple points of entry
+  - this can be useful for the power user, but be aware that deadlocks are possible if using multiple points of entry from different threads
+Added transaction hooks, two built in transaction types (see below) and public interface to allow users to develop their own transaction handlers
+- Deferred: commits updates to StateBase.IsActive, Region.IsActive and Region.Current only after all transitions have executed successfully
+- Null: commites updates to StateBase.IsActive, Region.IsActive and Region.Current in real time (for performance critical applications)
 Minor refactoring
 
 v1.4.2
@@ -55,9 +61,6 @@ Bug Fixes:
 
 Performance improvements:
 - many optimisations
-
-Examples:
-- base examples on a cassette player controller
 
 Notes:
 With the combination of orthogonal regions and external transtitions, it is possible to enter an already active state. This will result in entry actions being called multiple times.
