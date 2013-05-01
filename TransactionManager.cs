@@ -62,75 +62,100 @@ namespace Steelbreeze.Behavior
 
 		private sealed class DeferredTransaction : TransactionBase
 		{
-			// TODO: make more efficent - only one collection for region...
-			private Dictionary<Region, StateBase> regionCurrent = new Dictionary<Region, StateBase>();
-			private Dictionary<Region, Boolean> regionActive = new Dictionary<Region, bool>();
-			private Dictionary<StateBase, Boolean> stateBase = new Dictionary<StateBase, bool>();
+			private class UncommittedStateBase
+			{
+				public Boolean IsActive; // NOTE: make nullable if adding any more properties
+
+				public void Commit( StateBase stateBase )
+				{
+					stateBase.IsActive = IsActive;
+				}
+			}
+
+			private class UncommittedRegion
+			{
+				public Nullable<Boolean> IsActive;
+				public StateBase Current;
+
+				public void Commit( Region region )
+				{
+					if( IsActive != null )
+						region.IsActive = IsActive.Value;
+
+					if( Current != null )
+						region.Current = Current;
+				}
+			}
+
+			private Dictionary<Region, UncommittedRegion> uncommittedRegions = new Dictionary<Region, UncommittedRegion>();
+			private Dictionary<StateBase, UncommittedStateBase> uncommittedStateBases = new Dictionary<StateBase, UncommittedStateBase>();
 
 			public StateBase GetCurrent( Region region )
 			{
-				StateBase value;
+				UncommittedRegion uncommittedRegion;
 
-				return regionCurrent.TryGetValue( region, out value ) ? value : region.Current;
+				return uncommittedRegions.TryGetValue( region, out uncommittedRegion ) ? ( uncommittedRegion.Current ?? region.Current ) : region.Current;
 			}
 
 			public Boolean GetActive( Region region )
 			{
-				Boolean value;
+				UncommittedRegion uncommittedRegion;
 
-				return regionActive.TryGetValue( region, out value ) ? value : region.IsActive;
+				return uncommittedRegions.TryGetValue( region, out uncommittedRegion ) ? ( uncommittedRegion.IsActive ?? region.IsActive ) : region.IsActive;
 			}
 
-			public Boolean GetActive( StateBase state )
+			public Boolean GetActive( StateBase stateBase )
 			{
-				Boolean value;
+				UncommittedStateBase uncommittedStateBase;
 
-				return stateBase.TryGetValue( state, out value ) ? value : state.IsActive;
+				return uncommittedStateBases.TryGetValue( stateBase, out uncommittedStateBase ) ? uncommittedStateBase.IsActive : stateBase.IsActive;
 			}
 
 			public void SetActive( Region region, Boolean value )
 			{
-				if( !regionActive.ContainsKey( region ) )
-					regionActive.Add( region, value );
-				else
-					regionActive[ region ] = value;
+				UncommittedRegion uncommittedRegion;
+
+				if( !uncommittedRegions.TryGetValue( region, out uncommittedRegion ) )
+					uncommittedRegions.Add( region, uncommittedRegion = new UncommittedRegion() );
+
+				uncommittedRegion.IsActive = value;
 			}
 
-			public void SetActive( StateBase state, Boolean value )
+			public void SetActive( StateBase stateBase, Boolean value )
 			{
-				if( !stateBase.ContainsKey( state ) )
-					stateBase.Add( state, value );
-				else
-					stateBase[ state ] = value;
+				UncommittedStateBase uncommittedStateBase;
+
+				if( !uncommittedStateBases.TryGetValue( stateBase, out uncommittedStateBase ) )
+					uncommittedStateBases.Add( stateBase, uncommittedStateBase = new UncommittedStateBase() );
+
+				uncommittedStateBase.IsActive = value;
 			}
 
 			public void SetCurrent( Region region, StateBase value )
 			{
-				if( !regionCurrent.ContainsKey( region ) )
-					regionCurrent.Add( region, value );
-				else
-					regionCurrent[ region ] = value;
+				UncommittedRegion uncommittedRegion;
+
+				if( !uncommittedRegions.TryGetValue( region, out uncommittedRegion ) )
+					uncommittedRegions.Add( region, uncommittedRegion = new UncommittedRegion() );
+
+				uncommittedRegion.Current = value;
 			}
 
 			public void Commit()
 			{
-				foreach( var node in regionActive )
-					node.Key.IsActive = node.Value;
+				foreach( var uncommitedRegion in uncommittedRegions )
+					uncommitedRegion.Value.Commit( uncommitedRegion.Key );
 
-				foreach( var node in stateBase )
-					node.Key.IsActive = node.Value;
-
-				foreach( var region in regionCurrent )
-					region.Key.Current = region.Value;
+				foreach( var uncommittedStateBase in uncommittedStateBases )
+					uncommittedStateBase.Value.Commit( uncommittedStateBase.Key );
 
 				Rollback();
 			}
 
 			public void Rollback()
 			{
-				regionActive.Clear();
-				stateBase.Clear();
-				regionCurrent.Clear();
+				uncommittedRegions.Clear();
+				uncommittedStateBases.Clear();
 			}
 		}
 
