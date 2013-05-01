@@ -1,4 +1,7 @@
-﻿v1.4.1 - 2013-04-28
+v.1.4.2
+Fixed minor bug in XmlSerializer.
+
+v1.4.1 - 2013-04-28
 Fixed minor bug where PseudoState is not properly exited when source of an external transition.
 Added IsSimple, IsComposite and IsOrthogonal properties to State.
 Renamed Node to StateMachineBase.
