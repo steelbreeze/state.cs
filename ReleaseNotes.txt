@@ -1,4 +1,8 @@
-v.1.4.2
+v1.4.3
+Added transactions
+Minor refactoring
+
+v1.4.2
 Fixed minor bug in XmlSerializer.
 
 v1.4.1 - 2013-04-28
