@@ -24,7 +24,7 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public class XmlDeserializer : Visitor<XElement>
 	{
-		private static XNamespace ns = Names.Namespace;
+		private static readonly XNamespace ns = Names.Namespace;
 
 		/// <summary>
 		/// Restores the current active state of a region 
@@ -39,7 +39,7 @@ namespace Steelbreeze.Behavior
 				xml = xml.Elements( ns + region.GetType().Name.ToLower() ).Single( r => r.Attribute( Names.Name ).Value.Equals( region.Name ) );
 
 			// set active and current states
-			region.IsActive = Convert.ToBoolean( xml.Attribute( Names.Active ).Value );
+			region.IsActive =Convert.ToBoolean( xml.Attribute( Names.Active ).Value );
 			region.Current = region.vertices.OfType<StateBase>().SingleOrDefault( s => s.Name.Equals( xml.Attribute( Names.Current ).Value ) );
 
 			return xml;

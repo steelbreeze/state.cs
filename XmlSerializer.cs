@@ -23,7 +23,7 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public class XmlSerializer : Visitor<XElement>
 	{
-		private static XNamespace ns = Names.Namespace;
+		private static readonly XNamespace ns = Names.Namespace;
 
 		/// <summary>
 		/// The namespace prefix used while serializing
