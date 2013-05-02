@@ -130,6 +130,6 @@
     <value>name</value>
   </data>
   <data name="Namespace" xml:space="preserve">
-    <value>http://www.steelbreeze.net/products/StateMachines/Schema</value>
+    <value>http://www.steelbreeze.net/state.cs/schema</value>
   </data>
 </root>

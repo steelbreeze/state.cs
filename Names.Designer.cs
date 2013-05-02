@@ -97,7 +97,7 @@ namespace Steelbreeze.Behavior {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to http://www.steelbreeze.net/products/StateMachines/Schema.
+        ///   Looks up a localized string similar to http://www.steelbreeze.net/state.cs/schema.
         /// </summary>
         internal static string Namespace {
             get {
