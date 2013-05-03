@@ -7,7 +7,7 @@ State.cs is a C# implementation of a state machine library that largely follows 
 
 ## Versioning
 The versions are in the form {major}.{minor}.{build}
-* Major changes introduce significant new behaviour and will update the [public API](https://github.com/steelbreeze/state.cs/wiki/Public API).
+* Major changes introduce significant new behaviour and will update the [public API](https://github.com/steelbreeze/state.cs/wiki/Steelbreeze.Behavior-Namespace).
 * Minor changes introduce features, bug fixes, etc, but note that they also may break the public API.
 * Build changes can introduce features, though usually are fixes and performance enhancements; these will never break the public API.
 
