@@ -1,4 +1,4 @@
-Welcome to the state.cs
+Welcome to state.cs
 The current stable release is 1.4.3.
 
 ## Introduction
