@@ -5,7 +5,7 @@ Looking to contribute something to state.cs? **Here's how you can help.**
 ## Reporting issues
 
 We only accept issues that are bug reports or feature requests.
-Bugs must be isolated and reproducible problems that we can fix within the stte.cs core.
+Bugs must be isolated and reproducible problems that we can fix within the state.cs core.
 Please read the following guidelines before opening any issue.
 
 1. **Search for existing issues.** You'd help us out a lot by first checking if someone else has reported the same issue. Moreover, the issue may have already been resolved with a fix available.
