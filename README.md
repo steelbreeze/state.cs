@@ -11,7 +11,7 @@ The versions are in the form {major}.{minor}.{build}
 * Build changes can introduce features, though usually are fixes and performance enhancements; these will never break the public API.
 
 ## Documentation
-Please see the [wiki](wiki) for documentation.
+Please see the [wiki](https://github.com/steelbreeze/state.cs/wiki) for documentation.
 
 ## Building state.cs
 Simply add all the .cs files and the resources to an existing or new assembly. That's it...
