@@ -1,6 +1,6 @@
 # Welcome to state.cs
 
-The current stable release is 1.4.3.
+The current stable release is 1.5.0.
 
 ## Introduction
 State.cs is a C# implementation of a state machine library that largely follows UML 2 state machine semantics. Given the need to make this an executable model, there are certain features that are not supported, please read [UML compliance](https://github.com/steelbreeze/state.cs/wiki/UML Compliance) for more information.
