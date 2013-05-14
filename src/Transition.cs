@@ -22,7 +22,7 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A completion Transition between Vertices.
 	/// </summary>
-	public sealed class Transition : TransitionBase
+	public sealed class Completion : TransitionBase
 	{
 		// the transitions guard condition
 		internal readonly Func<Boolean> guard;
@@ -38,7 +38,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The source Vertex of the Transition.</param>
 		/// <param name="target">The target Vertex of the Transition.</param>
 		/// <param name="guard">An optional guard condition to restrict traversal of the transition.</param>
-		public Transition( PseudoState source, Vertex target, Func<Boolean> guard = null )
+		public Completion( PseudoState source, Vertex target, Func<Boolean> guard = null )
 			: base( source, target )
 		{
 			Trace.Assert( source != null, "Source PseudoState for transition must be specified." );
@@ -46,7 +46,7 @@ namespace Steelbreeze.Behavior
 
 			this.guard = guard ?? Guard.True;
 
-			( source.completions ?? ( source.completions = new HashSet<Transition>() ) ).Add( this );
+			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
 		}
 
 		/// <summary>
@@ -55,7 +55,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The source Vertex of the Transition.</param>
 		/// <param name="target">The target Vertex of the Transition.</param>
 		/// <param name="guard">An optional guard condition to restrict traversal of the transition.</param>
-		public Transition( State source, Vertex target, Func<Boolean> guard = null )
+		public Completion( State source, Vertex target, Func<Boolean> guard = null )
 			: base( source, target )
 		{
 			Trace.Assert( source != null, "Source State for transition must be specified." );
@@ -63,7 +63,7 @@ namespace Steelbreeze.Behavior
 
 			this.guard = guard ?? Guard.True;
 
-			( source.completions ?? ( source.completions = new HashSet<Transition>() ) ).Add( this );
+			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
 		}
 
 		internal void Traverse( ITransaction transaction, Boolean deepHistory )

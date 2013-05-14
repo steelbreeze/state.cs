@@ -27,7 +27,7 @@ namespace Steelbreeze.Examples
 			var final = new FinalState( "final", server );
 
 			// create transitions between states
-			new Transition( initial, stopped );
+			new Completion( initial, stopped );
 			new Transition<String>( stopped, final, s => s.Equals( "off" ) );
 			new Transition<String>( stopped, running, s => s.Equals( "play" ) );
 			new Transition<String>( running, stopped, s => s.Equals( "stop" ) );

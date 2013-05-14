@@ -24,7 +24,7 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public sealed class PseudoState : Vertex
 	{
-		internal HashSet<Transition> completions = null;
+		internal HashSet<Completion> completions = null;
 
 		/// <summary>
 		/// The kind of pseudostate that determines its behaviour.

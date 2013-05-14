@@ -31,7 +31,7 @@ namespace Steelbreeze.Behavior
 		/// <returns>The default Region.</returns>
 		public static implicit operator Region( State state ) { return state.Default; }
 
-		internal HashSet<Transition> completions = null;
+		internal HashSet<Completion> completions = null;
 		internal HashSet<TypedTransition> transitions = null;
 		internal HashSet<Region> regions = null;
 		private Region defaultRegion = null;

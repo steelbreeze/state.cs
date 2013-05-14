@@ -26,9 +26,9 @@ namespace Steelbreeze.Behavior
 	{
 		private static readonly Random random = new Random();
 
-		private static Transition RandomOrDefault( IEnumerable<Transition> items )
+		private static Completion RandomOrDefault( IEnumerable<Completion> items )
 		{
-			return items.Count() == 0 ? default( Transition ) : items.ElementAt( random.Next( items.Count() ) );
+			return items.Count() == 0 ? default( Completion ) : items.ElementAt( random.Next( items.Count() ) );
 		}
 
 		/// <summary>
@@ -92,9 +92,9 @@ namespace Steelbreeze.Behavior
 		internal readonly String Name;
 		internal readonly Boolean IsHistory;
 		internal readonly Boolean IsInitial;
-		internal readonly Func<IEnumerable<Transition>, Transition> GetCompletion;
+		internal readonly Func<IEnumerable<Completion>, Completion> GetCompletion;
 
-		private PseudoStateKind( String name, Func<IEnumerable<Transition>, Transition> getCompletion, Boolean isHistory, Boolean isInitial )
+		private PseudoStateKind( String name, Func<IEnumerable<Completion>, Completion> getCompletion, Boolean isHistory, Boolean isInitial )
 		{
 			Name = name;
 			GetCompletion = getCompletion;
