@@ -99,6 +99,26 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
+		override public void Reset( ITransaction transaction = null )
+		{
+			lock( sync )
+			{
+				var transactionOwner = transaction == null;
+
+				if( transactionOwner )
+					transaction = TransactionManager.Default();
+
+				if( IsComposite )
+					foreach( var region in regions )
+						region.Reset( transaction );
+
+				base.Reset( transaction );
+
+				if( transactionOwner )
+					transaction.Commit();
+			}
+		}
+
 		override internal void OnExit( ITransaction transaction )
 		{
 			if( IsComposite )

@@ -46,7 +46,12 @@ namespace Steelbreeze.Behavior
 				Trace.Assert( parent.vertices.OfType<StateBase>().Where( v => v.Name.Equals( name ) ).Count() == 1, "State/FinalState names must be unique within a Region." );
 		}
 
-		internal override void OnExit( ITransaction transaction )
+		virtual public void Reset( ITransaction transaction = null )
+		{
+			transaction.SetActive( this, false );
+		}
+
+		internal override void OnExit( ITransaction transaction = null )
 		{
 			transaction.SetActive( this, false );
 

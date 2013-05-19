@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Steelbreeze.Behavior
 {
@@ -85,6 +86,26 @@ namespace Steelbreeze.Behavior
 					transaction = TransactionManager.Default();
 
 				Initialise( transaction, false );
+
+				if( transactionOwner )
+					transaction.Commit();
+			}
+		}
+
+		public void Reset( ITransaction transaction = null )
+		{
+			lock( sync )
+			{
+				var transactionOwner = transaction == null;
+
+				if( transactionOwner )
+					transaction = TransactionManager.Default();
+
+				foreach( var state in vertices.OfType<StateBase>() )
+					state.Reset( transaction );
+
+				transaction.SetActive( this, false );
+				transaction.SetCurrent( this, null );
 
 				if( transactionOwner )
 					transaction.Commit();
