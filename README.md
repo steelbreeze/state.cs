@@ -5,6 +5,8 @@ The current stable release is 1.5.0.
 ## Introduction
 State.cs is a C# implementation of a state machine library that largely follows UML 2 state machine semantics. Given the need to make this an executable model, there are certain features that are not supported, please read [UML compliance](https://github.com/steelbreeze/state.cs/wiki/UML Compliance) for more information.
 
+State.js provides a hierarchical state machine capable of managing orthogonal regions; a variety of pseudo state kinds are implemented including initial, shallow & deep history, choice, junction and entry & exit points.
+
 ## Versioning
 The versions are in the form {major}.{minor}.{build}
 * Major changes introduce significant new behaviour and will update the [public API](https://github.com/steelbreeze/state.cs/wiki/Steelbreeze.Behavior-Namespace).
