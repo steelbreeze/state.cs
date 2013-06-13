@@ -40,11 +40,12 @@ namespace Steelbreeze.Examples
 		public Player3() : base( "player" )
 		{
 			// create some states
-			var initial1 = new PseudoState( PseudoStateKind.Initial, this );
+			var initial = new PseudoState( PseudoStateKind.Initial, this );
 			var operational = new State( "operational", this );
+			var flipped = new State( "flipped", this );
 			var final = new FinalState( "final", this );
 
-			var initial2 = new PseudoState( PseudoStateKind.Initial, operational );
+			var history = new PseudoState( PseudoStateKind.DeepHistory, operational );
 			var stopped = new State( "stopped", operational );
 			var active = new State( "active", operational );
 
@@ -59,12 +60,14 @@ namespace Steelbreeze.Examples
 			running.Exit += StopMotor;
 
 			// create transitions between states (one with transition behaviour)
-			new Completion( initial1, operational );
-			new Completion( initial2, stopped );
+			new Completion( initial, operational );
+			new Completion( history, stopped );
 			new Transition<String>( stopped, running, s => s.Equals( "play" ) );
 			new Transition<String>( active, stopped, s => s.Equals( "stop" ) );
 			new Transition<String>( running, paused, s => s.Equals( "pause" ) );
 			new Transition<String>( paused, running, s => s.Equals( "play" ) );
+			new Transition<String>( operational, flipped, s => s.Equals( "flip" ) );
+			new Transition<String>( flipped, operational, s => s.Equals( "flip" ) );
 			new Transition<String>( operational, final, s => s.Equals( "off" ) );
 		}
 
