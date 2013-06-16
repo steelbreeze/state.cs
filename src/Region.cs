@@ -156,7 +156,7 @@ namespace Steelbreeze.Behavior
 				if( transactionOwner )
 					transaction = TransactionManager.Default();
 
-				var processed = Current.Process( message );
+				var processed = IsActive && Current.Process( message );
 
 				if( transactionOwner )
 					transaction.Commit();

@@ -176,17 +176,9 @@ namespace Steelbreeze.Behavior
 				var processed = transition != null;
 
 				if( processed )
-				{
 					transition.Traverse( transaction, message );
-
-					transaction.Commit();
-				}
 				else
-				{
-					if( IsComposite )
-						foreach( var region in regions.Where( r => r.IsActive ) )
-							processed |= region.Process( message );
-				}
+					processed = IsComposite ? regions.Aggregate( false, ( aggregator, region ) => aggregator || region.Process( message ) ) : false;
 
 				if( transactionOwner )
 					transaction.Commit();

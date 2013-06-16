@@ -1,6 +1,6 @@
 # Welcome to state.cs
 
-The current stable release is 1.5.0.
+The current stable release is 1.5.1.
 
 ## Introduction
 State.js provides a hierarchical state machine capable of managing orthogonal regions; a variety of pseudo state kinds are implemented including initial, shallow & deep history, choice, junction and entry & exit points.
