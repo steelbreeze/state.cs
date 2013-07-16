@@ -122,7 +122,7 @@ namespace Steelbreeze.Behavior
 		override internal void OnExit( ITransaction transaction )
 		{
 			if( IsComposite )
-				foreach( var region in regions.Where( r => r.IsActive ) )
+				foreach( var region in regions.Where( r => transaction.GetActive( r ) ) )
 					region.OnExit( transaction );
 
 			if( Exit != null )

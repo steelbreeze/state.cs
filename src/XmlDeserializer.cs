@@ -22,7 +22,7 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// Restores the current active state of a state machine, region or composite state
 	/// </summary>
-	public class XmlDeserializer : Visitor<XElement>
+	public class XmlDeserializer : Visitor<XElement> // TODO: make transactional
 	{
 		private static readonly XNamespace ns = Names.Namespace;
 

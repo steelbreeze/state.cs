@@ -7,6 +7,7 @@ examples/Properties
 tests/obj
 tests/bin
 tests/Properties
+Steelbreeze.State.Alpha
 
 .DS_Store
 
@@ -17,3 +18,7 @@ examples/Test.cs
 *.suo
 
 *.csproj
+
+Steelbreeze.State.Alpha/Properties/AssemblyInfo.cs
+
+Steelbreeze.State.Alpha/Properties/AssemblyInfo.cs

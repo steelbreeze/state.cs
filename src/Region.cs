@@ -55,7 +55,7 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// Returns true when the Region is completed.
 		/// </summary>
-		public Boolean IsComplete { get { return Current is FinalState; } }
+		public Boolean IsComplete { get { return Current is FinalState; } } // TODO: test via transaction
 
 		/// <summary>
 		/// Creates a Region.
@@ -124,7 +124,7 @@ namespace Steelbreeze.Behavior
 		override internal void OnExit( ITransaction transaction )
 		{
 			if( transaction.GetCurrent( this ) != null )
-				Current.OnExit( transaction );
+				transaction.GetCurrent( this ).OnExit( transaction );
 
 			transaction.SetActive( this, false );
 
@@ -156,7 +156,7 @@ namespace Steelbreeze.Behavior
 				if( transactionOwner )
 					transaction = TransactionManager.Default();
 
-				var processed = IsActive && Current.Process( message );
+				var processed = transaction.GetActive( this ) && transaction.GetCurrent( this ).Process( message );
 
 				if( transactionOwner )
 					transaction.Commit();
