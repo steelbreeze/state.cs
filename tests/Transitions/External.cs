@@ -11,21 +11,21 @@ namespace Steelbreeze.Behavior.Test.Transitions
 	{
 		public static void Test()
 		{
-			var stateMachine = new State( "external" ); 
+			var stateMachine = new CompositeState( "external" ); 
 
 			var initial = new PseudoState( PseudoStateKind.Initial, stateMachine );
-			var composite = new State( "composite", stateMachine );
-			var orthogonal = new State( "orthogonal", stateMachine );
+			var composite = new CompositeState( "composite", stateMachine );
+			var orthogonal = new CompositeState( "orthogonal", stateMachine );
 			var final = new FinalState( "final", stateMachine);
 
-			var c1 = new State( "c1", composite );
-			var c2 = new State( "c2", composite );
+			var c1 = new SimpleState( "c1", composite );
+			var c2 = new SimpleState( "c2", composite );
 		
 			var region1 = new Region( "region1", orthogonal );
 			var region2 = new Region( "region2", orthogonal );
 
-			var o1 = new State( "o1", region1 );
-			var o2 = new State( "o2", region2 );
+			var o1 = new SimpleState( "o1", region1 );
+			var o2 = new SimpleState( "o2", region2 );
 
 			var j1 = new PseudoState( PseudoStateKind.Junction, region2 );
 
@@ -42,17 +42,19 @@ namespace Steelbreeze.Behavior.Test.Transitions
 			new Completion( new PseudoState( PseudoStateKind.Initial, region1 ), o1 );
 			new Completion( new PseudoState( PseudoStateKind.Initial, region2 ), o2 );
 
-			stateMachine.Initialise();
+			var state = new State();
 
-			Trace.Assert( !stateMachine.Process( "1" ) );
-			Trace.Assert(  stateMachine.Process( "2" ) );
-			Trace.Assert( !stateMachine.Process( "4" ) );
-			Trace.Assert(  stateMachine.Process( "3" ) );
-			Trace.Assert(  stateMachine.Process( "4" ) );
-			Trace.Assert(  stateMachine.Process( "1" ) );
-			Trace.Assert( !stateMachine.Process( "z" ) );
-			Trace.Assert(  stateMachine.Process( "x" ) );
-			Trace.Assert( stateMachine.IsComplete );
+			stateMachine.Initialise( state );
+
+			Trace.Assert( !stateMachine.Process( state, "1" ) );
+			Trace.Assert( stateMachine.Process( state, "2" ) );
+			Trace.Assert( !stateMachine.Process( state, "4" ) );
+			Trace.Assert( stateMachine.Process( state, "3" ) );
+			Trace.Assert( stateMachine.Process( state, "4" ) );
+			Trace.Assert( stateMachine.Process( state, "1" ) );
+			Trace.Assert( !stateMachine.Process( state, "z" ) );
+			Trace.Assert( stateMachine.Process( state, "x" ) );
+			Trace.Assert( stateMachine.IsComplete( state ) );
 		}
 	}
 }

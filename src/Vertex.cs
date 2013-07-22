@@ -21,12 +21,12 @@ using System.Linq;
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// A Vertex is a node within a state machine that can be the source or target of a transition.
+	/// A Vertex is a node within a state machine model that can be the source or target of a transition.
 	/// </summary>
-	public abstract class Vertex : StateMachineBase
+	public abstract class Vertex : StateMachineElement
 	{
 		/// <summary>
-		/// The Vertex's parent Region.
+		/// Returns the parent element of this element
 		/// </summary>
 		public Region Parent { get; private set; }
 
@@ -35,25 +35,29 @@ namespace Steelbreeze.Behavior
 			if( ( this.Parent = parent ) != null )
 				parent.vertices.Add( this );
 		}
-		
-		internal void Initialise( ITransaction transaction, Boolean deepHistory )
+
+		internal IEnumerable<StateMachineElement> Ancestors
 		{
-			BeginEnter( transaction );
-			EndEnter( transaction, deepHistory );
+			get
+			{
+				for( var element = this; element != null; element = element.Parent.Parent )
+				{
+					yield return element;
+
+					if( element.Parent == null )
+						break;
+
+					yield return element.Parent;
+				}
+			}
 		}
 
-		virtual internal void EndEnter( ITransaction transaction, Boolean deepHistory ) { }
-
-		/// <summary>
-		/// Accepts a Visitor object and visits all child Regions.
-		/// </summary>
-		/// <typeparam name="TContext">The type of the context to pass while visiting the CompositeState.</typeparam>
-		/// <param name="visitor">The Visitor object.</param>
-		/// <param name="context">The context to pass while visiting the CompositeState.</param>
-		/// <returns>Context to pass on to sibling Vertics within the parent Region.</returns>
-		override public TContext Accept<TContext>( Visitor<TContext> visitor, TContext context = default( TContext ) )
+		internal void Initialise( IState state, Boolean deepHistory )
 		{
-			return visitor.Visit( this, base.Accept( visitor, context ) );
+			OnEnter( state );
+			Complete( state, deepHistory );
 		}
+
+		virtual internal void Complete( IState state, Boolean deepHistory ) { }
 	}
 }

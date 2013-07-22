@@ -15,194 +15,87 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// A condition or situation during the life of an object during which it satisfies some condition, performs some activity, or waits for some event.
+	/// Basic example of state machine state implementation
 	/// </summary>
-	public class State : StateBase
+	public sealed class State : IState
 	{
-		/// <summary>
-		/// Returns the default Region within a CompositeState.
-		/// </summary>
-		/// <param name="state">The CompositeState to find the default Region for.</param>
-		/// <returns>The default Region.</returns>
-		public static implicit operator Region( State state ) { return state.Default; }
-
-		internal HashSet<Completion> completions = null;
-		internal HashSet<TypedTransition> transitions = null;
-		internal HashSet<Region> regions = null;
-		private Region defaultRegion = null;
-		private Object sync = new Object();
+		private Dictionary<StateMachineElement, Boolean> active = new Dictionary<StateMachineElement, Boolean>();
+		private Dictionary<Region, StateBase> current = new Dictionary<Region, StateBase>();
 
 		/// <summary>
-		/// The default region used for composite states when no region is explicitly referenced.
+		/// Returns the current state of a region
 		/// </summary>
-		public Region Default { get { return defaultRegion ?? ( defaultRegion = new Region( "default", this ) ); } }
-
-		/// <summary>
-		/// The action or actions performed when entering a State.
-		/// </summary>
-		public event Action Entry;
-
-		/// <summary>
-		/// The action or actions performed when leaving a State.
-		/// </summary>
-		public event Action Exit;
-
-		/// <summary>
-		/// True if the state has no child regions
-		/// </summary>
-		public Boolean IsSimple { get { return regions == null; } }
-
-		/// <summary>
-		/// True if the state has child regions
-		/// </summary>
-		public Boolean IsComposite { get { return regions != null; } }
-
-		/// <summary>
-		/// True if the state has more than one child region
-		/// </summary>
-		public Boolean IsOrthogonal { get { return IsComposite && regions.Count() > 1; } }
-
-		/// <summary>
-		/// True when the State is completed.
-		/// </summary>
-		public Boolean IsComplete { get { return IsSimple || regions.All( region => region.IsComplete ); } }
-
-		/// <summary>
-		/// Creates a State.
-		/// </summary>
-		/// <param name="name">The name of the State.</param>
-		/// <param name="parent">The parent Region or the State.</param>
-		public State( String name, Region parent = null ) : base( name, parent ) { }
-
-		/// <summary>
-		/// Initialises a node to its initial state.
-		/// </summary>
-		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
-		public void Initialise( ITransaction transaction = null )
+		/// <param name="region">The region to get the state for</param>
+		/// <returns>The uncommitted state of the region</returns>
+		public StateBase GetCurrent( Region region )
 		{
-			lock( sync )
-			{
-				var transactionOwner = transaction == null;
+			StateBase current = null;
 
-				if( transactionOwner )
-					transaction = TransactionManager.Default();
+			this.current.TryGetValue( region, out current );
 
-				Initialise( transaction, false );
-
-				if( transactionOwner )
-					transaction.Commit();
-			}
-		}
-
-		override public void Reset( ITransaction transaction = null )
-		{
-			lock( sync )
-			{
-				var transactionOwner = transaction == null;
-
-				if( transactionOwner )
-					transaction = TransactionManager.Default();
-
-				if( IsComposite )
-					foreach( var region in regions )
-						region.Reset( transaction );
-
-				base.Reset( transaction );
-
-				if( transactionOwner )
-					transaction.Commit();
-			}
-		}
-
-		override internal void OnExit( ITransaction transaction )
-		{
-			if( IsComposite )
-				foreach( var region in regions.Where( r => transaction.GetActive( r ) ) )
-					region.OnExit( transaction );
-
-			if( Exit != null )
-				Exit();
-
-			base.OnExit( transaction );
-		}
-
-		override internal void BeginEnter( ITransaction transaction )
-		{
-			base.BeginEnter( transaction );
-
-			if( Entry != null )
-				Entry();
-		}
-
-		internal override void EndEnter( ITransaction transaction, bool deepHistory )
-		{
-			if( IsComposite )
-				foreach( var region in regions )
-					region.Initialise( transaction, deepHistory );
-
-			if( completions != null )
-			{
-				if( IsSimple || regions.All( r => transaction.GetCurrent( r ) is FinalState ) ) // IsComplete for in-flight transactions
-				{
-					var completion = completions.SingleOrDefault( c => c.guard() );
-
-					if( completion != null )
-						completion.Traverse( transaction, deepHistory );
-				}
-			}
+			return current;
 		}
 
 		/// <summary>
-		/// Attempts to process a message.
+		/// Returns the active status of a region
 		/// </summary>
-		/// <param name="message">The message to process.</param>
-		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
-		/// <returns>A Boolean indicating if the message was processed.</returns>
-		override public Boolean Process( Object message, ITransaction transaction = null )
+		/// <param name="region">The region to get the active status for</param>
+		/// <returns>The uncommitted active status</returns>
+		public Boolean GetActive( Region region )
 		{
-			lock( sync )
-			{
-				var transactionOwner = transaction == null;
+			Boolean active = false;
 
-				if( transactionOwner )
-					transaction = TransactionManager.Default();
+			this.active.TryGetValue( region, out active );
 
-				var transition = transitions == null ? null : transitions.SingleOrDefault( t => t.Guard( message ) );
-				var processed = transition != null;
-
-				if( processed )
-					transition.Traverse( transaction, message );
-				else
-					processed = IsComposite ? regions.Aggregate( false, ( aggregator, region ) => aggregator || region.Process( message ) ) : false;
-
-				if( transactionOwner )
-					transaction.Commit();
-
-				return processed;
-			}
+			return active;
 		}
-		
+
 		/// <summary>
-		/// Accepts a Visitor object and visits all child Regions.
+		/// Returns the active status of a state
 		/// </summary>
-		/// <typeparam name="TContext">The type of the context to pass while visiting the CompositeState.</typeparam>
-		/// <param name="visitor">The Visitor object.</param>
-		/// <param name="context">The context to pass while visiting the CompositeState.</param>
-		/// <returns>Context to pass on to sibling Vertics within the parent Region.</returns>
-		override public TContext Accept<TContext>( Visitor<TContext> visitor, TContext context = default( TContext ) )
+		/// <param name="state">The state to get the active status for</param>
+		/// <returns>The uncommitted active status</returns>
+		public Boolean GetActive( StateBase state )
 		{
-			context = visitor.Visit( this, base.Accept( visitor, context ) );
+			Boolean active = false;
 
-			if( IsComposite )
-				foreach( var region in regions )
-					region.Accept( visitor, context );
+			this.active.TryGetValue( state, out active );
 
-			return context;
+			return active;
+		}
+
+		/// <summary>
+		/// Sets the active status of a region
+		/// </summary>
+		/// <param name="region">The region to set the active status for</param>
+		/// <param name="value">The valuse to set the active status to</param>
+		public void SetActive( Region region, Boolean value )
+		{
+			this.active[ region ] = value;
+		}
+
+		/// <summary>
+		/// Sets the active status of a state
+		/// </summary>
+		/// <param name="state">The state to set the active status for</param>
+		/// <param name="value">The valuse to set the active status to</param>
+		public void SetActive( StateBase state, Boolean value )
+		{
+			this.active[ state ] = value;
+		}
+
+		/// <summary>
+		/// Sets the current state of a region
+		/// </summary>
+		/// <param name="region">The region to set the current state for</param>
+		/// <param name="value">The value to set the current state to</param>
+		public void SetCurrent( Region region, StateBase value )
+		{
+			this.current[ region ] = value;
 		}
 	}
 }

@@ -14,35 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
 	/// A node within a state machine that can be entered and exited.
 	/// </summary>
-	public abstract class StateMachineBase
+	public abstract class StateMachineElement 
 	{
-		virtual internal void OnExit( ITransaction transaction )
+		virtual internal void OnExit( IState state )
 		{
 			Debug.WriteLine( this, "Leave" );
 		}
 
-		virtual internal void BeginEnter( ITransaction transaction )
+		virtual internal void OnEnter( IState state )
 		{
 			Debug.WriteLine( this, "Enter" );
-		}
-
-		/// <summary>
-		/// Accepts a Visitor object and visits all child nodes.
-		/// </summary>
-		/// <typeparam name="TContext">The type of the context to pass while visiting the node.</typeparam>
-		/// <param name="visitor">The Visitor object.</param>
-		/// <param name="context">The context to pass while visiting the node.</param>
-		/// <returns>Context to pass on to sibling nodes within the parent node.</returns>
-		virtual public TContext Accept<TContext>( Visitor<TContext> visitor, TContext context = default( TContext ) )
-		{
-			return visitor.Visit( this, context );
 		}
 	}
 }

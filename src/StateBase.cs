@@ -23,79 +23,63 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// Common base class for State and FinalState
 	/// </summary>
+	/// <remarks>
+	/// A StateBase can be the current state of a Region.
+	/// </remarks>
 	abstract public class StateBase : Vertex
 	{
+		//		readonly private Region parent;
+		//		readonly private String name;
+
 		/// <summary>
 		/// The name of the State
 		/// </summary>
 		public String Name { get; private set; }
 
-		/// <summary>
-		/// A flag indicating that the State is active (entered, but not yet exited)
-		/// </summary>
-		public Boolean IsActive { get; internal set; }
-
-		internal StateBase( String name, Region parent ) 
-			: base( parent ) 
+		internal StateBase( String name, Region parent )
+			: base( parent )
 		{
 			Trace.Assert( name != null, "State/FinalState must have name provided" );
 
-			Name = name;
+			this.Name = name;
 
 			if( parent != null )
 				Trace.Assert( parent.vertices.OfType<StateBase>().Where( v => v.Name.Equals( name ) ).Count() == 1, "State/FinalState names must be unique within a Region." );
 		}
 
-		virtual public void Reset( ITransaction transaction = null )
+		internal override void OnExit( IState state = null )
 		{
-			transaction.SetActive( this, false );
+			state.SetActive( this, false );
+
+			base.OnExit( state );
 		}
 
-		internal override void OnExit( ITransaction transaction = null )
+		internal override void OnEnter( IState state )
 		{
-			transaction.SetActive( this, false );
+			if( state.GetActive( this ) )
+				OnExit( state );
 
-			base.OnExit( transaction );
-		}
+			base.OnEnter( state );
 
-		internal override void BeginEnter( ITransaction transaction )
-		{
-			if( transaction.GetActive( this ) )
-				OnExit( transaction );
+			state.SetActive( this, true );
 
-			base.BeginEnter( transaction );
-
-			transaction.SetActive( this, true );
-
-			if( Parent != null )
-				transaction.SetCurrent( Parent, this );
+			if( this.Parent != null )
+				state.SetCurrent( this.Parent, this );
 		}
 
 		/// <summary>
 		/// Attempts to process a message.
 		/// </summary>
 		/// <param name="message">The message to process.</param>
-		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
+		/// <param name="state">An optional transaction that the process operation will participate in.</param>
 		/// <returns>A Boolean indicating if the message was processed.</returns>
-		virtual public Boolean Process( Object message, ITransaction transaction = null ) { return false; }
-
-		/// <summary>
-		/// Accepts a Visitor object and visits all child Regions.
-		/// </summary>
-		/// <typeparam name="TContext">The type of the context to pass while visiting the CompositeState.</typeparam>
-		/// <param name="visitor">The Visitor object.</param>
-		/// <param name="context">The context to pass while visiting the CompositeState.</param>
-		/// <returns>Context to pass on to sibling Vertics within the parent Region.</returns>
-		override public TContext Accept<TContext>( Visitor<TContext> visitor, TContext context = default( TContext ) )
-		{
-			return visitor.Visit( this, base.Accept( visitor, context ) );
-		}
+		virtual public Boolean Process( IState state, Object message ) { return false; }
 
 		/// <summary>
 		/// Displays the fully qualified name of the Region or Vertex
 		/// </summary>
 		/// <returns></returns>
-		override public String ToString()
+		public override string ToString()
 		{
 			return Parent == null ? Name : Parent + "." + Name;
 		}

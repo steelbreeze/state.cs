@@ -32,6 +32,11 @@ namespace Steelbreeze.Behavior
 		public PseudoStateKind Kind { get; private set; }
 
 		/// <summary>
+		/// Returns the name of the pseudo state
+		/// </summary>
+		public string Name { get { return Kind.Name; } }
+
+		/// <summary>
 		/// Creates a PseudoState.
 		/// </summary>
 		/// <param name="kind">The kind of the PseudoState.</param>
@@ -42,38 +47,21 @@ namespace Steelbreeze.Behavior
 			Trace.Assert( kind != null, "PseudoStateKind must be provided" );
 			Trace.Assert( parent != null, "PseudoState must have a parent" );
 
-			if( ( Kind = kind ).IsInitial )
-			{
-				Trace.Assert( parent.initial == null, "Region may have only one initial PseudoState (Initial, EntryPoint, DeepHistory, ShallowHistory)" );
-
-				parent.initial = this;
-			}
+			Kind = kind;
 		}
 
-		internal override void EndEnter( ITransaction transaction, bool deepHistory )
+		internal override void Complete( IState state, bool deepHistory )
 		{
-			Kind.GetCompletion( completions ).Traverse( transaction, deepHistory );
-		}
-
-		/// <summary>
-		/// Accepts a Visitor object.
-		/// </summary>
-		/// <typeparam name="TContext">The type of the context to pass while visiting the CompositeState.</typeparam>
-		/// <param name="visitor">The Visitor object.</param>
-		/// <param name="context">The context to pass while visiting the CompositeState.</param>
-		/// <returns>Context to pass on to sibling Vertices within the parent Region.</returns>
-		override public TContext Accept<TContext>( Visitor<TContext> visitor, TContext context )
-		{
-			return visitor.Visit( this, base.Accept( visitor, context ) );
+			Kind.GetCompletion( completions ).Traverse( state, deepHistory );
 		}
 
 		/// <summary>
 		/// Displays the fully qualified name of the Region or Vertex
 		/// </summary>
 		/// <returns></returns>
-		override public String ToString()
+		public override string ToString()
 		{
-			return Parent == null ? Kind.Name : Parent + "." + Kind.Name;
+			return Parent == null ? Name : Parent + "." + Name;
 		}
 	}
 }

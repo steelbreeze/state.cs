@@ -18,18 +18,19 @@ namespace Steelbreeze.Examples
 		{
 			// create a player
 			var player = new Player3();
+			var state = new State();
 
 			// initialises the state machine (enters the region for the first time, causing transition from the initial PseudoState)
-			player.Initialise();
+			player.Initialise( state );
 
 			// main event loop
-			while( !player.IsComplete )
+			while( !player.IsComplete( state ) )
 			{
 				// write a prompt
 				Console.Write( "alamo> " );
 
 				// process lines read from the console
-				if( !player.Process( Console.ReadLine() ) )
+				if( !player.Process( state, Console.ReadLine() ) )
 					Console.WriteLine( "unknown command" );
 			}
 
@@ -41,16 +42,16 @@ namespace Steelbreeze.Examples
 		{
 			// create some states
 			var initial = new PseudoState( PseudoStateKind.Initial, this );
-			var operational = new State( "operational", this );
-			var flipped = new State( "flipped", this );
+			var operational = new CompositeState( "operational", this );
+			var flipped = new SimpleState( "flipped", this );
 			var final = new FinalState( "final", this );
 
 			var history = new PseudoState( PseudoStateKind.DeepHistory, operational );
-			var stopped = new State( "stopped", operational );
-			var active = new State( "active", operational );
+			var stopped = new SimpleState( "stopped", operational );
+			var active = new CompositeState( "active", operational );
 
-			var running = new State( "running", active );
-			var paused = new State( "paused", active );
+			var running = new SimpleState( "running", active );
+			var paused = new SimpleState( "paused", active );
 
 			// some state behaviour
 			active.Entry += EngageHead;

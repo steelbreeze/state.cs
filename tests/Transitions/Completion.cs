@@ -9,7 +9,7 @@ namespace Steelbreeze.Behavior.Test.Transitions
 {
 	public class Completions
 	{
-		public class Activity : State
+		public class Activity : CompositeState
 		{
 			public Activity( String name, Region region )
 				: base(  name, region )
@@ -25,11 +25,11 @@ namespace Steelbreeze.Behavior.Test.Transitions
 				var stateMachine = new Region( "continuation" );
 
 				var initial = new PseudoState( PseudoStateKind.Initial, stateMachine );
-				var activity1 = new State( "activity1", stateMachine );
+				var activity1 = new SimpleState( "activity1", stateMachine );
 				var activity2 = new Activity( "activity2", stateMachine );
 				var junction1 = new PseudoState( PseudoStateKind.Junction, stateMachine );
 				var junction2 = new PseudoState( PseudoStateKind.Junction, stateMachine );
-				var activity3 = new State( "activity3", stateMachine );
+				var activity3 = new SimpleState( "activity3", stateMachine );
 				var final = new FinalState( "final", stateMachine );
 
 				new Completion( initial, activity1 );
@@ -39,9 +39,11 @@ namespace Steelbreeze.Behavior.Test.Transitions
 				new Completion( junction2, activity3 );
 				new Completion( activity3, final );
 
-				stateMachine.Initialise();
+				var state = new State();
 
-				Trace.Assert( stateMachine.IsComplete );
+				stateMachine.Initialise( state );
+
+				Trace.Assert( stateMachine.IsComplete( state ) );
 			}
 			catch( Exception x )
 			{

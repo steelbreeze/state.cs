@@ -33,17 +33,5 @@ namespace Steelbreeze.Behavior
 		{
 			Trace.Assert( parent != null, "FinalState must have parent provided" );
 		}
-
-		/// <summary>
-		/// Accepts a Visitor object.
-		/// </summary>
-		/// <typeparam name="TContext">The type of the context to pass to the visitor.</typeparam>
-		/// <param name="visitor">The visitor object.</param>
-		/// <param name="context">The context to pass while visiting the CompositeState.</param>
-		/// <returns>Context to pass on to sibling Vertices within the parent Region.</returns>
-		override public TContext Accept<TContext>( Visitor<TContext> visitor, TContext context )
-		{
-			return visitor.Visit( this, base.Accept( visitor, context ) );
-		}
 	}
 }

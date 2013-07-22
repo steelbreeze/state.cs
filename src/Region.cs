@@ -23,16 +23,14 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A Region is an orthogonal part of either a CompositeState or a StateMachine. It contains states and transitions.
 	/// </summary>
-	public class Region : StateMachineBase
+	public class Region : StateMachineElement
 	{
 		internal HashSet<Vertex> vertices = new HashSet<Vertex>();
-		internal PseudoState initial = null;
-		private Object sync = new Object();
 
 		/// <summary>
 		/// The Region's parent State
 		/// </summary>
-		public State Parent { get; private set; }
+		public CompositeState Parent { get; private set; }
 
 		/// <summary>
 		/// The name of Region
@@ -40,153 +38,89 @@ namespace Steelbreeze.Behavior
 		public String Name { get; private set; }
 
 		/// <summary>
-		/// A flag indicating that the Region is active (entered, but not yet exited)
-		/// </summary>
-		public Boolean IsActive { get; internal set; }
-
-		/// <summary>
-		/// The current state of the region.
-		/// </summary>
-		/// <remarks>
-		/// Note that if the region is no longer active, this represents the last known active state of the region.
-		/// </remarks>
-		public StateBase Current { get; internal set; } // internal set allows deserialisers to restore current active state
-
-		/// <summary>
-		/// Returns true when the Region is completed.
-		/// </summary>
-		public Boolean IsComplete { get { return Current is FinalState; } } // TODO: test via transaction
-
-		/// <summary>
 		/// Creates a Region.
 		/// </summary>
 		/// <param name="name">The name of the Region.</param>
 		/// <param name="parent">The parent CompositeState.</param>
-		public Region( String name, State parent = null )
+		public Region( String name, CompositeState parent = null )
 		{
 			Trace.Assert( name != null, "Region name must be provided" );
 
-			Name = name;
+			this.Name = name;
 
 			if( ( this.Parent = parent ) != null )
 				( parent.regions ?? ( parent.regions = new HashSet<Region>() ) ).Add( this );
 		}
 
 		/// <summary>
-		/// Initialises a node to its initial state.
-		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
+		/// Tests to see if a region is complete
 		/// </summary>
-		public void Initialise( ITransaction transaction = null )
+		/// <param name="state">The state machine state</param>
+		/// <returns>True if the region is complete</returns>
+		/// <remarks>
+		/// A Region is deemed to be complete when it's current state is a FinalState.
+		/// </remarks>
+		public Boolean IsComplete( IState state )
 		{
-			lock( sync )
-			{
-				Boolean transactionOwner = transaction == null;
-
-				if( transactionOwner )
-					transaction = TransactionManager.Default();
-
-				Initialise( transaction, false );
-
-				if( transactionOwner )
-					transaction.Commit();
-			}
+			return state.GetCurrent( this ) is FinalState;
 		}
 
-		public void Reset( ITransaction transaction = null )
+		/// <summary>
+		/// Initialises a node to its initial state.
+		/// <param name="state">The state machine state to initialise.</param>
+		/// </summary>
+		public void Initialise( IState state )
 		{
-			lock( sync )
-			{
-				var transactionOwner = transaction == null;
-
-				if( transactionOwner )
-					transaction = TransactionManager.Default();
-
-				foreach( var state in vertices.OfType<StateBase>() )
-					state.Reset( transaction );
-
-				transaction.SetActive( this, false );
-				transaction.SetCurrent( this, null );
-
-				if( transactionOwner )
-					transaction.Commit();
-			}
+			Initialise( state, false );
 		}
 
-		internal void Initialise( ITransaction transaction, Boolean deepHistory )
+		internal void Initialise( IState state, Boolean deepHistory )
 		{
-			BeginEnter( transaction );
+			OnEnter( state );
 
-			var vertex = deepHistory || initial.Kind.IsHistory ? transaction.GetCurrent( this ) as Vertex ?? initial : initial;
+			var initial = this.vertices.OfType<PseudoState>().SingleOrDefault( pseudoState => pseudoState.Kind.IsInitial ); // NOTE: linq is deferred so this will only evaluate if the logic below requires it
 
-			vertex.Initialise( transaction, deepHistory || ( initial.Kind == PseudoStateKind.DeepHistory ) );
+			var vertex = deepHistory || initial.Kind.IsHistory ? state.GetCurrent( this ) as Vertex ?? initial : initial;
+
+			vertex.Initialise( state, deepHistory || ( initial.Kind == PseudoStateKind.DeepHistory ) );
 		}
 
-		override internal void OnExit( ITransaction transaction )
+		override internal void OnExit( IState state )
 		{
-			if( transaction.GetCurrent( this ) != null )
-				transaction.GetCurrent( this ).OnExit( transaction );
+			if( state.GetCurrent( this ) != null )
+				state.GetCurrent( this ).OnExit( state );
 
-			transaction.SetActive( this, false );
+			state.SetActive( this, false );
 
-			base.OnExit( transaction );
+			base.OnExit( state );
 		}
 
-		internal override void BeginEnter( ITransaction transaction )
+		internal override void OnEnter( IState state )
 		{
-			if( transaction.GetActive( this ) )
-				OnExit( transaction );
+			if( state.GetActive( this ) )
+				OnExit( state );
 
-			base.BeginEnter( transaction );
+			base.OnEnter( state );
 
-			transaction.SetActive( this, true );
+			state.SetActive( this, true );
 		}
 
 		/// <summary>
 		/// Attempts to process a message to facilitate state transitions
 		/// </summary>
+		/// <param name="state">The state machine state to pass the message to.</param>
 		/// <param name="message">The message to process.</param>
-		/// <param name="transaction">An optional transaction that the process operation will participate in.</param>
 		/// <returns>A Boolean indicating if the message was processed.</returns>
-		public Boolean Process( Object message, ITransaction transaction = null )
+		public Boolean Process( IState state, Object message )
 		{
-			lock( sync )
-			{
-				var transactionOwner = transaction == null;
-
-				if( transactionOwner )
-					transaction = TransactionManager.Default();
-
-				var processed = transaction.GetActive( this ) && transaction.GetCurrent( this ).Process( message );
-
-				if( transactionOwner )
-					transaction.Commit();
-
-				return processed;
-			}
-		}
-
-		/// <summary>
-		/// Accepts a Visitor object and visits all child Vertices.
-		/// </summary>
-		/// <typeparam name="TContext">The type of the context to pass while visiting the CompositeState.</typeparam>
-		/// <param name="visitor">The Visitor object.</param>
-		/// <param name="context">The context to pass while visiting the CompositeState.</param>
-		/// <returns>Context to pass on to sibling Regions within the parent CompositeState.</returns>
-		override public TContext Accept<TContext>( Visitor<TContext> visitor, TContext context = default( TContext ) )
-		{
-			context = visitor.Visit( this, base.Accept( visitor, context ) );
-
-			foreach( var child in vertices )
-				child.Accept( visitor, context );
-
-			return context;
+			return state.GetActive( this ) && state.GetCurrent( this ).Process( state, message );
 		}
 
 		/// <summary>
 		/// Displays the fully qualified name of the Region or Vertex
 		/// </summary>
 		/// <returns></returns>
-		override public String ToString()
+		public override string ToString()
 		{
 			return Parent == null ? Name : Parent + "." + Name;
 		}

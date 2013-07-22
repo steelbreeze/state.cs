@@ -23,34 +23,8 @@ namespace Steelbreeze.Behavior
 	public static class Guard
 	{
 		/// <summary>
-		/// A guard condition that always returns true.
-		/// </summary>
-		public static readonly Func<Boolean> True = () => true;
-
-		/// <summary>
-		/// A guard condition that always returns false.
-		/// </summary>	
-		public static readonly Func<Boolean> False = () => false;
-		
-		/// <summary>
 		/// A guard condition used at Choice and Junction PseudoStates as a catch-all transtiion.
 		/// </summary>
 		public static readonly Func<Boolean> Else = () => false;
-	}
-
-	/// <summary>
-	/// Standard guard conditions for message triggered transitions
-	/// </summary>
-	public static class Guard<TMessage>
-	{
-		/// <summary>
-		/// A guard condition that always returns true.
-		/// </summary>
-		public static readonly Func<TMessage, Boolean> True = message => true;
-
-		/// <summary>
-		/// A guard condition that always returns false.
-		/// </summary>
-		public static readonly Func<TMessage, Boolean> False = message => false;
 	}
 }

@@ -44,7 +44,7 @@ namespace Steelbreeze.Behavior
 			Trace.Assert( source != null, "Source PseudoState for transition must be specified." );
 			Trace.Assert( target != null, "Target Vertex for completion transition must be specified." );
 
-			this.guard = guard ?? Guard.True;
+			this.guard = guard ?? ( () => true );
 
 			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
 		}
@@ -55,30 +55,30 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The source Vertex of the Transition.</param>
 		/// <param name="target">The target Vertex of the Transition.</param>
 		/// <param name="guard">An optional guard condition to restrict traversal of the transition.</param>
-		public Completion( State source, Vertex target, Func<Boolean> guard = null )
+		public Completion( SimpleState source, Vertex target, Func<Boolean> guard = null )
 			: base( source, target )
 		{
 			Trace.Assert( source != null, "Source State for transition must be specified." );
 			Trace.Assert( target != null, "Target Vertex for completion transition must be specified." );
 
-			this.guard = guard ?? Guard.True;
+			this.guard = guard ?? ( () => true );
 
 			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
 		}
 
-		internal void Traverse( ITransaction transaction, Boolean deepHistory )
+		internal void Traverse( IState state, Boolean deepHistory )
 		{
 			if( exit != null )
-				exit( transaction );
+				exit( state );
 
 			if( Effect != null )
 				Effect();
 
 			if( enter != null )
-				enter( transaction );
+				enter( state );
 
 			if( complete != null )
-				complete( transaction, deepHistory );
+				complete( state, deepHistory );
 		}
 	}
 
@@ -102,17 +102,17 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The source Vertex of the Transition.</param>
 		/// <param name="target">The target Vertex of the Transition.</param>
 		/// <param name="guard">An optional guard condition to restrict traversal of the transition.</param>
-		public Transition( State source, Vertex target, Func<TMessage, Boolean> guard = null )
+		public Transition( SimpleState source, Vertex target, Func<TMessage, Boolean> guard = null )
 			: base( source, target )
 		{
 			Trace.Assert( source != null, "Source vertex for transition must be specified." );
 
-			this.guard = guard ?? Guard<TMessage>.True;
+			this.guard = guard ?? ( message => true );
 
 			( source.transitions ?? ( source.transitions = new HashSet<TypedTransition>() ) ).Add( this );
 		}
 
-		override internal Boolean Guard( Object message )
+		internal override Boolean Guard( Object message )
 		{
 			var typed = message as TMessage;
 
@@ -122,19 +122,21 @@ namespace Steelbreeze.Behavior
 				return guard( typed );
 		}
 
-		override internal void Traverse( ITransaction transaction, Object message )
+		internal override Boolean Traverse( IState state, Object message )
 		{
 			if( exit != null )
-				exit( transaction );
+				exit( state );
 
 			if( Effect != null )
 				Effect( message as TMessage );
 
 			if( enter != null )
-				enter( transaction );
+				enter( state );
 
 			if( complete != null )
-				complete( transaction, false );
+				complete( state, false );
+
+			return true;
 		}
 	}
 }

@@ -1,6 +1,18 @@
 # Welcome to state.cs
 
-The current stable release is 1.5.2.
+The current stable release is 2.0.0.
+
+## Version 2 notes - please read before downloading
+Version 2 breaks apart the state machine model and the state machine state. This facilitates creating a single state machine model and using it with many different state machine states without any overhead of resetting the state machine, serializing/deserializing state or rebuilding the machine.
+
+###API changes
+The following are breaking API changes from version 1.5.x:
+
+The old State class is replaced by the new SimpleState and ComplexState classes. A simple state is a leaf-level state in a state machine hierarchy whereas a complex state can have child regions. This removes minor overheads for simple states.
+
+State machine state is represented by the new IState interface, a default implementation of which is found in the new State class.
+
+The implementaion of the visitor pattern has been removed, as the state machine state is now under your direct control.
 
 ## Introduction
 State.js provides a hierarchical state machine capable of managing orthogonal regions; a variety of pseudo state kinds are implemented including initial, shallow & deep history, choice, junction and entry & exit points.
@@ -18,6 +30,9 @@ Please see the [wiki](https://github.com/steelbreeze/state.cs/wiki) for document
 
 ## Building state.cs
 Simply add all the .cs files and the resources to an existing or new assembly. That's it...
+
+## Usage
+If you're using state.cs, please drop me a mail; I'd love to hear about how this is getting used...
 
 ## Licence
 Copyright © 2013 Steelbreeze Limited.

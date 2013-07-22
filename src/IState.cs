@@ -19,60 +19,50 @@ using System.Collections.Generic;
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// /// The base class and factory for transactions.
+	/// The interface for the state that a state machine manages.
 	/// </summary>
-	public interface ITransaction
+	public interface IState
 	{
 		/// <summary>
-		/// Returns the uncommitted current state of a region
+		/// Returns the current state of a region
 		/// </summary>
-		/// <param name="region">The region to get the uncommitted state for</param>
+		/// <param name="region">The region to get the state for</param>
 		/// <returns>The uncommitted state of the region</returns>
 		StateBase GetCurrent( Region region );
 
 		/// <summary>
-		/// Returns the uncommitted active status of a region
+		/// Returns the active status of a region
 		/// </summary>
-		/// <param name="region">The region to get the uncommitted active status for</param>
+		/// <param name="region">The region to get the active status for</param>
 		/// <returns>The uncommitted active status</returns>
 		Boolean GetActive( Region region );
 
 		/// <summary>
-		/// Returns the uncommitted active status of a state
+		/// Returns the active status of a state
 		/// </summary>
-		/// <param name="state">The state to get the uncommitted active status for</param>
+		/// <param name="state">The state to get the active status for</param>
 		/// <returns>The uncommitted active status</returns>
 		Boolean GetActive( StateBase state );
 
 		/// <summary>
-		/// Sets the uncommitted active status of a region
+		/// Sets the active status of a region
 		/// </summary>
-		/// <param name="region">The region to set the uncommitted active status for</param>
-		/// <param name="value">The valuse to set the uncommitted active status to</param>
+		/// <param name="region">The region to set the active status for</param>
+		/// <param name="value">The valuse to set the active status to</param>
 		void SetActive( Region region, Boolean value );
 
 		/// <summary>
-		/// Sets the uncommitted active status of a state
+		/// Sets the active status of a state
 		/// </summary>
-		/// <param name="state">The state to set the uncommitted active status for</param>
-		/// <param name="value">The valuse to set the uncommitted active status to</param>
+		/// <param name="state">The state to set the active status for</param>
+		/// <param name="value">The valuse to set the active status to</param>
 		void SetActive( StateBase state, Boolean value );
 
 		/// <summary>
-		/// Sets the uncommitted current state of a region
+		/// Sets the current state of a region
 		/// </summary>
-		/// <param name="region">The region to set the uncommitted current state for</param>
-		/// <param name="value">The value to set the uncommitted current state to</param>
+		/// <param name="region">The region to set the current state for</param>
+		/// <param name="value">The value to set the current state to</param>
 		void SetCurrent( Region region, StateBase value );
-
-		/// <summary>
-		/// Commits all uncommitted values
-		/// </summary>
-		void Commit();
-
-		/// <summary>
-		/// Rolls back all uncommitted values
-		/// </summary>
-		void Rollback();
 	}
 }

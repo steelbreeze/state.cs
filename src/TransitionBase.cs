@@ -25,16 +25,16 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public abstract class TransitionBase
 	{
-		readonly internal Action<ITransaction> exit;
-		readonly internal Action<ITransaction> enter;
-		readonly internal Action<ITransaction, Boolean> complete;
+		readonly internal Action<IState> exit;
+		readonly internal Action<IState> enter;
+		readonly internal Action<IState, Boolean> complete;
 
 		internal TransitionBase( Vertex source, Vertex target )
 		{
 			if( target != null )
 			{
-				var sourceAncestors = Ancestors( source ).Reverse().GetEnumerator();
-				var targetAncestors = Ancestors( target ).Reverse().GetEnumerator();
+				var sourceAncestors = source.Ancestors.Reverse().GetEnumerator();
+				var targetAncestors = target.Ancestors.Reverse().GetEnumerator();
 
 				while( sourceAncestors.MoveNext() && targetAncestors.MoveNext() && sourceAncestors.Current.Equals( targetAncestors.Current ) ) { }
 
@@ -43,24 +43,9 @@ namespace Steelbreeze.Behavior
 
 				exit += sourceAncestors.Current.OnExit;
 
-				do { enter += targetAncestors.Current.BeginEnter; } while( targetAncestors.MoveNext() );
+				do { enter += targetAncestors.Current.OnEnter; } while( targetAncestors.MoveNext() );
 
-				complete += target.EndEnter;
-			}
-		}
-
-		private static IEnumerable<StateMachineBase> Ancestors( Vertex vertex )
-		{
-			while( vertex != null )
-			{
-				yield return vertex;
-
-				if( vertex.Parent == null )
-					break;
-
-				yield return vertex.Parent;
-
-				vertex = vertex.Parent.Parent;
+				complete += target.Complete;
 			}
 		}
 	}
