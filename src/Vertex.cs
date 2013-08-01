@@ -58,6 +58,6 @@ namespace Steelbreeze.Behavior
 			Complete( state, deepHistory );
 		}
 
-		virtual internal void Complete( IState state, Boolean deepHistory ) { }
+		abstract internal void Complete( IState state, Boolean deepHistory );
 	}
 }

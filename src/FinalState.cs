@@ -17,7 +17,7 @@ using System;
 using System.Diagnostics;
 
 namespace Steelbreeze.Behavior
-{	
+{
 	/// <summary>
 	/// A State that has no outgoing transitions.
 	/// </summary>
@@ -32,6 +32,20 @@ namespace Steelbreeze.Behavior
 			: base( name, parent )
 		{
 			Trace.Assert( parent != null, "FinalState must have parent provided" );
+		}
+
+		internal override void Complete( IState state, bool deepHistory ) { }
+
+		/// <summary>
+		/// Attempts to process a message.
+		/// </summary>
+		/// <param name="message">The message to process.</param>
+		/// <param name="state">An optional transaction that the process operation will participate in.</param>
+		/// <returns>A Boolean indicating if the message was processed.</returns>
+		/// <remarks>Note that a final state has no outbound transitions so will therefore never be able to process a message itself.</remarks>
+		public override bool Process( IState state, object message )
+		{
+			return false;
 		}
 	}
 }

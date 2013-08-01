@@ -25,6 +25,6 @@ namespace Steelbreeze.Behavior
 		internal TypedTransition( Vertex source, Vertex target ) : base( source, target ) { }
 
 		internal abstract Boolean Guard( Object message );
-		internal abstract Boolean Traverse( IState state, Object message );
+		internal abstract void Traverse( IState state, Object message );
 	}
 }

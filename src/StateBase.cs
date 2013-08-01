@@ -28,9 +28,6 @@ namespace Steelbreeze.Behavior
 	/// </remarks>
 	abstract public class StateBase : Vertex
 	{
-		//		readonly private Region parent;
-		//		readonly private String name;
-
 		/// <summary>
 		/// The name of the State
 		/// </summary>
@@ -73,7 +70,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="message">The message to process.</param>
 		/// <param name="state">An optional transaction that the process operation will participate in.</param>
 		/// <returns>A Boolean indicating if the message was processed.</returns>
-		virtual public Boolean Process( IState state, Object message ) { return false; }
+		public abstract Boolean Process( IState state, Object message );
 
 		/// <summary>
 		/// Displays the fully qualified name of the Region or Vertex

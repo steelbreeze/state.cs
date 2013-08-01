@@ -31,6 +31,9 @@ namespace Steelbreeze.Behavior
 		/// <returns>The default Region.</returns>
 		public static implicit operator Region( CompositeState state ) { return state.regions.SingleOrDefault( r => r.Name.Equals( "default" ) ) ?? new Region( "default", state ); }
 
+		/// <summary>
+		/// The child regions of the composite state
+		/// </summary>
 		internal HashSet<Region> regions = new HashSet<Region>();
 
 		/// <summary>
@@ -56,6 +59,10 @@ namespace Steelbreeze.Behavior
 			return regions.All( region => region.IsComplete( state ) );
 		}
 
+		/// <summary>
+		/// Exits the composite state
+		/// </summary>
+		/// <param name="state">The state model state to operate on.</param>
 		internal override void OnExit( IState state )
 		{
 			foreach( var region in regions.Where( r => state.GetActive( r ) ) )
@@ -64,6 +71,11 @@ namespace Steelbreeze.Behavior
 			base.OnExit( state );
 		}
 
+		/// <summary>
+		/// Completes teh entry of the composite state.
+		/// </summary>
+		/// <param name="state">The state model state to operate on.</param>
+		/// <param name="deepHistory">Cascade of deep history.</param>
 		internal override void Complete( IState state, bool deepHistory )
 		{
 			foreach( var region in regions )

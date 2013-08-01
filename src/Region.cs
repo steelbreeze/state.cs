@@ -26,6 +26,7 @@ namespace Steelbreeze.Behavior
 	public class Region : StateMachineElement
 	{
 		internal HashSet<Vertex> vertices = new HashSet<Vertex>();
+		internal PseudoState initial;
 
 		/// <summary>
 		/// The Region's parent State
@@ -78,8 +79,6 @@ namespace Steelbreeze.Behavior
 		{
 			OnEnter( state );
 
-			var initial = this.vertices.OfType<PseudoState>().SingleOrDefault( pseudoState => pseudoState.Kind.IsInitial ); // NOTE: linq is deferred so this will only evaluate if the logic below requires it
-
 			var vertex = deepHistory || initial.Kind.IsHistory ? state.GetCurrent( this ) as Vertex ?? initial : initial;
 
 			vertex.Initialise( state, deepHistory || ( initial.Kind == PseudoStateKind.DeepHistory ) );
@@ -87,8 +86,10 @@ namespace Steelbreeze.Behavior
 
 		override internal void OnExit( IState state )
 		{
-			if( state.GetCurrent( this ) != null )
-				state.GetCurrent( this ).OnExit( state );
+			var current = state.GetCurrent( this );
+
+			if( current != null )
+				current.OnExit( state );
 
 			state.SetActive( this, false );
 

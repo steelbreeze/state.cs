@@ -24,17 +24,13 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public sealed class PseudoState : Vertex
 	{
+		// the completion transitions from the pseudostate
 		internal HashSet<Completion> completions = null;
 
 		/// <summary>
 		/// The kind of pseudostate that determines its behaviour.
 		/// </summary>
 		public PseudoStateKind Kind { get; private set; }
-
-		/// <summary>
-		/// Returns the name of the pseudo state
-		/// </summary>
-		public string Name { get { return Kind.Name; } }
 
 		/// <summary>
 		/// Creates a PseudoState.
@@ -48,6 +44,9 @@ namespace Steelbreeze.Behavior
 			Trace.Assert( parent != null, "PseudoState must have a parent" );
 
 			Kind = kind;
+
+			if( this.Kind.IsInitial )
+				parent.initial = this;
 		}
 
 		internal override void Complete( IState state, bool deepHistory )
@@ -61,7 +60,7 @@ namespace Steelbreeze.Behavior
 		/// <returns></returns>
 		public override string ToString()
 		{
-			return Parent == null ? Name : Parent + "." + Name;
+			return Parent == null ? Kind.Name : Parent + "." + Kind.Name;
 		}
 	}
 }

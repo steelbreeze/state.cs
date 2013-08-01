@@ -122,7 +122,7 @@ namespace Steelbreeze.Behavior
 				return guard( typed );
 		}
 
-		internal override Boolean Traverse( IState state, Object message )
+		internal override void Traverse( IState state, Object message )
 		{
 			if( exit != null )
 				exit( state );
@@ -135,8 +135,6 @@ namespace Steelbreeze.Behavior
 
 			if( complete != null )
 				complete( state, false );
-
-			return true;
 		}
 	}
 }

@@ -104,9 +104,17 @@ namespace Steelbreeze.Behavior
 		/// <returns>A Boolean indicating if the message was processed.</returns>
 		override public Boolean Process( IState state, Object message )
 		{
-			TypedTransition transition;
+			if( this.transitions == null )
+				return false;
 
-			return this.transitions != null && ( transition = this.transitions.SingleOrDefault( t => t.Guard( message ) ) ) != null && transition.Traverse( state, message );
+			var transition = this.transitions.SingleOrDefault( t => t.Guard( message ) );
+
+			if( transition == null )
+				return false;
+
+			transition.Traverse( state, message );
+
+			return true;
 		}
 	}
 }
