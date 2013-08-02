@@ -65,14 +65,15 @@ namespace Steelbreeze.Behavior
 		/// <param name="state">The state model state to operate on.</param>
 		internal override void OnExit( IState state )
 		{
-			foreach( var region in regions.Where( r => state.GetActive( r ) ) )
-				region.OnExit( state );
+			foreach( var region in regions )
+				if( state.GetActive( region ) )
+					region.OnExit( state );
 
 			base.OnExit( state );
 		}
 
 		/// <summary>
-		/// Completes teh entry of the composite state.
+		/// Completes the entry of the composite state.
 		/// </summary>
 		/// <param name="state">The state model state to operate on.</param>
 		/// <param name="deepHistory">Cascade of deep history.</param>

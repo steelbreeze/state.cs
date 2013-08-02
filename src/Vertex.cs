@@ -52,12 +52,6 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
-		internal void Initialise( IState state, Boolean deepHistory )
-		{
-			OnEnter( state );
-			Complete( state, deepHistory );
-		}
-
 		abstract internal void Complete( IState state, Boolean deepHistory );
 	}
 }

@@ -77,11 +77,20 @@ namespace Steelbreeze.Behavior
 
 		internal void Initialise( IState state, Boolean deepHistory )
 		{
+			StateBase current;
+
 			OnEnter( state );
 
-			var vertex = deepHistory || initial.Kind.IsHistory ? state.GetCurrent( this ) as Vertex ?? initial : initial;
-
-			vertex.Initialise( state, deepHistory || ( initial.Kind == PseudoStateKind.DeepHistory ) );
+			if( ( deepHistory || initial.Kind.IsHistory ) && ( current = state.GetCurrent( this ) ) != null )
+			{
+				current.OnEnter( state );
+				current.Complete( state, deepHistory || ( initial.Kind == PseudoStateKind.DeepHistory ) );
+			}
+			else
+			{
+				initial.OnEnter( state );
+				initial.Complete( state, deepHistory || ( initial.Kind == PseudoStateKind.DeepHistory ) );
+			}
 		}
 
 		override internal void OnExit( IState state )

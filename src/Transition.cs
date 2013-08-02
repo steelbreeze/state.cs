@@ -20,69 +20,6 @@ using System.Diagnostics;
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// A completion Transition between Vertices.
-	/// </summary>
-	public sealed class Completion : TransitionBase
-	{
-		// the transitions guard condition
-		internal readonly Func<Boolean> guard;
-
-		/// <summary>
-		/// The optional actions that are called while traversing the transition.
-		/// </summary>
-		public event Action Effect;
-
-		/// <summary>
-		/// Creates a completion transition.
-		/// </summary>
-		/// <param name="source">The source Vertex of the Transition.</param>
-		/// <param name="target">The target Vertex of the Transition.</param>
-		/// <param name="guard">An optional guard condition to restrict traversal of the transition.</param>
-		public Completion( PseudoState source, Vertex target, Func<Boolean> guard = null )
-			: base( source, target )
-		{
-			Trace.Assert( source != null, "Source PseudoState for transition must be specified." );
-			Trace.Assert( target != null, "Target Vertex for completion transition must be specified." );
-
-			this.guard = guard ?? ( () => true );
-
-			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
-		}
-
-		/// <summary>
-		/// Creates a completion transition.
-		/// </summary>
-		/// <param name="source">The source Vertex of the Transition.</param>
-		/// <param name="target">The target Vertex of the Transition.</param>
-		/// <param name="guard">An optional guard condition to restrict traversal of the transition.</param>
-		public Completion( SimpleState source, Vertex target, Func<Boolean> guard = null )
-			: base( source, target )
-		{
-			Trace.Assert( source != null, "Source State for transition must be specified." );
-			Trace.Assert( target != null, "Target Vertex for completion transition must be specified." );
-
-			this.guard = guard ?? ( () => true );
-
-			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
-		}
-
-		internal void Traverse( IState state, Boolean deepHistory )
-		{
-			if( exit != null )
-				exit( state );
-
-			if( Effect != null )
-				Effect();
-
-			if( enter != null )
-				enter( state );
-
-			if( complete != null )
-				complete( state, deepHistory );
-		}
-	}
-
-	/// <summary>
 	/// An event-based Transition between Vertices.
 	/// </summary>
 	/// <typeparam name="TMessage">The type of the message that may cause the transition to be traversed.</typeparam>

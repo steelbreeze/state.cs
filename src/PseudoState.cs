@@ -43,9 +43,7 @@ namespace Steelbreeze.Behavior
 			Trace.Assert( kind != null, "PseudoStateKind must be provided" );
 			Trace.Assert( parent != null, "PseudoState must have a parent" );
 
-			Kind = kind;
-
-			if( this.Kind.IsInitial )
+			if( ( this.Kind = kind ).IsInitial )
 				parent.initial = this;
 		}
 

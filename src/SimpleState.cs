@@ -63,7 +63,8 @@ namespace Steelbreeze.Behavior
 		/// <param name="state">An optional transaction that the process operation will participate in.</param>
 		public void Initialise( IState state )
 		{
-			Initialise( state, false );
+			OnEnter( state );
+			Complete( state, false );
 		}
 
 		override internal void OnExit( IState state )
