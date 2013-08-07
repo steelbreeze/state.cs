@@ -23,16 +23,53 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A node within a state machine that can be entered and exited.
 	/// </summary>
+	/// <remarks>
+	/// This draws a little from the UML 2 NamedElement class, but adds some state machine characteristics
+	/// </remarks>
 	public abstract class StateMachineElement 
 	{
+		/// <summary>
+		/// The name of the element
+		/// </summary>
+		public String Name { get; private set; }
+
+		/// <summary>
+		/// The fully qualified name of the element
+		/// </summary>
+		public String QualifiedName { get { return Ancestors.Select( ancestor => ancestor.Name ).Aggregate( ( right, left ) => left + "." + right ); } }
+
+		/// <summary>
+		/// The parent of the element
+		/// </summary>
+		public abstract StateMachineElement Parent { get; }
+
+		// The ancestors of the element
+		internal IEnumerable<StateMachineElement> Ancestors { get { for( StateMachineElement element = this; element != null; element = element.Parent ) yield return element; } }
+
+		internal StateMachineElement( String name )
+		{
+			Trace.Assert( name != null, "All state machine elements must have name provided" );
+
+			this.Name = name;
+		}
+
 		virtual internal void OnExit( IState state )
 		{
-			Debug.WriteLine( this, "Leave" );
+			Debug.WriteLine( this.QualifiedName, "Leave" );
 		}
 
 		virtual internal void OnEnter( IState state )
 		{
-			Debug.WriteLine( this, "Enter" );
+			Debug.WriteLine( this.QualifiedName, "Enter" );
+		}
+
+		/// <summary>
+		/// Returns the QualifiedName of the element
+		/// </summary>
+		/// <returns>The QualifiedName of the element</returns>
+		public override String ToString()
+		{
+			return this.QualifiedName;
 		}
 	}
 }

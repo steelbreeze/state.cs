@@ -34,7 +34,7 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// The child regions of the composite state
 		/// </summary>
-		internal HashSet<Region> regions = new HashSet<Region>();
+		internal readonly HashSet<Region> regions = new HashSet<Region>();
 
 		/// <summary>
 		/// Creates a Compsite State.

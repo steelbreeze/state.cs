@@ -42,7 +42,7 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="name">The name of the State.</param>
 		/// <param name="parent">The parent Region or the State.</param>
-		public SimpleState( String name, Region parent = null ) : base( name, parent ) { }
+		public SimpleState( String name, Region parent ) : base( name, parent ) { }
 
 		/// <summary>
 		/// Tests to see if a state is complete
@@ -69,8 +69,7 @@ namespace Steelbreeze.Behavior
 
 		override internal void OnExit( IState state )
 		{
-			if( Exit != null )
-				Exit();
+			OnExit();
 
 			base.OnExit( state );
 		}
@@ -79,6 +78,29 @@ namespace Steelbreeze.Behavior
 		{
 			base.OnEnter( state );
 
+			OnEnter();
+		}
+
+		/// <summary>
+		/// Calls the state's entry behaviour
+		/// </summary>
+		/// <remarks>
+		/// Override this method to implement more complex states
+		/// </remarks>
+		public virtual void OnExit()
+		{
+			if( Exit != null )
+				Exit();
+		}
+
+		/// <summary>
+		/// Calls the state's entry behaviour
+		/// </summary>
+		/// <remarks>
+		/// Override this method to implement more complex states
+		/// </remarks>
+		public virtual void OnEnter()
+		{
 			if( Entry != null )
 				Entry();
 		}

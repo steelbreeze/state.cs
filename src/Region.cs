@@ -25,32 +25,25 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public class Region : StateMachineElement
 	{
-		internal HashSet<Vertex> vertices = new HashSet<Vertex>();
+		private readonly CompositeState parent;
+		internal readonly HashSet<Vertex> vertices = new HashSet<Vertex>();
 		internal PseudoState initial;
 
 		/// <summary>
-		/// The Region's parent State
+		/// The parent element of this element
 		/// </summary>
-		public CompositeState Parent { get; private set; }
-
-		/// <summary>
-		/// The name of Region
-		/// </summary>
-		public String Name { get; private set; }
-
+		public override StateMachineElement Parent { get { return this.parent; } }
+	
 		/// <summary>
 		/// Creates a Region.
 		/// </summary>
 		/// <param name="name">The name of the Region.</param>
 		/// <param name="parent">The parent CompositeState.</param>
 		public Region( String name, CompositeState parent = null )
+			: base( name )
 		{
-			Trace.Assert( name != null, "Region name must be provided" );
-
-			this.Name = name;
-
-			if( ( this.Parent = parent ) != null )
-				( parent.regions ?? ( parent.regions = new HashSet<Region>() ) ).Add( this );
+			if( ( this.parent = parent ) != null )
+				this.parent.regions.Add( this );
 		}
 
 		/// <summary>
@@ -124,15 +117,6 @@ namespace Steelbreeze.Behavior
 		public Boolean Process( IState state, Object message )
 		{
 			return state.GetActive( this ) && state.GetCurrent( this ).Process( state, message );
-		}
-
-		/// <summary>
-		/// Displays the fully qualified name of the Region or Vertex
-		/// </summary>
-		/// <returns></returns>
-		public override string ToString()
-		{
-			return Parent == null ? Name : Parent + "." + Name;
 		}
 	}
 }

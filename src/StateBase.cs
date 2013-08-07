@@ -28,18 +28,9 @@ namespace Steelbreeze.Behavior
 	/// </remarks>
 	abstract public class StateBase : Vertex
 	{
-		/// <summary>
-		/// The name of the State
-		/// </summary>
-		public String Name { get; private set; }
-
 		internal StateBase( String name, Region parent )
-			: base( parent )
+			: base( name, parent )
 		{
-			Trace.Assert( name != null, "State/FinalState must have name provided" );
-
-			this.Name = name;
-
 			if( parent != null )
 				Trace.Assert( parent.vertices.OfType<StateBase>().Where( v => v.Name.Equals( name ) ).Count() == 1, "State/FinalState names must be unique within a Region." );
 		}
@@ -71,14 +62,5 @@ namespace Steelbreeze.Behavior
 		/// <param name="state">An optional transaction that the process operation will participate in.</param>
 		/// <returns>A Boolean indicating if the message was processed.</returns>
 		public abstract Boolean Process( IState state, Object message );
-
-		/// <summary>
-		/// Displays the fully qualified name of the Region or Vertex
-		/// </summary>
-		/// <returns></returns>
-		public override string ToString()
-		{
-			return Parent == null ? Name : Parent + "." + Name;
-		}
 	}
 }

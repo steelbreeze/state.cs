@@ -26,43 +26,29 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// Returns the current state of a region
 		/// </summary>
-		/// <param name="region">The region to get the state for</param>
+		/// <param name="element">The region to get the state for</param>
 		/// <returns>The uncommitted state of the region</returns>
-		StateBase GetCurrent( Region region );
-
-		/// <summary>
-		/// Returns the active status of a region
-		/// </summary>
-		/// <param name="region">The region to get the active status for</param>
-		/// <returns>The uncommitted active status</returns>
-		Boolean GetActive( Region region );
+		StateBase GetCurrent( StateMachineElement element );
 
 		/// <summary>
 		/// Returns the active status of a state
 		/// </summary>
-		/// <param name="state">The state to get the active status for</param>
+		/// <param name="element">The state to get the active status for</param>
 		/// <returns>The uncommitted active status</returns>
-		Boolean GetActive( StateBase state );
+		Boolean GetActive( StateMachineElement element );
 
 		/// <summary>
 		/// Sets the active status of a region
 		/// </summary>
-		/// <param name="region">The region to set the active status for</param>
-		/// <param name="value">The valuse to set the active status to</param>
-		void SetActive( Region region, Boolean value );
+		/// <param name="element">The element to set the active status for</param>
+		/// <param name="value">The value to set the active status to</param>
+		void SetActive( StateMachineElement element, Boolean value );
 
 		/// <summary>
-		/// Sets the active status of a state
+		/// Sets the current state of a element
 		/// </summary>
-		/// <param name="state">The state to set the active status for</param>
-		/// <param name="value">The valuse to set the active status to</param>
-		void SetActive( StateBase state, Boolean value );
-
-		/// <summary>
-		/// Sets the current state of a region
-		/// </summary>
-		/// <param name="region">The region to set the current state for</param>
-		/// <param name="value">The value to set the current state to</param>
-		void SetCurrent( Region region, StateBase value );
+		/// <param name="element">The elemnt to set the current state for</param>
+		/// <param name="value">The value to set the current element to</param>
+		void SetCurrent( StateMachineElement element, StateBase value );
 	}
 }

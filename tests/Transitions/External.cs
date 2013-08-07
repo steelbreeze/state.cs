@@ -13,7 +13,7 @@ namespace Steelbreeze.Behavior.Test.Transitions
 		{
 			var stateMachine = new CompositeState( "external" ); 
 
-			var initial = new PseudoState( PseudoStateKind.Initial, stateMachine );
+			var initial = new PseudoState( "initial", PseudoStateKind.Initial, stateMachine );
 			var composite = new CompositeState( "composite", stateMachine );
 			var orthogonal = new CompositeState( "orthogonal", stateMachine );
 			var final = new FinalState( "final", stateMachine);
@@ -27,10 +27,10 @@ namespace Steelbreeze.Behavior.Test.Transitions
 			var o1 = new SimpleState( "o1", region1 );
 			var o2 = new SimpleState( "o2", region2 );
 
-			var j1 = new PseudoState( PseudoStateKind.Junction, region2 );
+			var j1 = new PseudoState( "junction", PseudoStateKind.Junction, region2 );
 
 			new Completion( initial, composite );
-			new Completion( new PseudoState( PseudoStateKind.Initial, composite ), c1 );
+			new Completion( new PseudoState( "initial", PseudoStateKind.Initial, composite ), c1 );
 			new Transition<String>( c2, c1, command => command == "1" );
 			new Transition<String>( c1, j1, command => command == "2" );
 			new Completion( j1, o1 );
@@ -39,8 +39,8 @@ namespace Steelbreeze.Behavior.Test.Transitions
 			new Transition<String>( composite, orthogonal, command => command == "5" );
 			new Transition<String>( composite, final, command => command == "x" );
 
-			new Completion( new PseudoState( PseudoStateKind.Initial, region1 ), o1 );
-			new Completion( new PseudoState( PseudoStateKind.Initial, region2 ), o2 );
+			new Completion( new PseudoState( "initial", PseudoStateKind.Initial, region1 ), o1 );
+			new Completion( new PseudoState( "initial", PseudoStateKind.Initial, region2 ), o2 );
 
 			var state = new State();
 

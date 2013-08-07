@@ -25,31 +25,18 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public abstract class Vertex : StateMachineElement
 	{
+		private readonly Region parent;
+
 		/// <summary>
-		/// Returns the parent element of this element
+		/// The parent element of this element
 		/// </summary>
-		public Region Parent { get; private set; }
+		public override StateMachineElement Parent { get { return this.parent; } }
 
-		internal Vertex( Region parent )
+		internal Vertex( String name, Region parent )
+			: base( name )
 		{
-			if( ( this.Parent = parent ) != null )
-				parent.vertices.Add( this );
-		}
-
-		internal IEnumerable<StateMachineElement> Ancestors
-		{
-			get
-			{
-				for( var element = this; element != null; element = element.Parent.Parent )
-				{
-					yield return element;
-
-					if( element.Parent == null )
-						break;
-
-					yield return element.Parent;
-				}
-			}
+			if( ( this.parent = parent ) != null )
+				this.parent.vertices.Add( this );
 		}
 
 		abstract internal void Complete( IState state, Boolean deepHistory );

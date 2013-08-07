@@ -41,12 +41,12 @@ namespace Steelbreeze.Examples
 		public Player3() : base( "player" )
 		{
 			// create some states
-			var initial = new PseudoState( PseudoStateKind.Initial, this );
+			var initial = new PseudoState( "initial", PseudoStateKind.Initial, this );
 			var operational = new CompositeState( "operational", this );
 			var flipped = new SimpleState( "flipped", this );
 			var final = new FinalState( "final", this );
 
-			var history = new PseudoState( PseudoStateKind.DeepHistory, operational );
+			var history = new PseudoState( "history", PseudoStateKind.DeepHistory, operational );
 			var stopped = new SimpleState( "stopped", operational );
 			var active = new CompositeState( "active", operational );
 

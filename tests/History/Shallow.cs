@@ -13,7 +13,7 @@ namespace Steelbreeze.Behavior.Test.History
 		{
 			var machine = new Region( "history" );
 
-			var initial = new PseudoState( PseudoStateKind.Initial, machine );
+			var initial = new PseudoState( "initial", PseudoStateKind.Initial, machine );
 			var shallow = new CompositeState( "shallow", machine );
 			var deep = new SimpleState( "deep", machine );
 			var final = new FinalState( "final", machine );
@@ -22,7 +22,7 @@ namespace Steelbreeze.Behavior.Test.History
 			var s2 = new SimpleState( "s2", shallow );
 
 			new Completion( initial, shallow );
-			new Completion( new PseudoState( PseudoStateKind.ShallowHistory, shallow ), s1 );
+			new Completion( new PseudoState( "shallow", PseudoStateKind.ShallowHistory, shallow ), s1 );
 			new Transition<String>( s1, s2, c => c.Equals( "move" ) );
 			new Transition<String>( shallow, deep, c => c.Equals( "go deep" ) );
 			new Transition<String>( deep, shallow, c => c.Equals( "go shallow" ) );

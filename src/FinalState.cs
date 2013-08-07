@@ -28,11 +28,7 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="name">The name of the FinalState.</param>
 		/// <param name="parent">The paret Region of the FinalState.</param>
-		public FinalState( String name, Region parent )
-			: base( name, parent )
-		{
-			Trace.Assert( parent != null, "FinalState must have parent provided" );
-		}
+		public FinalState( String name, Region parent ) : base( name, parent ) { }
 
 		internal override void Complete( IState state, bool deepHistory ) { }
 

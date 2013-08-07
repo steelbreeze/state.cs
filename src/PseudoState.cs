@@ -35,10 +35,11 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// Creates a PseudoState.
 		/// </summary>
+		/// <param name="name">The name of the pseudo state.</param>
 		/// <param name="kind">The kind of the PseudoState.</param>
 		/// <param name="parent">The parent Region of the PseudoState.</param>
-		public PseudoState( PseudoStateKind kind, Region parent )
-			: base( parent )
+		public PseudoState( String name, PseudoStateKind kind, Region parent )
+			: base( name, parent )
 		{
 			Trace.Assert( kind != null, "PseudoStateKind must be provided" );
 			Trace.Assert( parent != null, "PseudoState must have a parent" );
@@ -50,15 +51,6 @@ namespace Steelbreeze.Behavior
 		internal override void Complete( IState state, bool deepHistory )
 		{
 			Kind.GetCompletion( completions ).Traverse( state, deepHistory );
-		}
-
-		/// <summary>
-		/// Displays the fully qualified name of the Region or Vertex
-		/// </summary>
-		/// <returns></returns>
-		public override string ToString()
-		{
-			return Parent == null ? Kind.Name : Parent + "." + Kind.Name;
 		}
 	}
 }

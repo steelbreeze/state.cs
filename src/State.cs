@@ -24,78 +24,54 @@ namespace Steelbreeze.Behavior
 	public sealed class State : IState
 	{
 		private Dictionary<StateMachineElement, Boolean> active = new Dictionary<StateMachineElement, Boolean>();
-		private Dictionary<Region, StateBase> current = new Dictionary<Region, StateBase>();
+		private Dictionary<StateMachineElement, StateBase> current = new Dictionary<StateMachineElement, StateBase>();
 
 		/// <summary>
 		/// Returns the current state of a region
 		/// </summary>
-		/// <param name="region">The region to get the state for</param>
+		/// <param name="element">The region to get the state for</param>
 		/// <returns>The uncommitted state of the region</returns>
-		public StateBase GetCurrent( Region region )
+		public StateBase GetCurrent( StateMachineElement element )
 		{
 			StateBase current = null;
 
-			this.current.TryGetValue( region, out current );
+			this.current.TryGetValue( element, out current );
 
 			return current;
 		}
 
 		/// <summary>
-		/// Returns the active status of a region
-		/// </summary>
-		/// <param name="region">The region to get the active status for</param>
-		/// <returns>The uncommitted active status</returns>
-		public Boolean GetActive( Region region )
-		{
-			Boolean active = false;
-
-			this.active.TryGetValue( region, out active );
-
-			return active;
-		}
-
-		/// <summary>
 		/// Returns the active status of a state
 		/// </summary>
-		/// <param name="state">The state to get the active status for</param>
+		/// <param name="element">The state to get the active status for</param>
 		/// <returns>The uncommitted active status</returns>
-		public Boolean GetActive( StateBase state )
+		public Boolean GetActive( StateMachineElement element )
 		{
 			Boolean active = false;
 
-			this.active.TryGetValue( state, out active );
+			this.active.TryGetValue( element, out active );
 
 			return active;
-		}
-
-		/// <summary>
-		/// Sets the active status of a region
-		/// </summary>
-		/// <param name="region">The region to set the active status for</param>
-		/// <param name="value">The valuse to set the active status to</param>
-		public void SetActive( Region region, Boolean value )
-		{
-			this.active[ region ] = value;
 		}
 
 		/// <summary>
 		/// Sets the active status of a state
 		/// </summary>
-		/// <param name="state">The state to set the active status for</param>
+		/// <param name="element">The state to set the active status for</param>
 		/// <param name="value">The valuse to set the active status to</param>
-		public void SetActive( StateBase state, Boolean value )
+		public void SetActive( StateMachineElement element, Boolean value )
 		{
-			this.active[ state ] = value;
+			this.active[ element ] = value;
 		}
 
 		/// <summary>
 		/// Sets the current state of a region
 		/// </summary>
-		/// <param name="region">The region to set the current state for</param>
+		/// <param name="element">The region to set the current state for</param>
 		/// <param name="value">The value to set the current state to</param>
-		public void SetCurrent( Region region, StateBase value )
+		public void SetCurrent( StateMachineElement element, StateBase value )
 		{
-			this.current[ region ] = value;
+			this.current[ element ] = value;
 		}
 	}
 }
