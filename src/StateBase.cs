@@ -28,11 +28,11 @@ namespace Steelbreeze.Behavior
 	/// </remarks>
 	abstract public class StateBase : Vertex
 	{
-		internal StateBase( String name, Region parent )
-			: base( name, parent )
+		internal StateBase( String name, Region owner )
+			: base( name, owner )
 		{
-			if( parent != null )
-				Trace.Assert( parent.vertices.OfType<StateBase>().Where( v => v.Name.Equals( name ) ).Count() == 1, "State/FinalState names must be unique within a Region." );
+			if( owner != null )
+				Trace.Assert( owner.vertices.OfType<StateBase>().Where( v => v.Name.Equals( name ) ).Count() == 1, "State/FinalState names must be unique within a Region." );
 		}
 
 		internal override void OnExit( IState state = null )
@@ -51,8 +51,8 @@ namespace Steelbreeze.Behavior
 
 			state.SetActive( this, true );
 
-			if( this.Parent != null )
-				state.SetCurrent( this.Parent, this );
+			if( this.Owner != null )
+				state.SetCurrent( this.Owner, this );
 		}
 
 		/// <summary>

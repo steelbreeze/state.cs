@@ -27,8 +27,8 @@ namespace Steelbreeze.Behavior
 		/// Creates a FinalState.
 		/// </summary>
 		/// <param name="name">The name of the FinalState.</param>
-		/// <param name="parent">The paret Region of the FinalState.</param>
-		public FinalState( String name, Region parent ) : base( name, parent ) { }
+		/// <param name="owner">The paret Region of the FinalState.</param>
+		public FinalState( String name, Region owner ) : base( name, owner ) { }
 
 		internal override void Complete( IState state, bool deepHistory ) { }
 

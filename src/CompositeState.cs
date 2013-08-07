@@ -40,11 +40,11 @@ namespace Steelbreeze.Behavior
 		/// Creates a Compsite State.
 		/// </summary>
 		/// <param name="name">The name of the composite state.</param>
-		/// <param name="parent">The optional parent region.</param>
+		/// <param name="owner">The optional parent region.</param>
 		/// <remarks>
 		/// A composite state may be used as the root of a state machine model; in this case, the parent region is not provided.
 		/// </remarks>
-		public CompositeState( String name, Region parent = null ) : base( name, parent ) { }
+		public CompositeState( String name, Region owner = null ) : base( name, owner ) { }
 
 		/// <summary>
 		/// Tests the composite state for completeness

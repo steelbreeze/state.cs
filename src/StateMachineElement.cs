@@ -41,10 +41,10 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// The parent of the element
 		/// </summary>
-		public abstract StateMachineElement Parent { get; }
+		public abstract StateMachineElement Owner { get; }
 
 		// The ancestors of the element
-		internal IEnumerable<StateMachineElement> Ancestors { get { for( StateMachineElement element = this; element != null; element = element.Parent ) yield return element; } }
+		internal IEnumerable<StateMachineElement> Ancestors { get { for( StateMachineElement element = this; element != null; element = element.Owner ) yield return element; } }
 
 		internal StateMachineElement( String name )
 		{

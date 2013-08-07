@@ -25,25 +25,25 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public class Region : StateMachineElement
 	{
-		private readonly CompositeState parent;
+		private readonly CompositeState owner;
 		internal readonly HashSet<Vertex> vertices = new HashSet<Vertex>();
 		internal PseudoState initial;
 
 		/// <summary>
 		/// The parent element of this element
 		/// </summary>
-		public override StateMachineElement Parent { get { return this.parent; } }
+		public override StateMachineElement Owner { get { return this.owner; } }
 	
 		/// <summary>
 		/// Creates a Region.
 		/// </summary>
 		/// <param name="name">The name of the Region.</param>
-		/// <param name="parent">The parent CompositeState.</param>
-		public Region( String name, CompositeState parent = null )
+		/// <param name="owner">The parent CompositeState.</param>
+		public Region( String name, CompositeState owner = null )
 			: base( name )
 		{
-			if( ( this.parent = parent ) != null )
-				this.parent.regions.Add( this );
+			if( ( this.owner = owner ) != null )
+				this.owner.regions.Add( this );
 		}
 
 		/// <summary>

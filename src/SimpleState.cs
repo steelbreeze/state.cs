@@ -41,8 +41,8 @@ namespace Steelbreeze.Behavior
 		/// Creates a State.
 		/// </summary>
 		/// <param name="name">The name of the State.</param>
-		/// <param name="parent">The parent Region or the State.</param>
-		public SimpleState( String name, Region parent ) : base( name, parent ) { }
+		/// <param name="owner">The parent Region or the State.</param>
+		public SimpleState( String name, Region owner ) : base( name, owner ) { }
 
 		/// <summary>
 		/// Tests to see if a state is complete

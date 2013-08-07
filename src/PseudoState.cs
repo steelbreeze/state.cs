@@ -37,15 +37,15 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="name">The name of the pseudo state.</param>
 		/// <param name="kind">The kind of the PseudoState.</param>
-		/// <param name="parent">The parent Region of the PseudoState.</param>
-		public PseudoState( String name, PseudoStateKind kind, Region parent )
-			: base( name, parent )
+		/// <param name="owner">The parent Region of the PseudoState.</param>
+		public PseudoState( String name, PseudoStateKind kind, Region owner )
+			: base( name, owner )
 		{
 			Trace.Assert( kind != null, "PseudoStateKind must be provided" );
-			Trace.Assert( parent != null, "PseudoState must have a parent" );
+			Trace.Assert( owner != null, "PseudoState must have an owner" );
 
 			if( ( this.Kind = kind ).IsInitial )
-				parent.initial = this;
+				owner.initial = this;
 		}
 
 		internal override void Complete( IState state, bool deepHistory )
