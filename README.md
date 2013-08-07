@@ -1,6 +1,6 @@
 # Welcome to state.cs
 
-The current stable release is 2.0.2.
+The current stable release is 2.1.0.
 
 ## Version 2 notes - please read before downloading
 Version 2 breaks apart the state machine model and the state machine state. This facilitates creating a single state machine model and using it with many different state machine states without any overhead of resetting the state machine, serializing/deserializing state or rebuilding the machine.
