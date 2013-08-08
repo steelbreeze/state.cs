@@ -21,7 +21,7 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A State that has no outgoing transitions.
 	/// </summary>
-	public sealed class FinalState : StateBase
+	public sealed class FinalState : Vertex
 	{
 		/// <summary>
 		/// Creates a FinalState.
@@ -30,7 +30,27 @@ namespace Steelbreeze.Behavior
 		/// <param name="owner">The paret Region of the FinalState.</param>
 		public FinalState( String name, Region owner ) : base( name, owner ) { }
 
-		internal override void Complete( IState state, bool deepHistory ) { }
+		internal override void Complete( IState state, Boolean deepHistory ) { }
+
+		override internal void OnExit( IState state )
+		{
+			state.SetActive( this, false );
+
+			base.OnExit( state );
+		}
+
+		override internal void OnEnter( IState state )
+		{
+			if( state.GetActive( this ) )
+				OnExit( state );
+
+			base.OnEnter( state );
+
+			state.SetActive( this, true );
+
+			if( this.Owner != null )
+				state.SetCurrent( this.Owner, this );
+		}
 
 		/// <summary>
 		/// Attempts to process a message.
@@ -39,7 +59,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="state">An optional transaction that the process operation will participate in.</param>
 		/// <returns>A Boolean indicating if the message was processed.</returns>
 		/// <remarks>Note that a final state has no outbound transitions so will therefore never be able to process a message itself.</remarks>
-		public override bool Process( IState state, object message )
+		public override bool Process( IState state, Object message )
 		{
 			return false;
 		}

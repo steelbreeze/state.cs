@@ -22,7 +22,7 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A condition or situation during the life of an object during which it satisfies some condition, performs some activity, or waits for some event.
 	/// </summary>
-	public class SimpleState : StateBase
+	public class SimpleState : Vertex
 	{
 		internal HashSet<Completion> completions = null;
 		internal HashSet<TypedTransition> transitions = null;
@@ -71,12 +71,22 @@ namespace Steelbreeze.Behavior
 		{
 			OnExit();
 
+			state.SetActive( this, false );
+
 			base.OnExit( state );
 		}
 
 		override internal void OnEnter( IState state )
 		{
+			if( state.GetActive( this ) )
+				OnExit( state );
+
 			base.OnEnter( state );
+
+			state.SetActive( this, true );
+
+			if( this.Owner != null )
+				state.SetCurrent( this.Owner, this );
 
 			OnEnter();
 		}
@@ -105,7 +115,7 @@ namespace Steelbreeze.Behavior
 				Entry();
 		}
 
-		internal override void Complete( IState state, bool deepHistory )
+		internal override void Complete( IState state, Boolean deepHistory )
 		{
 			if( completions != null )
 			{

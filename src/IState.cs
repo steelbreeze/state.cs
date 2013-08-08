@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
-using System.Collections.Generic;
 
 namespace Steelbreeze.Behavior
 {
@@ -28,7 +27,7 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="element">The region to get the state for</param>
 		/// <returns>The uncommitted state of the region</returns>
-		StateBase GetCurrent( StateMachineElement element );
+		Vertex GetCurrent( StateMachineElement element );
 
 		/// <summary>
 		/// Returns the active status of a state
@@ -49,6 +48,6 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="element">The elemnt to set the current state for</param>
 		/// <param name="value">The value to set the current element to</param>
-		void SetCurrent( StateMachineElement element, StateBase value );
+		void SetCurrent( StateMachineElement element, Vertex value );
 	}
 }

@@ -54,7 +54,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>
 		/// A composite state is deemed to be complete if all its child regions are complete.
 		/// </remarks>
-		public override bool IsComplete( IState state )
+		public override Boolean IsComplete( IState state )
 		{
 			return regions.All( region => region.IsComplete( state ) );
 		}
@@ -77,7 +77,7 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="state">The state model state to operate on.</param>
 		/// <param name="deepHistory">Cascade of deep history.</param>
-		internal override void Complete( IState state, bool deepHistory )
+		internal override void Complete( IState state, Boolean deepHistory )
 		{
 			foreach( var region in regions )
 				region.Initialise( state, deepHistory );
@@ -94,7 +94,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>
 		/// Note that a state transition may leave the state machine state unchanged (both internal transitions and self-transitions). 
 		/// </remarks>
-		public override bool Process( IState state, object message )
+		public override bool Process( IState state, Object message )
 		{
 			return base.Process( state, message ) || regions.Aggregate( false, ( result, region ) => result || region.Process( state, message ) );
 		}

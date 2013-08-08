@@ -64,6 +64,14 @@ namespace Steelbreeze.Behavior
 		}
 
 		/// <summary>
+		/// Attempts to process a message.
+		/// </summary>
+		/// <param name="message">The message to process.</param>
+		/// <param name="state">An optional transaction that the process operation will participate in.</param>
+		/// <returns>A Boolean indicating if the message was processed.</returns>
+		public abstract Boolean Process( IState state, Object message );
+
+		/// <summary>
 		/// Returns the QualifiedName of the element
 		/// </summary>
 		/// <returns>The QualifiedName of the element</returns>

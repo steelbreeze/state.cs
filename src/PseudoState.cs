@@ -25,7 +25,7 @@ namespace Steelbreeze.Behavior
 	public sealed class PseudoState : Vertex
 	{
 		// the completion transitions from the pseudostate
-		internal HashSet<Completion> completions = null;
+		internal readonly HashSet<Completion> completions = new HashSet<Completion>();
 
 		/// <summary>
 		/// The kind of pseudostate that determines its behaviour.
@@ -48,9 +48,21 @@ namespace Steelbreeze.Behavior
 				owner.initial = this;
 		}
 
-		internal override void Complete( IState state, bool deepHistory )
+		internal override void Complete( IState state, Boolean deepHistory )
 		{
 			Kind.GetCompletion( completions ).Traverse( state, deepHistory );
+		}
+
+		/// <summary>
+		/// Attempts to process a message.
+		/// </summary>
+		/// <param name="message">The message to process.</param>
+		/// <param name="state">An optional transaction that the process operation will participate in.</param>
+		/// <returns>A Boolean indicating if the message was processed.</returns>
+		/// <remarks>Note that pseudo states are transient so will therefore never be able to process a message itself.</remarks>
+		public override bool Process( IState state, Object message )
+		{
+			return false;
 		}
 	}
 }

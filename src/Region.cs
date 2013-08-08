@@ -70,20 +70,12 @@ namespace Steelbreeze.Behavior
 
 		internal void Initialise( IState state, Boolean deepHistory )
 		{
-			StateBase current;
+			this.OnEnter( state );
 
-			OnEnter( state );
+			var current = ( deepHistory || initial.Kind.IsHistory ) ? ( state.GetCurrent( this ) ?? initial ) : initial;
 
-			if( ( deepHistory || initial.Kind.IsHistory ) && ( current = state.GetCurrent( this ) ) != null )
-			{
-				current.OnEnter( state );
-				current.Complete( state, deepHistory || ( initial.Kind == PseudoStateKind.DeepHistory ) );
-			}
-			else
-			{
-				initial.OnEnter( state );
-				initial.Complete( state, deepHistory || ( initial.Kind == PseudoStateKind.DeepHistory ) );
-			}
+			current.OnEnter( state );
+			current.Complete( state, deepHistory || initial.Kind == PseudoStateKind.DeepHistory );
 		}
 
 		override internal void OnExit( IState state )
@@ -114,7 +106,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="state">The state machine state to pass the message to.</param>
 		/// <param name="message">The message to process.</param>
 		/// <returns>A Boolean indicating if the message was processed.</returns>
-		public Boolean Process( IState state, Object message )
+		public override Boolean Process( IState state, Object message )
 		{
 			return state.GetActive( this ) && state.GetCurrent( this ).Process( state, message );
 		}

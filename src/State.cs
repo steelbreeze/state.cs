@@ -24,16 +24,16 @@ namespace Steelbreeze.Behavior
 	public sealed class State : IState
 	{
 		private Dictionary<StateMachineElement, Boolean> active = new Dictionary<StateMachineElement, Boolean>();
-		private Dictionary<StateMachineElement, StateBase> current = new Dictionary<StateMachineElement, StateBase>();
+		private Dictionary<StateMachineElement, Vertex> current = new Dictionary<StateMachineElement, Vertex>();
 
 		/// <summary>
 		/// Returns the current state of a region
 		/// </summary>
 		/// <param name="element">The region to get the state for</param>
 		/// <returns>The uncommitted state of the region</returns>
-		public StateBase GetCurrent( StateMachineElement element )
+		public Vertex GetCurrent( StateMachineElement element )
 		{
-			StateBase current = null;
+			Vertex current = null;
 
 			this.current.TryGetValue( element, out current );
 
@@ -69,7 +69,7 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="element">The region to set the current state for</param>
 		/// <param name="value">The value to set the current state to</param>
-		public void SetCurrent( StateMachineElement element, StateBase value )
+		public void SetCurrent( StateMachineElement element, Vertex value )
 		{
 			this.current[ element ] = value;
 		}
