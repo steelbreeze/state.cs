@@ -45,19 +45,6 @@ namespace Steelbreeze.Behavior
 		public SimpleState( String name, Region owner ) : base( name, owner ) { }
 
 		/// <summary>
-		/// Tests to see if a state is complete
-		/// </summary>
-		/// <param name="state">The state machine state</param>
-		/// <returns>True if the state is complete</returns>
-		/// <remarks>
-		/// A SimpleState is always deemed to be complete.
-		/// </remarks>
-		virtual public Boolean IsComplete( IState state )
-		{
-			return true;
-		}
-
-		/// <summary>
 		/// Initialises a node to its initial state.
 		/// </summary>
 		/// <param name="state">An optional transaction that the process operation will participate in.</param>
@@ -95,7 +82,7 @@ namespace Steelbreeze.Behavior
 		/// Calls the state's entry behaviour
 		/// </summary>
 		/// <remarks>
-		/// Override this method to implement more complex states
+		/// Override this method to implement more complex state entry behaviour
 		/// </remarks>
 		public virtual void OnExit()
 		{
@@ -107,7 +94,7 @@ namespace Steelbreeze.Behavior
 		/// Calls the state's entry behaviour
 		/// </summary>
 		/// <remarks>
-		/// Override this method to implement more complex states
+		/// Override this method to implement more complex state entry behaviour
 		/// </remarks>
 		public virtual void OnEnter()
 		{

@@ -54,7 +54,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>
 		/// A Region is deemed to be complete when it's current state is a FinalState.
 		/// </remarks>
-		public Boolean IsComplete( IState state )
+		public override Boolean IsComplete( IState state )
 		{
 			return state.GetCurrent( this ) is FinalState;
 		}

@@ -22,7 +22,7 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A completion Transition between Vertices.
 	/// </summary>
-	public sealed class Completion : TransitionBase
+	public class Completion : TransitionBase
 	{
 		// the transitions guard condition
 		internal readonly Func<Boolean> guard;
@@ -71,14 +71,25 @@ namespace Steelbreeze.Behavior
 			if( exit != null )
 				exit( state );
 
-			if( Effect != null )
-				Effect();
+			OnEffect();
 
 			if( enter != null )
 				enter( state );
 
 			if( complete != null )
 				complete( state, deepHistory );
+		}
+
+		/// <summary>
+		/// The completion transitions behaviour
+		/// </summary>
+		/// <remarks>
+		/// Override this method to implement more complex completion transition behaviour
+		/// </remarks>
+		public virtual void OnEffect()
+		{
+			if( Effect != null )
+				Effect();
 		}
 	}
 }

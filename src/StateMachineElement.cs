@@ -36,21 +36,34 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// The fully qualified name of the element
 		/// </summary>
-		public String QualifiedName { get { return Ancestors.Select( ancestor => ancestor.Name ).Aggregate( ( right, left ) => left + "." + right ); } }
+		public String QualifiedName { get { return this.Ancestors.Select( ancestor => ancestor.Name ).Aggregate( ( right, left ) => left + "." + right ); } }
 
 		/// <summary>
 		/// The parent of the element
 		/// </summary>
 		public abstract StateMachineElement Owner { get; }
-
+		
 		// The ancestors of the element
-		internal IEnumerable<StateMachineElement> Ancestors { get { for( StateMachineElement element = this; element != null; element = element.Owner ) yield return element; } }
+		internal IEnumerable<StateMachineElement> Ancestors { get { for( var element = this; element != null; element = element.Owner ) yield return element; } }
 
 		internal StateMachineElement( String name )
 		{
 			Trace.Assert( name != null, "All state machine elements must have name provided" );
 
 			this.Name = name;
+		}
+
+		/// <summary>
+		/// Tests an element in a state machine to see if it is 'complete'.
+		/// </summary>
+		/// <param name="state">The state machine state to test.</param>
+		/// <returns>True if the element is complete.</returns>
+		/// <remarks>
+		/// All leaf-level elements in a state machine are deemed to be complete; regions complete when their current state is a final state; composite states are complete when all their child regions are complete.
+		/// </remarks>
+		public virtual Boolean IsComplete( IState state )
+		{
+			return true;
 		}
 
 		virtual internal void OnExit( IState state )

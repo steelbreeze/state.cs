@@ -23,7 +23,7 @@ namespace Steelbreeze.Behavior
 	/// An event-based Transition between Vertices.
 	/// </summary>
 	/// <typeparam name="TMessage">The type of the message that may cause the transition to be traversed.</typeparam>
-	public sealed class Transition<TMessage> : TypedTransition where TMessage : class
+	public class Transition<TMessage> : TypedTransition where TMessage : class
 	{
 		// the guard condition
 		private readonly Func<TMessage, Boolean> guard;
@@ -64,14 +64,26 @@ namespace Steelbreeze.Behavior
 			if( exit != null )
 				exit( state );
 
-			if( Effect != null )
-				Effect( message as TMessage );
+			OnEffect( message );
 
 			if( enter != null )
 				enter( state );
 
 			if( complete != null )
 				complete( state, false );
+		}
+
+		/// <summary>
+		/// The transitions behaviour
+		/// </summary>
+		/// <param name="message">The message that caused the transition.</param>
+		/// <remarks>
+		/// Override this method to implement more complex event-based transition behaviour
+		/// </remarks>
+		public virtual void OnEffect( Object message )
+		{
+			if( Effect != null )
+				Effect( message as TMessage );
 		}
 	}
 }
