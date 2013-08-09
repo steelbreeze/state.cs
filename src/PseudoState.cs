@@ -24,9 +24,6 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public sealed class PseudoState : Vertex
 	{
-		// the completion transitions from the pseudostate
-		internal readonly HashSet<Completion> completions = new HashSet<Completion>();
-
 		/// <summary>
 		/// The kind of pseudostate that determines its behaviour.
 		/// </summary>
@@ -39,18 +36,13 @@ namespace Steelbreeze.Behavior
 		/// <param name="kind">The kind of the PseudoState.</param>
 		/// <param name="owner">The parent Region of the PseudoState.</param>
 		public PseudoState( String name, PseudoStateKind kind, Region owner )
-			: base( name, owner )
+			: base( name, owner, kind.GetCompletion )
 		{
 			Trace.Assert( kind != null, "PseudoStateKind must be provided" );
 			Trace.Assert( owner != null, "PseudoState must have an owner" );
 
 			if( ( this.Kind = kind ).IsInitial )
 				owner.initial = this;
-		}
-
-		internal override void Complete( IState state, Boolean deepHistory )
-		{
-			Kind.GetCompletion( completions ).Traverse( state, deepHistory );
 		}
 
 		/// <summary>

@@ -24,7 +24,7 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public class SimpleState : Vertex
 	{
-		internal HashSet<Completion> completions = null;
+		private static Func<IEnumerable<Completion>, Completion> GetCompletion = completions => completions.SingleOrDefault( c => c.guard() ); 
 		internal HashSet<TypedTransition> transitions = null;
 
 		/// <summary>
@@ -42,7 +42,7 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="name">The name of the State.</param>
 		/// <param name="owner">The parent Region or the State.</param>
-		public SimpleState( String name, Region owner ) : base( name, owner ) { }
+		public SimpleState( String name, Region owner ) : base( name, owner, GetCompletion ) { }
 
 		/// <summary>
 		/// Initialises a node to its initial state.
@@ -100,20 +100,6 @@ namespace Steelbreeze.Behavior
 		{
 			if( Entry != null )
 				Entry();
-		}
-
-		internal override void Complete( IState state, Boolean deepHistory )
-		{
-			if( completions != null )
-			{
-				if( IsComplete( state ) )
-				{
-					var completion = completions.SingleOrDefault( c => c.guard() );
-
-					if( completion != null )
-						completion.Traverse( state, deepHistory );
-				}
-			}
 		}
 
 		/// <summary>

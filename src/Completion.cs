@@ -46,7 +46,7 @@ namespace Steelbreeze.Behavior
 
 			this.guard = guard ?? ( () => true );
 
-			source.completions.Add( this );
+			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
 		}
 
 		/// <summary>

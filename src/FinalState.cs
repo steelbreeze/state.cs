@@ -28,9 +28,7 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="name">The name of the FinalState.</param>
 		/// <param name="owner">The paret Region of the FinalState.</param>
-		public FinalState( String name, Region owner ) : base( name, owner ) { }
-
-		internal override void Complete( IState state, Boolean deepHistory ) { }
+		public FinalState( String name, Region owner ) : base( name, owner, null ) { }
 
 		override internal void OnExit( IState state )
 		{
