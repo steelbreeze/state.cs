@@ -45,6 +45,14 @@ namespace Steelbreeze.Behavior
 				owner.initial = this;
 		}
 
+		internal override void OnEnter( IState state )
+		{
+			base.OnEnter( state );
+
+			if( this.Kind == PseudoStateKind.Terminated )
+				state.IsTerminated = true;
+		}
+
 		/// <summary>
 		/// Attempts to process a message.
 		/// </summary>

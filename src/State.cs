@@ -27,6 +27,14 @@ namespace Steelbreeze.Behavior
 		private Dictionary<StateMachineElement, Vertex> current = new Dictionary<StateMachineElement, Vertex>();
 
 		/// <summary>
+		/// Creates a state machine state object
+		/// </summary>
+		public State()
+		{
+			IsTerminated = false;
+		}
+
+		/// <summary>
 		/// Returns the current state of a region
 		/// </summary>
 		/// <param name="element">The region to get the state for</param>
@@ -73,5 +81,13 @@ namespace Steelbreeze.Behavior
 		{
 			this.current[ element ] = value;
 		}
+
+		/// <summary>
+		/// Indicates that the state machine state has been terminated
+		/// </summary>
+		/// <remarks>
+		/// A state machine is deemed to be terminated if a terminate pseudo state is transitioned to.
+		/// </remarks>
+		public Boolean IsTerminated { get; set; }
 	}
 }

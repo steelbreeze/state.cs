@@ -108,7 +108,10 @@ namespace Steelbreeze.Behavior
 		/// <returns>A Boolean indicating if the message was processed.</returns>
 		public override Boolean Process( IState state, Object message )
 		{
-			return state.GetActive( this ) && state.GetCurrent( this ).Process( state, message );
+			if( state.IsTerminated )
+				return false;
+
+			return  state.GetActive( this ) && state.GetCurrent( this ).Process( state, message );
 		}
 	}
 }

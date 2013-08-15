@@ -110,6 +110,9 @@ namespace Steelbreeze.Behavior
 		/// <returns>A Boolean indicating if the message was processed.</returns>
 		override public Boolean Process( IState state, Object message )
 		{
+			if( state.IsTerminated )
+				return false;
+
 			if( this.transitions == null )
 				return false;
 

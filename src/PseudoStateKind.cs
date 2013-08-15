@@ -89,6 +89,13 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		public static readonly PseudoStateKind ShallowHistory = new PseudoStateKind( "ShallowHistory", Enumerable.Single, true, true );
 
+		/// <summary>
+		/// Entering a terminate pseudostate implies that the execution of this state machine by means of its context object is terminated.
+		/// The state machine does not exit any states nor does it perform any exit actions other than those associated with the transition leading to the terminate pseudostate.
+		/// Entering a terminate pseudostate is equivalent to invoking a DestroyObjectAction.
+		/// </summary>
+		public static readonly PseudoStateKind Terminated = new PseudoStateKind( "Terminated", null, false, false );
+
 		internal readonly String Name;
 		internal readonly Boolean IsHistory;
 		internal readonly Boolean IsInitial;

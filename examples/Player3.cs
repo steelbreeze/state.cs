@@ -24,7 +24,7 @@ namespace Steelbreeze.Examples
 			player.Initialise( state );
 
 			// main event loop
-			while( !player.IsComplete( state ) )
+			while( !state.IsTerminated && !player.IsComplete( state ) )
 			{
 				// write a prompt
 				Console.Write( "alamo> " );
@@ -45,6 +45,7 @@ namespace Steelbreeze.Examples
 			var operational = new CompositeState( "operational", this );
 			var flipped = new SimpleState( "flipped", this );
 			var final = new FinalState( "final", this );
+			var terminated = new PseudoState( "terminated", PseudoStateKind.Terminated, this );
 
 			var history = new PseudoState( "history", PseudoStateKind.DeepHistory, operational );
 			var stopped = new SimpleState( "stopped", operational );
@@ -70,6 +71,7 @@ namespace Steelbreeze.Examples
 			new Transition<String>( operational, flipped, s => s.Equals( "flip" ) );
 			new Transition<String>( flipped, operational, s => s.Equals( "flip" ) );
 			new Transition<String>( operational, final, s => s.Equals( "off" ) );
+			new Transition<String>( operational, terminated, s => s.Equals( "term" ) );
 		}
 
 		private void EngageHead()

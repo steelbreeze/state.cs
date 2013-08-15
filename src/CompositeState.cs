@@ -96,6 +96,9 @@ namespace Steelbreeze.Behavior
 		/// </remarks>
 		public override bool Process( IState state, Object message )
 		{
+			if( state.IsTerminated )
+				return false;
+
 			return base.Process( state, message ) || regions.Aggregate( false, ( result, region ) => result || region.Process( state, message ) );
 		}
 	}

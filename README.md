@@ -1,6 +1,6 @@
 # Welcome to state.cs
 
-The current stable release is 2.2.2.
+The current stable release is 2.2.3.
 
 If you like this, star it...
 

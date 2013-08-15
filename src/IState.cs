@@ -23,13 +23,6 @@ namespace Steelbreeze.Behavior
 	public interface IState
 	{
 		/// <summary>
-		/// Returns the current state of a region
-		/// </summary>
-		/// <param name="element">The region to get the state for</param>
-		/// <returns>The uncommitted state of the region</returns>
-		Vertex GetCurrent( StateMachineElement element );
-
-		/// <summary>
 		/// Returns the active status of a state
 		/// </summary>
 		/// <param name="element">The state to get the active status for</param>
@@ -44,10 +37,25 @@ namespace Steelbreeze.Behavior
 		void SetActive( StateMachineElement element, Boolean value );
 
 		/// <summary>
+		/// Returns the current state of a region
+		/// </summary>
+		/// <param name="element">The region to get the state for</param>
+		/// <returns>The uncommitted state of the region</returns>
+		Vertex GetCurrent( StateMachineElement element );
+
+		/// <summary>
 		/// Sets the current state of a element
 		/// </summary>
 		/// <param name="element">The elemnt to set the current state for</param>
 		/// <param name="value">The value to set the current element to</param>
 		void SetCurrent( StateMachineElement element, Vertex value );
+
+		/// <summary>
+		/// Indicates that the state machine state has been terminated
+		/// </summary>
+		/// <remarks>
+		/// A state machine is deemed to be terminated if a terminate pseudo state is transitioned to.
+		/// </remarks>
+		Boolean IsTerminated { get; set; }
 	}
 }

@@ -43,6 +43,7 @@ namespace Steelbreeze.Behavior
 		{
 			Trace.Assert( source != null, "Source PseudoState for transition must be specified." );
 			Trace.Assert( target != null, "Target Vertex for completion transition must be specified." );
+			Trace.Assert( source.Kind != PseudoStateKind.Terminated, "Cannot specify a transition from a terminated pseudo state" );
 
 			this.guard = guard ?? ( () => true );
 
