@@ -24,8 +24,8 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public class SimpleState : Vertex
 	{
-		private static Func<IEnumerable<Completion>, Completion> GetCompletion = completions => completions.SingleOrDefault( c => c.guard() ); 
-		internal HashSet<TypedTransition> transitions = null;
+		private static Func<IEnumerable<Completion>, Completion> GetCompletion = completions => completions.SingleOrDefault( c => c.EvaluateGuard() ); 
+		internal HashSet<ITransition> transitions = null;
 
 		/// <summary>
 		/// The action or actions performed when entering a State.
@@ -41,18 +41,15 @@ namespace Steelbreeze.Behavior
 		/// Creates a State.
 		/// </summary>
 		/// <param name="name">The name of the State.</param>
-		/// <param name="owner">The parent Region or the State.</param>
+		/// <param name="owner">The parent Region of the State.</param>
 		public SimpleState( String name, Region owner ) : base( name, owner, GetCompletion ) { }
 
 		/// <summary>
-		/// Initialises a node to its initial state.
+		/// Creates a State.
 		/// </summary>
-		/// <param name="state">An optional transaction that the process operation will participate in.</param>
-		public void Initialise( IState state )
-		{
-			OnEnter( state );
-			Complete( state, false );
-		}
+		/// <param name="name">The name of the State.</param>
+		/// <param name="owner">The parent CompositeState of the State.</param>
+		public SimpleState( String name, CompositeState owner ) : base( name, owner, GetCompletion ) { }
 
 		override internal void OnExit( IState state )
 		{
@@ -63,12 +60,12 @@ namespace Steelbreeze.Behavior
 			base.OnExit( state );
 		}
 
-		override internal void OnEnter( IState state )
+		override internal void OnBeginEnter( IState state )
 		{
 			if( state.GetActive( this ) )
 				OnExit( state );
 
-			base.OnEnter( state );
+			base.OnBeginEnter( state );
 
 			state.SetActive( this, true );
 
@@ -84,7 +81,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>
 		/// Override this method to implement more complex state entry behaviour
 		/// </remarks>
-		public virtual void OnExit()
+		protected virtual void OnExit()
 		{
 			if( Exit != null )
 				Exit();
@@ -96,7 +93,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>
 		/// Override this method to implement more complex state entry behaviour
 		/// </remarks>
-		public virtual void OnEnter()
+		protected virtual void OnEnter()
 		{
 			if( Entry != null )
 				Entry();
@@ -116,7 +113,7 @@ namespace Steelbreeze.Behavior
 			if( this.transitions == null )
 				return false;
 
-			var transition = this.transitions.SingleOrDefault( t => t.Guard( message ) );
+			var transition = this.transitions.SingleOrDefault( t => t.EvaluateGuard( message ) );
 
 			if( transition == null )
 				return false;

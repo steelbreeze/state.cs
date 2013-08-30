@@ -41,16 +41,17 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// The parent of the element
 		/// </summary>
-		public abstract StateMachineElement Owner { get; }
+		public StateMachineElement Owner { get; private set; }
 		
 		// The ancestors of the element
 		internal IEnumerable<StateMachineElement> Ancestors { get { for( var element = this; element != null; element = element.Owner ) yield return element; } }
 
-		internal StateMachineElement( String name )
+		internal StateMachineElement( String name, StateMachineElement owner )
 		{
 			Trace.Assert( name != null, "All state machine elements must have name provided" );
 
 			this.Name = name;
+			this.Owner = owner;
 		}
 
 		/// <summary>
@@ -71,7 +72,7 @@ namespace Steelbreeze.Behavior
 			Debug.WriteLine( this.QualifiedName, "Leave" );
 		}
 
-		virtual internal void OnEnter( IState state )
+		virtual internal void OnBeginEnter( IState state )
 		{
 			Debug.WriteLine( this.QualifiedName, "Enter" );
 		}

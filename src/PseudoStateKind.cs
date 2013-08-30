@@ -39,7 +39,7 @@ namespace Steelbreeze.Behavior
 		/// If none of the guards evaluates to true, then the model is considered ill-formed. (To avoid this, it is recommended to define one outgoing transition with the predefined “else” guard for every choice vertex.)
 		/// Choice vertices should be distinguished from static branch points that are based on junction points.
 		/// </summary>
-		public static readonly PseudoStateKind Choice = new PseudoStateKind( "Choice", c => RandomOrDefault( c.Where( t => t.guard() ) ) ?? c.Single( t => t.guard.Equals( Guard.Else ) ), false, false );
+		public static readonly PseudoStateKind Choice = new PseudoStateKind( "Choice", c => RandomOrDefault( c.Where( t => t.EvaluateGuard() ) ) ?? c.Single( t => t.IsElse ), false, false );
 
 		/// <summary>
 		/// DeepHistory represents the most recent active configuration of the Region that directly contains this PseudoState (e.g., the state configuration that was active when the Region was last exited).
@@ -59,7 +59,7 @@ namespace Steelbreeze.Behavior
 		/// An ExitPoint pseudostate is an exit point of a state machine or composite state.
 		/// Entering an exit point within any region of the CompositeState or StateMachine referenced by a submachine state implies the exit of this CompositeState or submachine state and the triggering of the transition that has this exit point as source in the state machine enclosing the submachine or composite state.
 		/// </summary>
-		public static readonly PseudoStateKind ExitPoint = new PseudoStateKind( "ExitPoint", c => c.Single( t => t.guard() ), false, false );
+		public static readonly PseudoStateKind ExitPoint = new PseudoStateKind( "ExitPoint", c => c.Single( t => t.EvaluateGuard() ), false, false );
 
 		/// <summary>
 		/// An Initial PseudoState represents a default Vertex that is the source for a single transition to the default state of a Region.
@@ -77,7 +77,7 @@ namespace Steelbreeze.Behavior
 		/// A predefined guard denoted “else” may be defined for at most one outgoing transition. This transition is enabled if all the guards labeling the other transitions are false.)
 		/// Static conditional branches are distinct from dynamic conditional branches that are realized by choice vertices.
 		/// </summary>
-		public static readonly PseudoStateKind Junction = new PseudoStateKind( "Junction", c => c.SingleOrDefault( t => t.guard() ) ?? c.Single( t => t.guard.Equals( Guard.Else ) ), false, false );
+		public static readonly PseudoStateKind Junction = new PseudoStateKind( "Junction", c => c.SingleOrDefault( t => t.EvaluateGuard() ) ?? c.Single( t => t.IsElse ), false, false );
 
 		/// <summary>
 		/// ShallowHistory represents the most recent active substate of its containing state (but not the substates of that substate).

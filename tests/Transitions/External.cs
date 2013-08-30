@@ -11,11 +11,11 @@ namespace Steelbreeze.Behavior.Test.Transitions
 	{
 		public static void Test()
 		{
-			var stateMachine = new CompositeState( "external" ); 
+			var stateMachine = new Region( "external" ); 
 
 			var initial = new PseudoState( "initial", PseudoStateKind.Initial, stateMachine );
 			var composite = new CompositeState( "composite", stateMachine );
-			var orthogonal = new CompositeState( "orthogonal", stateMachine );
+			var orthogonal = new OrthogonalState( "orthogonal", stateMachine );
 			var final = new FinalState( "final", stateMachine);
 
 			var c1 = new SimpleState( "c1", composite );

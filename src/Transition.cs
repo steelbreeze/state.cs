@@ -23,7 +23,7 @@ namespace Steelbreeze.Behavior
 	/// An event-based Transition between Vertices.
 	/// </summary>
 	/// <typeparam name="TMessage">The type of the message that may cause the transition to be traversed.</typeparam>
-	public class Transition<TMessage> : TypedTransition where TMessage : class
+	public class Transition<TMessage> : TransitionBase, ITransition where TMessage : class
 	{
 		// the guard condition
 		private readonly Func<TMessage, Boolean> guard;
@@ -46,10 +46,20 @@ namespace Steelbreeze.Behavior
 
 			this.guard = guard ?? ( message => true );
 
-			( source.transitions ?? ( source.transitions = new HashSet<TypedTransition>() ) ).Add( this );
+			( source.transitions ?? ( source.transitions = new HashSet<ITransition>() ) ).Add( this );
 		}
 
-		internal override Boolean Guard( Object message )
+		Boolean ITransition.EvaluateGuard( Object message )
+		{
+			return Guard( message );
+		}
+
+		/// <summary>
+		/// Logic required to evaluate the completion guard condition
+		/// </summary>
+		/// <param name="message">The message to test the guard condition against</param>
+		/// <returns>True if the guard evaluates true</returns>
+		protected virtual Boolean Guard( Object message )
 		{
 			var typed = message as TMessage;
 
@@ -59,18 +69,18 @@ namespace Steelbreeze.Behavior
 				return guard( typed );
 		}
 
-		internal override void Traverse( IState state, Object message )
+		void ITransition.Traverse( IState state, Object message )
 		{
-			if( exit != null )
-				exit( state );
+			if( onExit != null )
+				onExit( state );
 
 			OnEffect( message );
-
-			if( enter != null )
-				enter( state );
-
-			if( complete != null )
-				complete( state, false );
+	
+			if( onBeginEnter != null )
+				onBeginEnter( state );
+	
+			if( onEndEnter != null )
+				onEndEnter( state, false );
 		}
 
 		/// <summary>
@@ -80,7 +90,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>
 		/// Override this method to implement more complex event-based transition behaviour
 		/// </remarks>
-		public virtual void OnEffect( Object message )
+		protected virtual void OnEffect( Object message )
 		{
 			if( Effect != null )
 				Effect( message as TMessage );

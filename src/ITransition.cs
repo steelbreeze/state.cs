@@ -18,13 +18,11 @@ using System;
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// Interface that all event-based transitions must implement
+	/// Common interface for templated transitions
 	/// </summary>
-	public abstract class TypedTransition : TransitionBase
+	internal interface ITransition
 	{
-		internal TypedTransition( Vertex source, Vertex target ) : base( source, target ) { }
-
-		internal abstract Boolean Guard( Object message );
-		internal abstract void Traverse( IState state, Object message );
+		Boolean EvaluateGuard( Object message );
+		void Traverse( IState state, Object message );
 	}
 }

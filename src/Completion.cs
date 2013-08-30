@@ -20,17 +20,18 @@ using System.Diagnostics;
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// A completion Transition between Vertices.
+	/// A completion transition between vertices.
 	/// </summary>
 	public class Completion : TransitionBase
 	{
-		// the transitions guard condition
-		internal readonly Func<Boolean> guard;
+		private readonly Func<Boolean> guard;
 
 		/// <summary>
 		/// The optional actions that are called while traversing the transition.
 		/// </summary>
 		public event Action Effect;
+
+		internal Boolean IsElse { get { return this.guard.Equals( Behavior.Guard.Else ); } }
 
 		/// <summary>
 		/// Creates a completion transition.
@@ -45,7 +46,7 @@ namespace Steelbreeze.Behavior
 			Trace.Assert( target != null, "Target Vertex for completion transition must be specified." );
 			Trace.Assert( source.Kind != PseudoStateKind.Terminated, "Cannot specify a transition from a terminated pseudo state" );
 
-			this.guard = guard ?? ( () => true );
+			this.guard = guard;
 
 			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
 		}
@@ -62,23 +63,37 @@ namespace Steelbreeze.Behavior
 			Trace.Assert( source != null, "Source State for transition must be specified." );
 			Trace.Assert( target != null, "Target Vertex for completion transition must be specified." );
 
-			this.guard = guard ?? ( () => true );
+			this.guard = guard;
 
 			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
 		}
 
 		internal void Traverse( IState state, Boolean deepHistory )
 		{
-			if( exit != null )
-				exit( state );
-
+			if( onExit != null )
+				onExit( state );
+	
 			OnEffect();
+			
+			if( onBeginEnter != null )
+				onBeginEnter( state );
+	
+			if( onEndEnter != null )
+				onEndEnter( state, deepHistory );
+		}
 
-			if( enter != null )
-				enter( state );
+		internal Boolean EvaluateGuard()
+		{
+			return Guard();
+		}
 
-			if( complete != null )
-				complete( state, deepHistory );
+		/// <summary>
+		/// Logic required to evaluate the completion guard condition
+		/// </summary>
+		/// <returns>True if the guard evaluates true</returns>
+		protected virtual Boolean Guard()
+		{
+			return this.guard == null || this.guard();
 		}
 
 		/// <summary>
@@ -87,7 +102,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>
 		/// Override this method to implement more complex completion transition behaviour
 		/// </remarks>
-		public virtual void OnEffect()
+		protected virtual void OnEffect()
 		{
 			if( Effect != null )
 				Effect();

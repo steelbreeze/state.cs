@@ -25,25 +25,18 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public class Region : StateMachineElement
 	{
-		private readonly CompositeState owner;
-		internal readonly HashSet<Vertex> vertices = new HashSet<Vertex>();
 		internal PseudoState initial;
-
-		/// <summary>
-		/// The parent element of this element
-		/// </summary>
-		public override StateMachineElement Owner { get { return this.owner; } }
 	
 		/// <summary>
 		/// Creates a Region.
 		/// </summary>
 		/// <param name="name">The name of the Region.</param>
 		/// <param name="owner">The parent CompositeState.</param>
-		public Region( String name, CompositeState owner = null )
-			: base( name )
+		public Region( String name, OrthogonalState owner = null )
+			: base( name, owner )
 		{
-			if( ( this.owner = owner ) != null )
-				this.owner.regions.Add( this );
+			if( owner != null )
+				owner.regions.Add( this );
 		}
 
 		/// <summary>
@@ -65,17 +58,16 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		public void Initialise( IState state )
 		{
-			Initialise( state, false );
+			this.OnBeginEnter( state );
+			this.OnEndEnter( state, false );
 		}
 
-		internal void Initialise( IState state, Boolean deepHistory )
+		internal void OnEndEnter( IState state, Boolean deepHistory )
 		{
-			this.OnEnter( state );
-
 			var current = ( deepHistory || initial.Kind.IsHistory ) ? ( state.GetCurrent( this ) ?? initial ) : initial;
 
-			current.OnEnter( state );
-			current.Complete( state, deepHistory || initial.Kind == PseudoStateKind.DeepHistory );
+			current.OnBeginEnter( state );
+			current.OnEndEnter( state, deepHistory || initial.Kind == PseudoStateKind.DeepHistory );
 		}
 
 		override internal void OnExit( IState state )
@@ -90,12 +82,12 @@ namespace Steelbreeze.Behavior
 			base.OnExit( state );
 		}
 
-		internal override void OnEnter( IState state )
+		internal override void OnBeginEnter( IState state )
 		{
 			if( state.GetActive( this ) )
 				OnExit( state );
 
-			base.OnEnter( state );
+			base.OnBeginEnter( state );
 
 			state.SetActive( this, true );
 		}

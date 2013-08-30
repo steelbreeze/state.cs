@@ -1,8 +1,11 @@
 # Welcome to state.cs
 
-The current stable release is 2.2.3.
+The current stable release is 2.3.0
 
 If you like this, star it...
+
+## Version 2.3 notes - please read before downloading
+Another significant API change; renamed CompositeState to OrthogonalState and added a new CompositeState that contains vertices without the need for intermediate regions.
 
 ## Version 2 notes - please read before downloading
 Version 2 breaks apart the state machine model and the state machine state. This facilitates creating a single state machine model and using it with many different state machine states without any overhead of resetting the state machine, serializing/deserializing state or rebuilding the machine.

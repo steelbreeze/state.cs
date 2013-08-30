@@ -25,9 +25,9 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public abstract class TransitionBase
 	{
-		readonly internal Action<IState> exit;
-		readonly internal Action<IState> enter;
-		readonly internal Action<IState, Boolean> complete;
+		readonly internal Action<IState> onExit;
+		readonly internal Action<IState> onBeginEnter;
+		readonly internal Action<IState, Boolean> onEndEnter;
 
 		internal TransitionBase( Vertex source, Vertex target )
 		{
@@ -39,13 +39,13 @@ namespace Steelbreeze.Behavior
 				while( sourceAncestors.MoveNext() && targetAncestors.MoveNext() && sourceAncestors.Current.Equals( targetAncestors.Current ) ) { }
 
 				if( source is PseudoState && !sourceAncestors.Current.Equals( source ) )
-					exit += source.OnExit;
+					onExit += source.OnExit;
 
-				exit += sourceAncestors.Current.OnExit;
+				onExit += sourceAncestors.Current.OnExit;
 
-				do { enter += targetAncestors.Current.OnEnter; } while( targetAncestors.MoveNext() );
+				do { onBeginEnter += targetAncestors.Current.OnBeginEnter; } while( targetAncestors.MoveNext() );
 
-				complete += target.Complete;
+				onEndEnter += target.OnEndEnter;
 			}
 		}
 	}

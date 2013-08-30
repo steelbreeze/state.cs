@@ -30,6 +30,13 @@ namespace Steelbreeze.Behavior
 		/// <param name="owner">The paret Region of the FinalState.</param>
 		public FinalState( String name, Region owner ) : base( name, owner, null ) { }
 
+		/// <summary>
+		/// Creates a FinalState.
+		/// </summary>
+		/// <param name="name">The name of the FinalState.</param>
+		/// <param name="owner">The paret CompositeState of the FinalState.</param>
+		public FinalState( String name, CompositeState owner ) : base( name, owner, null ) { }
+
 		override internal void OnExit( IState state )
 		{
 			state.SetActive( this, false );
@@ -37,12 +44,12 @@ namespace Steelbreeze.Behavior
 			base.OnExit( state );
 		}
 
-		override internal void OnEnter( IState state )
+		override internal void OnBeginEnter( IState state )
 		{
 			if( state.GetActive( this ) )
 				OnExit( state );
 
-			base.OnEnter( state );
+			base.OnBeginEnter( state );
 
 			state.SetActive( this, true );
 

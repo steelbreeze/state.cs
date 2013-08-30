@@ -45,9 +45,25 @@ namespace Steelbreeze.Behavior
 				owner.initial = this;
 		}
 
-		internal override void OnEnter( IState state )
+		/// <summary>
+		/// Creates a PseudoState.
+		/// </summary>
+		/// <param name="name">The name of the pseudo state.</param>
+		/// <param name="kind">The kind of the PseudoState.</param>
+		/// <param name="owner">The parent CompositeState of the PseudoState.</param>
+		public PseudoState( String name, PseudoStateKind kind, CompositeState owner )
+			: base( name, owner, kind.GetCompletion )
 		{
-			base.OnEnter( state );
+			Trace.Assert( kind != null, "PseudoStateKind must be provided" );
+			Trace.Assert( owner != null, "PseudoState must have an owner" );
+
+			if( ( this.Kind = kind ).IsInitial )
+				owner.initial = this;
+		}
+
+		internal override void OnBeginEnter( IState state )
+		{
+			base.OnBeginEnter( state );
 
 			if( this.Kind == PseudoStateKind.Terminated )
 				state.IsTerminated = true;

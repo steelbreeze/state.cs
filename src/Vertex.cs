@@ -25,25 +25,22 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public abstract class Vertex : StateMachineElement
 	{
-		private readonly Region owner;
 		private readonly Func<IEnumerable<Completion>, Completion> getCompletion;
 		internal HashSet<Completion> completions = null;
 
-		/// <summary>
-		/// The parent element of this element
-		/// </summary>
-		public override StateMachineElement Owner { get { return this.owner; } }
-
 		internal Vertex( String name, Region owner, Func<IEnumerable<Completion>, Completion> getCompletion )
-			: base( name )
+			: base( name, owner )
 		{
 			this.getCompletion = getCompletion;
-
-			if( ( this.owner = owner ) != null )
-				this.owner.vertices.Add( this );
 		}
 
-		internal virtual void Complete( IState state, Boolean deepHistory )
+		internal Vertex( String name, CompositeState owner, Func<IEnumerable<Completion>, Completion> getCompletion )
+			: base( name, owner )
+		{
+			this.getCompletion = getCompletion;
+		}
+
+		internal virtual void OnEndEnter( IState state, Boolean deepHistory )
 		{
 			if( completions != null )
 			{

@@ -3,6 +3,8 @@
 using System;
 using Steelbreeze.Behavior;
 
+using StateMachine = Steelbreeze.Behavior.Region;
+
 namespace Steelbreeze.Examples
 {
 	/// <summary>
@@ -12,7 +14,7 @@ namespace Steelbreeze.Examples
 	/// The player now inherits from a Region, so can be used in isolation, or as a region in a larger device.
 	/// The player now implements an 'operational' composite state so the off command can be used while in any sub-state.
 	/// </remarks>
-	public class Player3 : Region
+	public class Player3 : StateMachine
 	{
 		public static void Main()
 		{
