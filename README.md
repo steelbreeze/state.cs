@@ -2,7 +2,7 @@
 
 The current stable release is 2.3.1
 
-If you like this, star it...
+If you're using state.cs I'd love to hear about it; please e-mail me at mesmo@steelbreeze.net 
 
 ## Version 2.3 notes - please read before downloading
 Another significant API change; renamed CompositeState to OrthogonalState and added a new CompositeState that contains vertices without the need for intermediate regions.
