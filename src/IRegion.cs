@@ -13,18 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-using System;
-
 namespace Steelbreeze.Behavior
 {
-	/// <summary>
-	/// Standard guard conditions for completion transitions
-	/// </summary>
-	public static class Guard
+	internal interface IRegion : IElement
 	{
-		/// <summary>
-		/// A guard condition used at Choice and Junction PseudoStates as a catch-all transtiion.
-		/// </summary>
-		public static readonly Func<Boolean> Else = () => false;
+		PseudoState Initial { get; set; }
 	}
 }

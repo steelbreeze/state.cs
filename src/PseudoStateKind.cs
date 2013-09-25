@@ -20,102 +20,121 @@ using System.Linq;
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// The various kinds of PseudoState
+	/// Enumeration of the valid kinds of pseudo states.
 	/// </summary>
-	public sealed class PseudoStateKind
+	public enum PseudoStateKind
 	{
-		private static readonly Random random = new Random();
-
-		private static Completion RandomOrDefault( IEnumerable<Completion> items )
-		{
-			return items.Count() == 0 ? default( Completion ) : items.ElementAt( random.Next( items.Count() ) );
-		}
+		/// <summary>
+		/// Enables a dynamic conditional branches; within a compound transition.
+		/// </summary>
+		/// <remarks>
+		/// Choice pseudo states may have multiple outbound transitions; when reached the guards are evaluated and an appropriate outbound transition is followed.
+		/// If more than one outbound transition guard evaluates true, an arbitary one is selected.
+		/// If no outbound transition guard evaluates true an 'else' transition is looked for.
+		/// If no outbound transition or else transition are found, the state machine model is deemed to be malformed and an exception is thrown.
+		/// </remarks>
+		Choice,
 
 		/// <summary>
-		/// Choice vertices which, when reached, result in the dynamic evaluation of the guards of the triggers of its outgoing transitions.
-		/// This realizes a dynamic conditional branch.
-		/// It allows splitting of transitions into multiple outgoing paths such that the decision on which path to take may be a function of the results of prior actions performed in the same run-to-completion step.
-		/// If more than one of the guards evaluates to true, an arbitrary one is selected.
-		/// If none of the guards evaluates to true, then the model is considered ill-formed. (To avoid this, it is recommended to define one outgoing transition with the predefined “else” guard for every choice vertex.)
-		/// Choice vertices should be distinguished from static branch points that are based on junction points.
+		/// A type of initial pseudo state; forms the initial starting point when entering a region or composite state for the first time.
+		/// Subsiquent entry of the owning (parent) region or composite state will enter the last know active state for the region or composite state.
+		/// Deep history cascades the history behaviour to any and all child region and composite or orthogonal states.
 		/// </summary>
-		public static readonly PseudoStateKind Choice = new PseudoStateKind( "Choice", c => RandomOrDefault( c.Where( t => t.EvaluateGuard() ) ) ?? c.Single( t => t.IsElse ), false, false );
+		DeepHistory,
 
 		/// <summary>
-		/// DeepHistory represents the most recent active configuration of the Region that directly contains this PseudoState (e.g., the state configuration that was active when the Region was last exited).
-		/// A composite state can have at most one deep history vertex.
-		/// At most one transition may originate from the history connector to the default deep history state; this transition is taken in case the composite state had never been active before.
-		/// Entry actions of states entered on the implicit direct path from the deep history to the innermost state(s) represented by a deep history are performed. The entry action is preformed only once for each state in the active state configuration being restored.
+		/// A type of initial pseudo state; forms the initial starting point when entering a region or composite state for the first time.
+		/// Subsiquent entry of the owning (parent) region or composite state will enter at the initial pseudo state unless deep history is in force in some ancestor region or composite state.
 		/// </summary>
-		public static readonly PseudoStateKind DeepHistory = new PseudoStateKind( "DeepHistory", Enumerable.Single, true, true );
+		Initial,
 
 		/// <summary>
-		/// An EntryPoint PseudoState is an entry point of a Region.
-		/// In each Region of the StateMachine or CompositeState it has at most a single Transition to a Vertex within the same Region.
+		/// Enables a static conditional branches; within a compound transition.
 		/// </summary>
-		public static readonly PseudoStateKind EntryPoint = new PseudoStateKind( "EntryPoint", Enumerable.Single, false, true );
+		/// <remarks>
+		/// Junction pseudo states may have multiple outbound transitions; when reached the guards are evaluated and an appropriate outbound transition is followed.
+		/// If more than one outbound transition guard evaluates true, the state machine model is deemed to be malformed and an exception is thrown.
+		/// If no outbound transition guard evaluates true an 'else' transition is looked for.
+		/// If no outbound transition or else transition are found, the state machine model is deemed to be malformed and an exception is thrown.
+		/// </remarks>
+		Junction,
 
 		/// <summary>
-		/// An ExitPoint pseudostate is an exit point of a state machine or composite state.
-		/// Entering an exit point within any region of the CompositeState or StateMachine referenced by a submachine state implies the exit of this CompositeState or submachine state and the triggering of the transition that has this exit point as source in the state machine enclosing the submachine or composite state.
+		/// A type of initial pseudo state; forms the initial starting point when entering a region or composite state for the first time.
+		/// Subsiquent entry of the owning (parent) region or composite state will enter the last know active state for the region or composite state.
 		/// </summary>
-		public static readonly PseudoStateKind ExitPoint = new PseudoStateKind( "ExitPoint", c => c.Single( t => t.EvaluateGuard() ), false, false );
-
-		/// <summary>
-		/// An Initial PseudoState represents a default Vertex that is the source for a single transition to the default state of a Region.
-		/// There can be at most one initial vertex in a region.
-		/// The outgoing transition from the initial vertex is a completion transition.
-		/// </summary>
-		public static readonly PseudoStateKind Initial = new PseudoStateKind( "Initial", Enumerable.Single, false ,true );
-
-		/// <summary>
-		/// Junction PseudoStates are semantic-free vertices that are used to chain together multiple transitions.
-		/// They are used to construct compound transition paths between States.
-		/// For example, a junction can be used to converge multiple incoming transitions into a single outgoing transition representing a shared transition path (this is known as a merge).
-		/// Conversely, they can be used to split an incoming transition into multiple outgoing transition segments with different guard conditions.
-		/// This realizes a static conditional branch. (In the latter case, outgoing transitions whose guard conditions evaluate to false are disabled.
-		/// A predefined guard denoted “else” may be defined for at most one outgoing transition. This transition is enabled if all the guards labeling the other transitions are false.)
-		/// Static conditional branches are distinct from dynamic conditional branches that are realized by choice vertices.
-		/// </summary>
-		public static readonly PseudoStateKind Junction = new PseudoStateKind( "Junction", c => c.SingleOrDefault( t => t.EvaluateGuard() ) ?? c.Single( t => t.IsElse ), false, false );
-
-		/// <summary>
-		/// ShallowHistory represents the most recent active substate of its containing state (but not the substates of that substate).
-		/// A composite state can have at most one shallow history vertex.
-		/// A transition coming into the shallow history vertex is equivalent to a transition coming into the most recent active substate of a state.
-		/// At most one transition may originate from the history connector to the default shallow history state.
-		/// This transition is taken in case the composite state had never been active before.
-		/// The entry action of the state represented by the shallow history is performed.
-		/// </summary>
-		public static readonly PseudoStateKind ShallowHistory = new PseudoStateKind( "ShallowHistory", Enumerable.Single, true, true );
+		ShallowHistory,
 
 		/// <summary>
 		/// Entering a terminate pseudostate implies that the execution of this state machine by means of its context object is terminated.
-		/// The state machine does not exit any states nor does it perform any exit actions other than those associated with the transition leading to the terminate pseudostate.
-		/// Entering a terminate pseudostate is equivalent to invoking a DestroyObjectAction.
 		/// </summary>
-		public static readonly PseudoStateKind Terminated = new PseudoStateKind( "Terminated", null, false, false );
+		/// <remarks>
+		/// The state machine ceases to be active upon entry to the terminate pseudo state.
+		/// No further actions are performed and the state machine will not respond to messages.
+		/// </remarks>
+		Terminated
+	}
 
-		internal readonly String Name;
-		internal readonly Boolean IsHistory;
-		internal readonly Boolean IsInitial;
-		internal readonly Func<IEnumerable<Completion>, Completion> GetCompletion;
+	internal static class PseudoStateKindMethods
+	{
+		private static readonly Random random = new Random();
 
-		private PseudoStateKind( String name, Func<IEnumerable<Completion>, Completion> getCompletion, Boolean isHistory, Boolean isInitial )
+		internal static Boolean IsHistory( this PseudoStateKind pseudoStateKind )
 		{
-			Name = name;
-			GetCompletion = getCompletion;
-			IsHistory = isHistory;
-			IsInitial = isInitial;
+			switch( pseudoStateKind )
+			{
+				case PseudoStateKind.DeepHistory:
+				case PseudoStateKind.ShallowHistory:
+					return true;
+
+				default:
+					return false;
+			}
 		}
 
-		/// <summary>
-		/// Returns the name of the PseudoStateKind.
-		/// </summary>
-		/// <returns>The name of the PseudoStateKind.</returns>
-		public override string ToString()
+		internal static Boolean IsInitial( this PseudoStateKind pseudoStateKind )
 		{
-			return Name;
+			switch( pseudoStateKind )
+			{
+				case PseudoStateKind.DeepHistory:
+				case PseudoStateKind.Initial:
+				case PseudoStateKind.ShallowHistory:
+					return true;
+
+				default:
+					return false;
+			}
+		}
+
+		internal static Completion Completion( this PseudoStateKind pseudoStateKind, IEnumerable<Completion> completions )
+		{
+			switch( pseudoStateKind )
+			{
+				case PseudoStateKind.Choice:
+					return GetChoiceCompletion( completions );
+
+				case PseudoStateKind.Junction:
+					return GetJunctionCompletion( completions );
+
+				case PseudoStateKind.Terminated:
+					return null;
+
+				default:
+					return Enumerable.Single( completions );
+			}
+		}
+
+		private static Completion GetChoiceCompletion( IEnumerable<Completion> c )
+		{
+			var items = c.Where( t => t.Guard() );
+			var count = items.Count();
+
+			return count > 0 ? items.ElementAt( random.Next( count ) ) : c.Single( t => t.IsElse );
+		}
+
+		private static Completion GetJunctionCompletion( IEnumerable<Completion> c )
+		{
+			return c.SingleOrDefault( t => t.Guard() ) ?? c.Single( t => t.IsElse );
 		}
 	}
 }

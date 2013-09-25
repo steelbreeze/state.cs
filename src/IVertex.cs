@@ -17,10 +17,8 @@ using System;
 
 namespace Steelbreeze.Behavior
 {
-	internal interface ITransition
+	internal interface IVertex : IElement
 	{
-		Boolean Guard( Object message );
-
-		void Traverse( IState context, Object message );
+		void OnEndEnter( IState context, Boolean deepHistory );
 	}
 }

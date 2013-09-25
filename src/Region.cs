@@ -21,89 +21,121 @@ using System.Linq;
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// A Region is an orthogonal part of either a CompositeState or a StateMachine. It contains states and transitions.
+	/// A region within a state machine model.
 	/// </summary>
-	public class Region : StateMachineElement
+	/// <remarks>
+	/// A region is a container for states and pseudo states.
+	/// </remarks>
+	public class Region : IRegion
 	{
-		internal PseudoState initial;
-	
-		/// <summary>
-		/// Creates a Region.
-		/// </summary>
-		/// <param name="name">The name of the Region.</param>
-		/// <param name="owner">The parent CompositeState.</param>
-		public Region( String name, OrthogonalState owner = null )
-			: base( name, owner )
-		{
-			if( owner != null )
-				owner.regions.Add( this );
-		}
+		IElement IElement.Owner { get { return owner; } }
 
 		/// <summary>
-		/// Tests to see if a region is complete
+		/// Holds the initial pseudo state for the composote state upon initial entry or subsiquent entry without history
 		/// </summary>
-		/// <param name="state">The state machine state</param>
-		/// <returns>True if the region is complete</returns>
+		PseudoState IRegion.Initial { get; set; }
+
+		private readonly OrthogonalState owner;
+
+		/// <summary>
+		/// The name of the region.
+		/// </summary>
+		public String Name { get; private set; }
+
+		/// <summary>
+		/// Creates a new region within a state machine.
+		/// </summary>
+		/// <param name="name">The name of the region.</param>
+		/// <param name="owner">The optional parent orthogonal state.</param>
 		/// <remarks>
-		/// A Region is deemed to be complete when it's current state is a FinalState.
+		/// A region is a container of states and pseudo states within a state machine model; it can be used as a root state machine.
 		/// </remarks>
-		public override Boolean IsComplete( IState state )
+		public Region( String name, OrthogonalState owner = null )
 		{
-			return state.GetCurrent( this ) is FinalState;
+			this.Name = name;
+			this.owner = owner;
+
+			if( this.owner != null )
+				( this.owner.regions ?? ( this.owner.regions = new HashSet<Region>() ) ).Add( this );
 		}
 
 		/// <summary>
-		/// Initialises a node to its initial state.
-		/// <param name="state">The state machine state to initialise.</param>
+		/// Determines if a region is completed.
 		/// </summary>
-		public void Initialise( IState state )
+		/// <param name="context">The state machine state to test completeness for.</param>
+		/// <returns>A boolean value indicating that the region is completed.</returns>
+		/// <remarks>A region is deemed to be completed when its current child state is a final state.</remarks>
+		public Boolean IsComplete( IState context )
 		{
-			this.OnBeginEnter( state );
-			this.OnEndEnter( state, false );
+			return context.IsTerminated || context.GetCurrent( this ) is FinalState;
 		}
 
-		internal void OnEndEnter( IState state, Boolean deepHistory )
+		/// <summary>
+		/// Initialises the state machine state context with its initial state.
+		/// </summary>
+		/// <param name="context">The state machine state context to initialise.</param>
+		public void Initialise( IState context )
 		{
-			var current = ( deepHistory || initial.Kind.IsHistory ) ? ( state.GetCurrent( this ) ?? initial ) : initial;
+			IRegion region = this;
 
-			current.OnBeginEnter( state );
-			current.OnEndEnter( state, deepHistory || initial.Kind == PseudoStateKind.DeepHistory );
+			region.OnBeginEnter( context );
+			OnEndEnter( context, false );
 		}
 
-		override internal void OnExit( IState state )
+		void IElement.OnExit( IState context )
 		{
-			var current = state.GetCurrent( this );
+			var current = context.GetCurrent( this ) as IVertex;
 
 			if( current != null )
-				current.OnExit( state );
+				current.OnExit( context );
 
-			state.SetActive( this, false );
+			Debug.WriteLine( this, "Leave" );
 
-			base.OnExit( state );
+			context.SetActive( this, false );
 		}
 
-		internal override void OnBeginEnter( IState state )
+		void IElement.OnBeginEnter( IState context )
 		{
-			if( state.GetActive( this ) )
-				OnExit( state );
+			IRegion region = this;
 
-			base.OnBeginEnter( state );
+			if( context.GetActive( region ) )
+				region.OnExit( context );
 
-			state.SetActive( this, true );
+			Debug.WriteLine( this, "Enter" );
+
+			context.SetActive( region, true );
+		}
+
+		internal void OnEndEnter( IState context, Boolean deepHistory )
+		{
+			IRegion region = this;
+			IVertex current = deepHistory || region.Initial.Kind.IsInitial() ? context.GetCurrent( this ) as IVertex ?? region.Initial : region.Initial;
+
+			current.OnBeginEnter( context );
+			current.OnEndEnter( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );
 		}
 
 		/// <summary>
-		/// Attempts to process a message to facilitate state transitions
+		/// Attempts to process a message against a region.
 		/// </summary>
-		/// <param name="state">The state machine state to pass the message to.</param>
-		/// <param name="message">The message to process.</param>
-		/// <returns>A Boolean indicating if the message was processed.</returns>
-		public override Boolean Process( IState state, Object message )
+		/// <param name="context">The state machine state.</param>
+		/// <param name="message">The message to evaluate.</param>
+		/// <returns>A boolean indicating if the message caused a state change.</returns>
+		public Boolean Process( IState context, Object message )
 		{
-			if( state.IsTerminated )
+			if( context.IsTerminated )
 				return false;
 
-			return  state.GetActive( this ) && state.GetCurrent( this ).Process( state, message );
+			return context.GetActive( this ) && context.GetCurrent( this ).Process( context, message );
+		}
+
+		/// <summary>
+		/// Returns the fully qualified name of the region.
+		/// </summary>
+		/// <returns>The fully qualified name of the region.</returns>
+		public override string ToString()
+		{
+			return this.Ancestors().Select( ancestor => ancestor.Name ).Aggregate( ( right, left ) => left + "." + right );
 		}
 	}
 }

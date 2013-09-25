@@ -1,23 +1,18 @@
 # Welcome to state.cs
 
-The current stable release is 2.3.1
+The current stable release is 3.0.0
 
 If you're using state.cs I'd love to hear about it; please e-mail me at mesmo@steelbreeze.net 
 
-## Version 2.3 notes - please read before downloading
-Another significant API change; renamed CompositeState to OrthogonalState and added a new CompositeState that contains vertices without the need for intermediate regions.
+## Version 3 notes - please read before downloading
+Version 3 has focused on creating a clean public and protected API; there should be no implementation details visible in the namespace.
 
-## Version 2 notes - please read before downloading
-Version 2 breaks apart the state machine model and the state machine state. This facilitates creating a single state machine model and using it with many different state machine states without any overhead of resetting the state machine, serializing/deserializing state or rebuilding the machine.
-
-###API changes
-The following are breaking API changes from version 1.5.x:
-
-The old State class is replaced by the new SimpleState and ComplexState classes. A simple state is a leaf-level state in a state machine hierarchy whereas a complex state can have child regions. This removes minor overheads for simple states.
-
-State machine state is represented by the new IState interface, a default implementation of which is found in the new State class.
-
-The implementaion of the visitor pattern has been removed, as the state machine state is now under your direct control.
+I have endevoured to keep the API as similar as possible to the version 2, but with a couple of notable changes:
+* PseudoStateKind has changed to an enum (its methods are now internal extension methods).
+* EntryPoint and ExitPoint pseudo states have been removed as they weren't really adding anything that can't be done with a choice or initial.
+* Other base classes or interfaces have become internal only.
+* FinalState now inherits from SimpleState (as per UML); note that use of the Entry and Exit actions will cause a compiler error (if anyone can help me find a way to hide them I'd love to hear about it).
+* 
 
 ## Introduction
 State.js provides a hierarchical state machine capable of managing orthogonal regions; a variety of pseudo state kinds are implemented including initial, shallow & deep history, choice, junction and entry & exit points.

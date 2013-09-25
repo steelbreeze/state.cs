@@ -15,33 +15,34 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
+using Steelbreeze.Behavior;
 
-namespace Steelbreeze.Behavior
+namespace Steelbreeze.Examples
 {
 	/// <summary>
 	/// Basic example of state machine state implementation
 	/// </summary>
 	public sealed class State : IState
 	{
-		private Dictionary<StateMachineElement, Boolean> active = new Dictionary<StateMachineElement, Boolean>();
-		private Dictionary<StateMachineElement, Vertex> current = new Dictionary<StateMachineElement, Vertex>();
-
+		private Dictionary<Object, Boolean> active = new Dictionary<Object, Boolean>();
+		private Dictionary<Object, SimpleState> current = new Dictionary<Object, SimpleState>();
+		
 		/// <summary>
-		/// Creates a state machine state object
+		/// Indicates that the state machine state has been terminated
 		/// </summary>
-		public State()
-		{
-			IsTerminated = false;
-		}
+		/// <remarks>
+		/// A state machine is deemed to be terminated if a terminate pseudo state is transitioned to.
+		/// </remarks>
+		public Boolean IsTerminated { get; set; }
 
 		/// <summary>
 		/// Returns the current state of a region
 		/// </summary>
 		/// <param name="element">The region to get the state for</param>
 		/// <returns>The uncommitted state of the region</returns>
-		public Vertex GetCurrent( StateMachineElement element )
+		public SimpleState GetCurrent( Object element )
 		{
-			Vertex current = null;
+			SimpleState current = null;
 
 			this.current.TryGetValue( element, out current );
 
@@ -53,7 +54,7 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="element">The state to get the active status for</param>
 		/// <returns>The uncommitted active status</returns>
-		public Boolean GetActive( StateMachineElement element )
+		public Boolean GetActive( Object element )
 		{
 			Boolean active = false;
 
@@ -67,7 +68,7 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="element">The state to set the active status for</param>
 		/// <param name="value">The valuse to set the active status to</param>
-		public void SetActive( StateMachineElement element, Boolean value )
+		public void SetActive( Object element, Boolean value )
 		{
 			this.active[ element ] = value;
 		}
@@ -77,17 +78,9 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="element">The region to set the current state for</param>
 		/// <param name="value">The value to set the current state to</param>
-		public void SetCurrent( StateMachineElement element, Vertex value )
+		public void SetCurrent( Object element, SimpleState value )
 		{
 			this.current[ element ] = value;
 		}
-
-		/// <summary>
-		/// Indicates that the state machine state has been terminated
-		/// </summary>
-		/// <remarks>
-		/// A state machine is deemed to be terminated if a terminate pseudo state is transitioned to.
-		/// </remarks>
-		public Boolean IsTerminated { get; set; }
 	}
 }

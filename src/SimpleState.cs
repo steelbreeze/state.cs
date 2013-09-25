@@ -15,84 +15,73 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// A condition or situation during the life of an object during which it satisfies some condition, performs some activity, or waits for some event.
+	/// A state (invariant condition) within a state machine model.
 	/// </summary>
-	public class SimpleState : Vertex
+	public class SimpleState : IVertex
 	{
-		private static Func<IEnumerable<Completion>, Completion> GetCompletion = completions => completions.SingleOrDefault( c => c.EvaluateGuard() ); 
-		internal HashSet<ITransition> transitions = null;
+		IElement IElement.Owner { get { return owner; } }
+
+		private readonly IRegion owner;
+
+		internal ICollection<Completion> completions { get; set; }
+		internal ICollection<ITransition> transitions { get; set; }
 
 		/// <summary>
-		/// The action or actions performed when entering a State.
+		/// The name of the state.
 		/// </summary>
-		public event Action Entry;
+		public String Name { get; private set; }
+	
+		/// <summary>
+		/// Optional action(s) that can be called when the state is entered.
+		/// </summary>
+		public Action Entry { get; set; }
 
 		/// <summary>
-		/// The action or actions performed when leaving a State.
+		/// Optional action(s) that can be calle when the state is exited.
 		/// </summary>
-		public event Action Exit;
+		public Action Exit { get; set; }
 
 		/// <summary>
-		/// Creates a State.
+		/// Creates a state within an owning (parent) region.
 		/// </summary>
-		/// <param name="name">The name of the State.</param>
-		/// <param name="owner">The parent Region of the State.</param>
-		public SimpleState( String name, Region owner ) : base( name, owner, GetCompletion ) { }
-
-		/// <summary>
-		/// Creates a State.
-		/// </summary>
-		/// <param name="name">The name of the State.</param>
-		/// <param name="owner">The parent CompositeState of the State.</param>
-		public SimpleState( String name, CompositeState owner ) : base( name, owner, GetCompletion ) { }
-
-		override internal void OnExit( IState state )
+		/// <param name="name">The name of the state.</param>
+		/// <param name="owner">The owning (parent) region.</param>
+		public SimpleState( String name, Region owner )
 		{
-			OnExit();
-
-			state.SetActive( this, false );
-
-			base.OnExit( state );
-		}
-
-		override internal void OnBeginEnter( IState state )
-		{
-			if( state.GetActive( this ) )
-				OnExit( state );
-
-			base.OnBeginEnter( state );
-
-			state.SetActive( this, true );
-
-			if( this.Owner != null )
-				state.SetCurrent( this.Owner, this );
-
-			OnEnter();
+			this.Name = name;
+			this.owner = owner;
 		}
 
 		/// <summary>
-		/// Calls the state's entry behaviour
+		/// Creates a state within an owning (parent) composite state.
 		/// </summary>
-		/// <remarks>
-		/// Override this method to implement more complex state entry behaviour
-		/// </remarks>
-		protected virtual void OnExit()
+		/// <param name="name">The name of the state.</param>
+		/// <param name="owner">The owning (parent) composite state.</param>
+		public SimpleState( String name, CompositeState owner )
 		{
-			if( Exit != null )
-				Exit();
+			this.Name = name;
+			this.owner = owner;
 		}
 
 		/// <summary>
-		/// Calls the state's entry behaviour
+		/// Tests the state for completeness.
 		/// </summary>
-		/// <remarks>
-		/// Override this method to implement more complex state entry behaviour
-		/// </remarks>
+		/// <param name="context">The state machine state to test.</param>
+		public virtual Boolean IsComplete( IState context )
+		{
+			return true;
+		}
+
+		/// <summary>
+		/// Invokes the state entry action.
+		/// </summary>
+		/// <remarks>Override this method to create custom entry behaviour.</remarks>
 		protected virtual void OnEnter()
 		{
 			if( Entry != null )
@@ -100,27 +89,101 @@ namespace Steelbreeze.Behavior
 		}
 
 		/// <summary>
-		/// Attempts to process a message.
+		/// Invokes the state exit action.
 		/// </summary>
-		/// <param name="message">The message to process.</param>
-		/// <param name="state">An optional transaction that the process operation will participate in.</param>
-		/// <returns>A Boolean indicating if the message was processed.</returns>
-		override public Boolean Process( IState state, Object message )
+		/// <remarks>Override this method to create custom exit behaviour.</remarks>
+		protected virtual void OnExit()
 		{
-			if( state.IsTerminated )
+			if( Exit != null )
+				Exit();
+		}
+
+		void IElement.OnExit( IState context )
+		{
+			DoOnExit( context );
+		}
+
+		internal virtual void DoOnExit( IState context )
+		{
+			this.OnExit();
+
+			Debug.WriteLine( this, "Leave" );
+
+			context.SetActive( this, false );
+		}
+
+		void IElement.OnBeginEnter( IState context )
+		{
+			DoOnBeginEnter( context );
+		}
+
+		internal virtual void DoOnBeginEnter( IState context )
+		{
+			IVertex vertex = this;
+
+			if( context.GetActive( this ) )
+				vertex.OnExit( context );
+
+			Debug.WriteLine( this, "Enter" );
+
+			context.SetActive( this, true );
+
+			if( this.owner != null )
+				context.SetCurrent( owner, this );
+
+			this.OnEnter();
+		}
+
+		void IVertex.OnEndEnter( IState context, Boolean deepHistory )
+		{
+			DoOnEndEnter( context, deepHistory );
+		}
+
+		internal virtual void DoOnEndEnter( IState context, Boolean deepHistory )
+		{
+			if( completions != null )
+			{
+				if( IsComplete( context ) )
+				{
+					var completion = completions.SingleOrDefault( t => t.Guard() );
+
+					if( completion != null )
+						completion.Traverse( context, deepHistory );
+				}
+			}
+		}
+
+		/// <summary>
+		/// Attempts to process a message against a state.
+		/// </summary>
+		/// <param name="context">The state machine state.</param>
+		/// <param name="message">The message to evaluate.</param>
+		/// <returns>A boolean indicating if the message caused a state change.</returns>
+		public virtual Boolean Process( IState context, Object message )
+		{
+			if( context.IsTerminated )
 				return false;
 
 			if( this.transitions == null )
 				return false;
 
-			var transition = this.transitions.SingleOrDefault( t => t.EvaluateGuard( message ) );
+			var transition = this.transitions.SingleOrDefault( t => t.Guard( message ) );
 
 			if( transition == null )
 				return false;
 
-			transition.Traverse( state, message );
+			transition.Traverse( context, message );
 
 			return true;
+		}
+
+		/// <summary>
+		/// Returns the fully qualified name of the state.
+		/// </summary>
+		/// <returns>The fully qualified name of the state.</returns>
+		public override String ToString()
+		{
+			return this.Ancestors().Select( ancestor => ancestor.Name ).Aggregate( ( right, left ) => left + "." + right );
 		}
 	}
 }

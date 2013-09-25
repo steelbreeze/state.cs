@@ -14,40 +14,19 @@ namespace Steelbreeze.Examples
 	/// The player now inherits from a Region, so can be used in isolation, or as a region in a larger device.
 	/// The player now implements an 'operational' composite state so the off command can be used while in any sub-state.
 	/// </remarks>
-	public class Player3 : StateMachine
+	public class Player
 	{
-		public static void Main()
+		static void Main()
 		{
-			// create a player
-			var player = new Player3();
-			var state = new State();
-
-			// initialises the state machine (enters the region for the first time, causing transition from the initial PseudoState)
-			player.Initialise( state );
-
-			// main event loop
-			while( !state.IsTerminated && !player.IsComplete( state ) )
-			{
-				// write a prompt
-				Console.Write( "alamo> " );
-
-				// process lines read from the console
-				if( !player.Process( state, Console.ReadLine() ) )
-					Console.WriteLine( "unknown command" );
-			}
-
-			Console.WriteLine( "Press any key to quit" );
-			Console.ReadKey();
-		}
-
-		public Player3() : base( "player" )
-		{
+			// create the state machine
+			var player = new StateMachine( "player" );
+			
 			// create some states
-			var initial = new PseudoState( "initial", PseudoStateKind.Initial, this );
-			var operational = new CompositeState( "operational", this );
-			var flipped = new SimpleState( "flipped", this );
-			var final = new FinalState( "final", this );
-			var terminated = new PseudoState( "terminated", PseudoStateKind.Terminated, this );
+			var initial = new PseudoState( "initial", PseudoStateKind.Initial, player );
+			var operational = new CompositeState( "operational", player );
+			var flipped = new SimpleState( "flipped", player );
+			var final = new FinalState( "final", player );
+			var terminated = new PseudoState( "terminated", PseudoStateKind.Terminated, player );
 
 			var history = new PseudoState( "history", PseudoStateKind.DeepHistory, operational );
 			var stopped = new SimpleState( "stopped", operational );
@@ -55,7 +34,7 @@ namespace Steelbreeze.Examples
 
 			var running = new SimpleState( "running", active );
 			var paused = new SimpleState( "paused", active );
-
+			
 			// some state behaviour
 			active.Entry += EngageHead;
 			active.Exit += DisengageHead;
@@ -74,29 +53,48 @@ namespace Steelbreeze.Examples
 			new Transition<String>( flipped, operational, s => s.Equals( "flip" ) );
 			new Transition<String>( operational, final, s => s.Equals( "off" ) );
 			new Transition<String>( operational, terminated, s => s.Equals( "term" ) );
+	
+			var state = new State();
+
+			// initialises the state machine (enters the region for the first time, causing transition from the initial PseudoState)
+			player.Initialise( state );
+
+			// main event loop
+			while( !player.IsComplete( state ) )
+			{
+				// write a prompt
+				Console.Write( "alamo> " );
+
+				// process lines read from the console
+				if( !player.Process( state, Console.ReadLine() ) )
+					Console.WriteLine( "unknown command" );
+			}
+
+			Console.WriteLine( "Press any key to quit" );
+			Console.ReadKey();
 		}
 
-		private void EngageHead()
+		private static void EngageHead()
 		{
 			Console.WriteLine( "- engaging head" );
 		}
 
-		private void DisengageHead()
+		private static void DisengageHead()
 		{
 			Console.WriteLine( "- disengaging head" );
 		}
 
-		private void StartMotor()
+		private static void StartMotor()
 		{
 			Console.WriteLine( "- starting motor" );
 		}
 
-		private void StopMotor()
+		private static void StopMotor()
 		{
 			Console.WriteLine( "- stopping motor" );
 		}
 
-		private void PowerDown( String command )
+		private static void PowerDown( String command )
 		{
 			Console.WriteLine( "- powering down" );
 		}

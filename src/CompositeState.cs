@@ -14,78 +14,91 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
-
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// A Composite State that contains child vertices.
+	/// A composite state is a state that contains states and pseudo states.
 	/// </summary>
-	public class CompositeState : SimpleState
+	public class CompositeState : SimpleState, IRegion
 	{
-		internal PseudoState initial;
+		/// <summary>
+		/// Holds the initial pseudo state for the composote state upon initial entry or subsiquent entry without history
+		/// </summary>
+		PseudoState IRegion.Initial { get; set; }
 
 		/// <summary>
-		/// Creates a composite state.
+		/// Creates a composite state within an owning (parent) region.
 		/// </summary>
-		/// <param name="name">The name of the composite state</param>
-		/// <param name="parent">The parent region of the composite state.</param>
-		public CompositeState( String name, Region parent ) : base( name, parent ) { }
-
-		/// <summary>
-		/// Creates a composite state
-		/// </summary>
-		/// <param name="name">The name of the composite state</param>
-		/// <param name="parent">The parent composite state of the composite state</param>
-		public CompositeState( String name, CompositeState parent ) : base( name, parent ) { }
-
-		/// <summary>
-		/// Tests the orthogonal state for completeness
-		/// </summary>
-		/// <param name="state">The state machine state to test completeness against.</param>
-		/// <returns>True if the state machine state is complete for this composite state.</returns>
+		/// <param name="name">The name of the composite state.</param>
+		/// <param name="owner">The owning (parent) region.</param>
 		/// <remarks>
-		/// A composite state is deemed to be complete if its currently active child state is a final state.
+		/// A composite state is a container of states and pseudo states within a state machine model; it can be used as a root state machine.
 		/// </remarks>
-		public override bool IsComplete( IState state )
+		public CompositeState( String name, Region owner ) : base( name, owner ) { }
+
+		/// <summary>
+		/// Creates a composite state within an owning (parent) composite state.
+		/// </summary>
+		/// <param name="name">The name of the composite state.</param>
+		/// <param name="owner">The owning (parent) composite state.</param>
+		/// <remarks>
+		/// A composite state is a container of states and pseudo states within a state machine model; it can be used as a root state machine.
+		/// </remarks>
+		public CompositeState( String name, CompositeState owner ) : base( name, owner ) { }
+
+		/// <summary>
+		/// Tests the composite state for completeness.
+		/// </summary>
+		/// <param name="context">The state machine state to test.</param>
+		/// <returns>True if the current state of the state machine state is a final state.</returns>
+		public override bool IsComplete( IState context )
 		{
-			return state.GetCurrent( this ) is FinalState;
+			return context.IsTerminated || context.GetCurrent( this ) is FinalState;
 		}
 
-		internal override void OnExit( IState state )
+		/// <summary>
+		/// Initialises the state machine state context with its initial state.
+		/// </summary>
+		/// <param name="context">The state machine state context to initialise.</param>
+		public void Initialise( IState context )
 		{
-			var current = state.GetCurrent( this );
+			DoOnBeginEnter( context );
+			DoOnEndEnter( context, false );
+		}
+
+		internal override void DoOnExit( IState context )
+		{
+			var current = context.GetCurrent( this ) as IVertex;
 
 			if( current != null )
-				current.OnExit( state );
+				current.OnExit( context );
 
-			base.OnExit( state );
+			base.DoOnExit( context );
 		}
 
-		internal override void OnEndEnter( IState state, bool deepHistory )
+		internal override void DoOnEndEnter( IState context, bool deepHistory )
 		{
-			var current = ( deepHistory || initial.Kind.IsHistory ) ? ( state.GetCurrent( this ) ?? initial ) : initial;
+			IRegion region = this;
+			IVertex current = deepHistory || region.Initial.Kind.IsInitial() ? context.GetCurrent( this ) as IVertex ?? region.Initial : region.Initial;
 
-			current.OnBeginEnter( state );
-			current.OnEndEnter( state, deepHistory || initial.Kind == PseudoStateKind.DeepHistory );
+			current.OnBeginEnter( context );
+			current.OnEndEnter( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );
 
-			base.OnEndEnter( state, deepHistory );
+			base.DoOnEndEnter( context, deepHistory );
 		}
 
 		/// <summary>
-		/// Attempts to process a message against a state machine state.
+		/// Attempts to process a message against a composite state.
 		/// </summary>
-		/// <param name="state">The state machine state to process the message against.</param>
-		/// <param name="message">The message.</param>
-		/// <returns>True if the message caused a state transition.</returns>
-		/// <remarks>
-		/// Note that a state transition may leave the state machine state unchanged (both internal transitions and self-transitions). 
-		/// </remarks>
-		public override Boolean Process( IState state, Object message )
+		/// <param name="context">The state machine state.</param>
+		/// <param name="message">The message to evaluate.</param>
+		/// <returns>A boolean indicating if the message caused a state change.</returns>
+		public override Boolean Process( IState context, Object message )
 		{
-			if( state.IsTerminated )
+			if( context.IsTerminated )
 				return false;
 
-			return base.Process( state, message ) || state.GetCurrent( this ).Process( state, message );
+			return base.Process( context, message ) || context.GetCurrent( this ).Process( context, message );
 		}
 	}
 }

@@ -14,13 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
+using System.Collections.Generic;
 
 namespace Steelbreeze.Behavior
 {
-	internal interface ITransition
+	internal interface IElement
 	{
-		Boolean Guard( Object message );
+		String Name { get; }
+		IElement Owner { get; }
 
-		void Traverse( IState context, Object message );
+		void OnExit( IState context );
+		void OnBeginEnter( IState context );
+	}
+
+	internal static class IElementMethods
+	{
+		internal static IEnumerable<IElement> Ancestors( this IElement vertex )
+		{
+			do
+			{
+				yield return vertex;
+			} while( ( vertex = vertex.Owner ) != null );
+		}
 	}
 }

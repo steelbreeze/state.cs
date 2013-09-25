@@ -14,59 +14,38 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
-using System.Diagnostics;
 
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// A State that has no outgoing transitions.
+	/// A final state is a state that denotes its parent region or composite state is complete.
 	/// </summary>
-	public sealed class FinalState : Vertex
+	public class FinalState : SimpleState
 	{
 		/// <summary>
-		/// Creates a FinalState.
+		/// The final state's entry action (do not set this)
 		/// </summary>
-		/// <param name="name">The name of the FinalState.</param>
-		/// <param name="owner">The paret Region of the FinalState.</param>
-		public FinalState( String name, Region owner ) : base( name, owner, null ) { }
+		[Obsolete( "Entry actions are not permitted for FinalState", true )]
+		new public Action Entry { get { return null; } set { throw new Exception( "FinalState cannot have an entry action" ); } }
 
 		/// <summary>
-		/// Creates a FinalState.
+		/// The final state's exit action (do not set this)
 		/// </summary>
-		/// <param name="name">The name of the FinalState.</param>
-		/// <param name="owner">The paret CompositeState of the FinalState.</param>
-		public FinalState( String name, CompositeState owner ) : base( name, owner, null ) { }
-
-		override internal void OnExit( IState state )
-		{
-			state.SetActive( this, false );
-
-			base.OnExit( state );
-		}
-
-		override internal void OnBeginEnter( IState state )
-		{
-			if( state.GetActive( this ) )
-				OnExit( state );
-
-			base.OnBeginEnter( state );
-
-			state.SetActive( this, true );
-
-			if( this.Owner != null )
-				state.SetCurrent( this.Owner, this );
-		}
+		[Obsolete( "Exit actions are not permitted for FinalState", true )]
+		new public Action Exit { get { return null; } set { throw new Exception( "FinalState cannot have an exit action" ); } }
 
 		/// <summary>
-		/// Attempts to process a message.
+		/// Creates a final state within an owning (parent) region.
 		/// </summary>
-		/// <param name="message">The message to process.</param>
-		/// <param name="state">An optional transaction that the process operation will participate in.</param>
-		/// <returns>A Boolean indicating if the message was processed.</returns>
-		/// <remarks>Note that a final state has no outbound transitions so will therefore never be able to process a message itself.</remarks>
-		public override bool Process( IState state, Object message )
-		{
-			return false;
-		}
+		/// <param name="name">The name of the final state.</param>
+		/// <param name="owner">The owning (parent) region.</param>
+		public FinalState( String name, Region owner ) : base( name, owner ) { }
+
+		/// <summary>
+		/// Creates a final state within an owning (parent) composite state.
+		/// </summary>
+		/// <param name="name">The name of the final state.</param>
+		/// <param name="owner">The owning (parent) composite state.</param>
+		public FinalState( String name, CompositeState owner ) : base( name, owner ) { }
 	}
 }

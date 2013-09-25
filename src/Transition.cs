@@ -15,81 +15,101 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// An event-based Transition between Vertices.
+	/// An event-based transition from a state.
 	/// </summary>
-	/// <typeparam name="TMessage">The type of the message that may cause the transition to be traversed.</typeparam>
-	public class Transition<TMessage> : TransitionBase, ITransition where TMessage : class
+	/// <typeparam name="TMessage">The type of the message that can trigger the transition.</typeparam>
+	public class Transition<TMessage> : ITransition where TMessage : class
 	{
-		// the guard condition
-		private readonly Func<TMessage, Boolean> guard;
+		private Action<IState> onExit;
+		private Action<IState> onBeginEnter;
+		private Func<TMessage, Boolean> guard;
+		private IVertex target;
 
 		/// <summary>
-		/// The optional action that is called while traversing the transition.
+		/// The action(s) to perform while traversing the transition.
 		/// </summary>
 		public event Action<TMessage> Effect;
 
 		/// <summary>
-		/// Creates an event-based Transition.
+		/// Creates a transition from a state to a pseudo state.
 		/// </summary>
-		/// <param name="source">The source Vertex of the Transition.</param>
-		/// <param name="target">The target Vertex of the Transition.</param>
-		/// <param name="guard">An optional guard condition to restrict traversal of the transition.</param>
-		public Transition( SimpleState source, Vertex target, Func<TMessage, Boolean> guard = null )
-			: base( source, target )
+		/// <param name="source">The source state.</param>
+		/// <param name="target">The target pseudo state.</param>
+		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
+		/// <remarks>This type of transition initiates a compound transition.</remarks>
+		public Transition( SimpleState source, PseudoState target, Func<TMessage, Boolean> guard = null )
 		{
-			Trace.Assert( source != null, "Source vertex for transition must be specified." );
+			this.target = target;
+			this.guard = guard;
 
-			this.guard = guard ?? ( message => true );
+			Completion.Path( source, target, ref onExit, ref onBeginEnter );
 
 			( source.transitions ?? ( source.transitions = new HashSet<ITransition>() ) ).Add( this );
 		}
 
-		Boolean ITransition.EvaluateGuard( Object message )
+		/// <summary>
+		/// Creates a transition between states.
+		/// </summary>
+		/// <param name="source">The source state.</param>
+		/// <param name="target">The target state.</param>
+		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
+		public Transition( SimpleState source, SimpleState target, Func<TMessage, Boolean> guard = null )
 		{
-			return Guard( message );
+			this.target = target;
+			this.guard = guard;
+
+			Completion.Path( source, target, ref onExit, ref onBeginEnter );
+
+			( source.transitions ?? ( source.transitions = new HashSet<ITransition>() ) ).Add( this );
 		}
 
 		/// <summary>
-		/// Logic required to evaluate the completion guard condition
+		/// Creates an internal transition.
 		/// </summary>
-		/// <param name="message">The message to test the guard condition against</param>
-		/// <returns>True if the guard evaluates true</returns>
-		protected virtual Boolean Guard( Object message )
+		/// <param name="state">The state to create the internal transition for.</param>
+		/// <param name="guard">The guard condition to be tested in order to call the effect action.</param>
+		/// <remarks>Internal transitions perform an action in response to an event, but do not leave the state therefore no entry or exit actions are performed.</remarks>
+		public Transition( SimpleState state, Func<TMessage, Boolean> guard = null )
 		{
+			this.guard = guard;
+
+			( state.transitions ?? ( state.transitions = new HashSet<ITransition>() ) ).Add( this );
+		}
+
+		Boolean ITransition.Guard( Object message )
+		{
+			if( guard == null )
+				return true;
+
 			var typed = message as TMessage;
 
-			if( typed == null )
-				return false;
-			else
-				return guard( typed );
+			return typed != null && guard( typed );
 		}
 
-		void ITransition.Traverse( IState state, Object message )
+		void ITransition.Traverse( IState context, Object message )
 		{
 			if( onExit != null )
-				onExit( state );
+				onExit( context );
 
 			OnEffect( message );
-	
+
 			if( onBeginEnter != null )
-				onBeginEnter( state );
-	
-			if( onEndEnter != null )
-				onEndEnter( state, false );
+				onBeginEnter( context );
+
+			if( this.target != null )
+				this.target.OnEndEnter( context, false );
 		}
 
 		/// <summary>
-		/// The transitions behaviour
+		/// Invokes the transition effect action.
 		/// </summary>
 		/// <param name="message">The message that caused the transition.</param>
-		/// <remarks>
-		/// Override this method to implement more complex event-based transition behaviour
-		/// </remarks>
+		/// <remarks>Override this method to create custom transition behaviour.</remarks>
 		protected virtual void OnEffect( Object message )
 		{
 			if( Effect != null )

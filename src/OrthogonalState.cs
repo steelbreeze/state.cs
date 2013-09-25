@@ -20,92 +20,80 @@ using System.Linq;
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// A state with a state machine model that can contain child regions.
+	/// An orthogonal state is a state that contains regions.
 	/// </summary>
+	/// <remarks>
+	/// Orthogonal states allow seperation of mutually exclusive child states allowing them to independantly respond to messages. 
+	/// </remarks>
 	public class OrthogonalState : SimpleState
 	{
 		/// <summary>
-		/// The child regions of the orthogonal state
+		/// The set of child regions.
 		/// </summary>
-		internal readonly HashSet<Region> regions = new HashSet<Region>();
+		internal ICollection<Region> regions { get; set; }
 
 		/// <summary>
-		/// Creates an orthogonal state.
+		/// Creates an orthogonal state within an owning (parent) region.
 		/// </summary>
 		/// <param name="name">The name of the orthogonal state.</param>
-		/// <param name="owner">The parent region.</param>
+		/// <param name="owner">The owning (parent) region.</param>
 		/// <remarks>
-		/// A composite state may be used as the root of a state machine model; in this case, the parent region is not provided.
+		/// An orthogonal state is a container of regions within a state machine model; it can be used as a root state machine.
 		/// </remarks>
 		public OrthogonalState( String name, Region owner ) : base( name, owner ) { }
 
 		/// <summary>
-		/// Creates a Compsite State.
+		/// Creates an orthogonal state within an owning (parent) composite state.
 		/// </summary>
-		/// <param name="name">The name of the composite state.</param>
-		/// <param name="owner">The optional parent region.</param>
+		/// <param name="name">The name of the orthogonal state.</param>
+		/// <param name="owner">The owning (parent) composite state.</param>
 		/// <remarks>
-		/// A composite state may be used as the root of a state machine model; in this case, the parent region is not provided.
+		/// An orthogonal state is a container of regions within a state machine model; it can be used as a root state machine.
 		/// </remarks>
 		public OrthogonalState( String name, CompositeState owner ) : base( name, owner ) { }
 
 		/// <summary>
-		/// Tests the orthogonal state for completeness
+		/// Tests the orthogonal state for completeness.
 		/// </summary>
-		/// <param name="state">The state machine state to test completeness against.</param>
-		/// <returns>True if the state machine state is complete for this composite state.</returns>
-		/// <remarks>
-		/// A composite state is deemed to be complete if all its child regions are complete.
-		/// </remarks>
-		public override Boolean IsComplete( IState state )
+		/// <param name="context">The state machine state to test.</param>
+		/// <returns>True if the all the child regions are complete.</returns>
+		public override bool IsComplete( IState context )
 		{
-			return regions.All( region => region.IsComplete( state ) );
+			return context.IsTerminated || regions.All( region => region.IsComplete( context ) );
 		}
 
-		/// <summary>
-		/// Exits the composite state
-		/// </summary>
-		/// <param name="state">The state model state to operate on.</param>
-		internal override void OnExit( IState state )
+		internal override void DoOnExit( IState context )
 		{
-			foreach( var region in regions )
-				if( state.GetActive( region ) )
-					region.OnExit( state );
+			foreach( IRegion region in regions )
+				if( context.GetActive( region ) )
+					region.OnExit( context );
 
-			base.OnExit( state );
+			base.DoOnExit( context );
 		}
 
-		/// <summary>
-		/// Completes the entry of the composite state.
-		/// </summary>
-		/// <param name="state">The state model state to operate on.</param>
-		/// <param name="deepHistory">Cascade of deep history.</param>
-		internal override void OnEndEnter( IState state, Boolean deepHistory )
+		internal override void DoOnEndEnter( IState context, bool deepHistory )
 		{
 			foreach( var region in regions )
 			{
-				region.OnBeginEnter( state );
-				region.OnEndEnter( state, deepHistory );
+				( region as IRegion ).OnBeginEnter( context );
+				region.OnEndEnter( context, deepHistory );
 			}
 
-			base.OnEndEnter( state, deepHistory );
+			base.DoOnEndEnter( context, deepHistory );
 		}
 
 		/// <summary>
-		/// Attempts to process a message against a state machine state.
+		/// Attempts to process a message against an orthogonal state.
 		/// </summary>
-		/// <param name="state">The state machine state to process the message against.</param>
-		/// <param name="message">The message.</param>
-		/// <returns>True if the message caused a state transition.</returns>
-		/// <remarks>
-		/// Note that a state transition may leave the state machine state unchanged (both internal transitions and self-transitions). 
-		/// </remarks>
-		public override bool Process( IState state, Object message )
+		/// <param name="context">The state machine state.</param>
+		/// <param name="message">The message to evaluate.</param>
+		/// <returns>A boolean indicating if the message caused a state change.</returns>
+		public override bool Process( IState context, object message )
 		{
-			if( state.IsTerminated )
+			if( context.IsTerminated )
 				return false;
 
-			return base.Process( state, message ) || regions.Aggregate( false, ( result, region ) => result || region.Process( state, message ) );
+			return base.Process( context, message ) || regions.Aggregate( false, ( result, region ) => result || region.Process( context, message ) );
 		}
 	}
 }

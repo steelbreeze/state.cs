@@ -16,69 +16,100 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// A transient Vertex within a Region.
+	/// A transient state within a pseudo state model.
 	/// </summary>
-	public sealed class PseudoState : Vertex
+	public class PseudoState : IVertex
 	{
+		IElement IElement.Owner { get { return owner; } }
+
+		private readonly IRegion owner;
+
+		internal ICollection<Completion> completions { get; set; }
+
 		/// <summary>
-		/// The kind of pseudostate that determines its behaviour.
+		/// The name of the pseudo state.
+		/// </summary>
+		public String Name { get; private set; }
+
+		/// <summary>
+		/// The kind of the pseudo state.
 		/// </summary>
 		public PseudoStateKind Kind { get; private set; }
 
 		/// <summary>
-		/// Creates a PseudoState.
+		/// Creates a pseudo state within an owning region.
 		/// </summary>
 		/// <param name="name">The name of the pseudo state.</param>
-		/// <param name="kind">The kind of the PseudoState.</param>
-		/// <param name="owner">The parent Region of the PseudoState.</param>
+		/// <param name="kind">The kind of the pseudo state.</param>
+		/// <param name="owner">The owenr of the pseudo state.</param>
 		public PseudoState( String name, PseudoStateKind kind, Region owner )
-			: base( name, owner, kind.GetCompletion )
 		{
-			Trace.Assert( kind != null, "PseudoStateKind must be provided" );
-			Trace.Assert( owner != null, "PseudoState must have an owner" );
+			this.Name = name;
+			this.Kind = kind;
+			this.owner = owner;
 
-			if( ( this.Kind = kind ).IsInitial )
-				owner.initial = this;
+			if( this.Kind.IsInitial() )
+				this.owner.Initial = this;
 		}
 
 		/// <summary>
-		/// Creates a PseudoState.
+		/// Creates a pseudo state within an owning composite state.
 		/// </summary>
 		/// <param name="name">The name of the pseudo state.</param>
-		/// <param name="kind">The kind of the PseudoState.</param>
-		/// <param name="owner">The parent CompositeState of the PseudoState.</param>
+		/// <param name="kind">The kind of the pseudo state.</param>
+		/// <param name="owner">The owenr of the pseudo state.</param>
 		public PseudoState( String name, PseudoStateKind kind, CompositeState owner )
-			: base( name, owner, kind.GetCompletion )
 		{
-			Trace.Assert( kind != null, "PseudoStateKind must be provided" );
-			Trace.Assert( owner != null, "PseudoState must have an owner" );
+			this.Name = name;
+			this.Kind = kind;
+			this.owner = owner;
 
-			if( ( this.Kind = kind ).IsInitial )
-				owner.initial = this;
+			if( this.Kind.IsInitial() )
+				this.owner.Initial = this;
 		}
 
-		internal override void OnBeginEnter( IState state )
+		void IElement.OnExit( IState context )
 		{
-			base.OnBeginEnter( state );
+			Debug.WriteLine( this, "Leave" );
+
+			context.SetActive( this, false );
+		}
+
+		void IElement.OnBeginEnter( IState context )
+		{
+			IVertex vertex = this;
+
+			if( context.GetActive( this ) )
+				vertex.OnExit( context );
+
+			Debug.WriteLine( this, "Enter" );
+
+			context.SetActive( this, true );
 
 			if( this.Kind == PseudoStateKind.Terminated )
-				state.IsTerminated = true;
+				context.IsTerminated = true;
+		}
+
+		void IVertex.OnEndEnter( IState context, Boolean deepHistory )
+		{
+			var completion = Kind.Completion( completions );
+
+			if( completion != null )
+				completion.Traverse( context, deepHistory );
 		}
 
 		/// <summary>
-		/// Attempts to process a message.
+		/// Returns the fully qualified name of the pseudo state.
 		/// </summary>
-		/// <param name="message">The message to process.</param>
-		/// <param name="state">An optional transaction that the process operation will participate in.</param>
-		/// <returns>A Boolean indicating if the message was processed.</returns>
-		/// <remarks>Note that pseudo states are transient so will therefore never be able to process a message itself.</remarks>
-		public override bool Process( IState state, Object message )
+		/// <returns>The fully qualified name of the pseudo state.</returns>
+		public override string ToString()
 		{
-			return false;
+			return this.Ancestors().Select( ancestor => ancestor.Name ).Aggregate( ( right, left ) => left + "." + right );
 		}
 	}
 }

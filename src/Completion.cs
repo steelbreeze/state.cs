@@ -15,97 +15,149 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// A completion transition between vertices.
+	/// A continuation transition between states or pseudo states within a state machine.
 	/// </summary>
-	public class Completion : TransitionBase
+	/// <remarks>
+	/// Continuation transitions are tested for after sucessful entry to pseudo states or completed states.
+	/// </remarks>
+	public class Completion
 	{
-		private readonly Func<Boolean> guard;
+		/// <summary>
+		/// The guard comdition to be used within 'else' transitions.
+		/// </summary>
+		/// <remarks>
+		/// An 'else' transition is a default path to follow after a choice or junction pseudo state where no other transition's guards evaluate true.
+		/// </remarks>
+		public static readonly Func<Boolean> Else = () => false;
+
+		private Action<IState> onExit;
+		private Action<IState> onBeginEnter;
+		private IVertex target;
+		private Func<Boolean> guard;
+
+		internal Boolean IsElse { get { return this.guard.Equals( Else ); } }
 
 		/// <summary>
-		/// The optional actions that are called while traversing the transition.
+		/// The action(s) to perform while traversing the transition.
 		/// </summary>
 		public event Action Effect;
 
-		internal Boolean IsElse { get { return this.guard.Equals( Behavior.Guard.Else ); } }
-
 		/// <summary>
-		/// Creates a completion transition.
+		/// Creates a continuation transition between pseudo states.
 		/// </summary>
-		/// <param name="source">The source Vertex of the Transition.</param>
-		/// <param name="target">The target Vertex of the Transition.</param>
-		/// <param name="guard">An optional guard condition to restrict traversal of the transition.</param>
-		public Completion( PseudoState source, Vertex target, Func<Boolean> guard = null )
-			: base( source, target )
+		/// <param name="source">The source pseudo state.</param>
+		/// <param name="target">The target pseudo state.</param>
+		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
+		/// <remarks>For initial pseudo states, this type of tranision initiates a compound transition, for others, it is a particiapnt in a compound transition.</remarks>
+		public Completion( PseudoState source, PseudoState target, Func<Boolean> guard = null )
 		{
-			Trace.Assert( source != null, "Source PseudoState for transition must be specified." );
-			Trace.Assert( target != null, "Target Vertex for completion transition must be specified." );
-			Trace.Assert( source.Kind != PseudoStateKind.Terminated, "Cannot specify a transition from a terminated pseudo state" );
-
+			this.target = target;
 			this.guard = guard;
+
+			Completion.Path( source, target, ref onExit, ref onBeginEnter );
 
 			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
 		}
 
 		/// <summary>
-		/// Creates a completion transition.
+		/// Creates a continuation transition from a pseudo state to a state.
 		/// </summary>
-		/// <param name="source">The source Vertex of the Transition.</param>
-		/// <param name="target">The target Vertex of the Transition.</param>
-		/// <param name="guard">An optional guard condition to restrict traversal of the transition.</param>
-		public Completion( SimpleState source, Vertex target, Func<Boolean> guard = null )
-			: base( source, target )
+		/// <param name="source">The source pseudo state.</param>
+		/// <param name="target">The target state.</param>
+		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
+		/// <remarks>This type of transition completes a compound transition.</remarks>
+		public Completion( PseudoState source, SimpleState target, Func<Boolean> guard = null )
 		{
-			Trace.Assert( source != null, "Source State for transition must be specified." );
-			Trace.Assert( target != null, "Target Vertex for completion transition must be specified." );
-
+			this.target = target;
 			this.guard = guard;
+
+			Completion.Path( source, target, ref onExit, ref onBeginEnter );
 
 			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
 		}
 
-		internal void Traverse( IState state, Boolean deepHistory )
+		/// <summary>
+		/// Creates a continuation transition from a state to a pseudo state.
+		/// </summary>
+		/// <param name="source">The source state.</param>
+		/// <param name="target">The target pseudo state.</param>
+		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
+		/// <remarks>Continuation transitions are tested for after a state has been entered if the state is deemed to be completed.</remarks>
+		/// <remarks>This type of transition initiates a compound transition.</remarks>
+		public Completion( SimpleState source, PseudoState target, Func<Boolean> guard = null )
+		{
+			this.target = target;
+			this.guard = guard;
+
+			Completion.Path( source, target, ref onExit, ref onBeginEnter );
+
+			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
+		}
+
+		/// <summary>
+		/// Creates a continuation transition between states.
+		/// </summary>
+		/// <param name="source">The source state.</param>
+		/// <param name="target">The target state.</param>
+		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
+		/// <remarks>Continuation transitions are tested for after a state has been entered if the state is deemed to be completed.</remarks>
+		public Completion( SimpleState source, SimpleState target, Func<Boolean> guard = null )
+		{
+			this.target = target;
+			this.guard = guard;
+
+			Completion.Path( source, target, ref onExit, ref onBeginEnter );
+
+			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
+		}
+
+		internal Boolean Guard()
+		{
+			return guard == null || guard();
+		}
+
+		internal void Traverse( IState context, Boolean deepHistory )
 		{
 			if( onExit != null )
-				onExit( state );
-	
+				onExit( context );
+
 			OnEffect();
-			
+
 			if( onBeginEnter != null )
-				onBeginEnter( state );
-	
-			if( onEndEnter != null )
-				onEndEnter( state, deepHistory );
-		}
+				onBeginEnter( context );
 
-		internal Boolean EvaluateGuard()
-		{
-			return Guard();
+			if( target != null )
+				target.OnEndEnter( context, deepHistory );
 		}
 
 		/// <summary>
-		/// Logic required to evaluate the completion guard condition
+		/// Invokes the transition effect action.
 		/// </summary>
-		/// <returns>True if the guard evaluates true</returns>
-		protected virtual Boolean Guard()
-		{
-			return this.guard == null || this.guard();
-		}
-
-		/// <summary>
-		/// The completion transitions behaviour
-		/// </summary>
-		/// <remarks>
-		/// Override this method to implement more complex completion transition behaviour
-		/// </remarks>
+		/// <remarks>Override this method to create custom transition behaviour.</remarks>
 		protected virtual void OnEffect()
 		{
 			if( Effect != null )
 				Effect();
+		}
+
+		internal static void Path( IVertex source, IVertex target, ref Action<IState> onExit, ref Action<IState> onBeginEnter )
+		{
+			var sourceAncestors = source.Ancestors().Reverse().GetEnumerator();
+			var targetAncestors = target.Ancestors().Reverse().GetEnumerator();
+
+			while( sourceAncestors.MoveNext() && targetAncestors.MoveNext() && sourceAncestors.Current.Equals( targetAncestors.Current ) ) { }
+
+			if( source is PseudoState && !sourceAncestors.Current.Equals( source ) )
+				onExit += source.OnExit;
+
+			onExit += sourceAncestors.Current.OnExit;
+
+			do { onBeginEnter += targetAncestors.Current.OnBeginEnter; } while( targetAncestors.MoveNext() );
 		}
 	}
 }

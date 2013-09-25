@@ -18,44 +18,41 @@ using System;
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
-	/// The interface for the state that a state machine manages.
+	/// Abstraction of a state machines state.
 	/// </summary>
 	public interface IState
 	{
 		/// <summary>
-		/// Returns the active status of a state
+		/// Boolean indicating that the state machine is terminated.
 		/// </summary>
-		/// <param name="element">The state to get the active status for</param>
-		/// <returns>The uncommitted active status</returns>
-		Boolean GetActive( StateMachineElement element );
-
-		/// <summary>
-		/// Sets the active status of a region
-		/// </summary>
-		/// <param name="element">The element to set the active status for</param>
-		/// <param name="value">The value to set the active status to</param>
-		void SetActive( StateMachineElement element, Boolean value );
-
-		/// <summary>
-		/// Returns the current state of a region
-		/// </summary>
-		/// <param name="element">The region to get the state for</param>
-		/// <returns>The uncommitted state of the region</returns>
-		Vertex GetCurrent( StateMachineElement element );
-
-		/// <summary>
-		/// Sets the current state of a element
-		/// </summary>
-		/// <param name="element">The elemnt to set the current state for</param>
-		/// <param name="value">The value to set the current element to</param>
-		void SetCurrent( StateMachineElement element, Vertex value );
-
-		/// <summary>
-		/// Indicates that the state machine state has been terminated
-		/// </summary>
-		/// <remarks>
-		/// A state machine is deemed to be terminated if a terminate pseudo state is transitioned to.
-		/// </remarks>
 		Boolean IsTerminated { get; set; }
+
+		/// <summary>
+		/// Sets the active flag for an element within the state machine model hierarchy.
+		/// </summary>
+		/// <param name="element">The element to set the active flag for.</param>
+		/// <param name="value">The value of the active flag.</param>
+		void SetActive( Object element, Boolean value );
+
+		/// <summary>
+		/// Returns the active flag for an element within the state machine model hierarchy.
+		/// </summary>
+		/// <param name="element">The element to get the active flag for.</param>
+		/// <returns>The active flag for the given element.</returns>
+		Boolean GetActive( Object element );
+
+		/// <summary>
+		/// Sets the current state for a given region or composite state.
+		/// </summary>
+		/// <param name="region">The region or composite state to set the current state for.</param>
+		/// <param name="state">The current state.</param>
+		void SetCurrent( Object region, SimpleState state );
+
+		/// <summary>
+		/// Gets the current state for a given region or composite state.
+		/// </summary>
+		/// <param name="region">The region or composite state to get the current state for.</param>
+		/// <returns>The current state of the region or composite state.</returns>
+		SimpleState GetCurrent( Object region );
 	}
 }
