@@ -109,7 +109,7 @@ namespace Steelbreeze.Behavior
 		internal void OnEndEnter( IState context, Boolean deepHistory )
 		{
 			IRegion region = this;
-			IVertex current = deepHistory || region.Initial.Kind.IsInitial() ? context.GetCurrent( this ) as IVertex ?? region.Initial : region.Initial;
+			IVertex current = deepHistory || region.Initial.Kind.IsHistory() ? context.GetCurrent( this ) as IVertex ?? region.Initial : region.Initial;
 
 			current.OnBeginEnter( context );
 			current.OnEndEnter( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );
