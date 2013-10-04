@@ -129,12 +129,12 @@ namespace Steelbreeze.Behavior
 			var items = c.Where( t => t.Guard() );
 			var count = items.Count();
 
-			return count > 0 ? items.ElementAt( random.Next( count ) ) : c.Single( t => t.IsElse );
+			return count > 0 ? items.ElementAt( random.Next( count ) ) : c.Single( t => t is Completion.Else );
 		}
 
 		private static Completion GetJunctionCompletion( IEnumerable<Completion> c )
 		{
-			return c.SingleOrDefault( t => t.Guard() ) ?? c.Single( t => t.IsElse );
+			return c.SingleOrDefault( t => t.Guard() ) ?? c.Single( t => t is Completion.Else );
 		}
 	}
 }
