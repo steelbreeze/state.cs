@@ -106,7 +106,7 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
-		internal static Completion Completion( this PseudoStateKind pseudoStateKind, IEnumerable<Completion> completions )
+		internal static Completion Completion( this PseudoStateKind pseudoStateKind, ICollection<Completion> completions )
 		{
 			switch( pseudoStateKind )
 			{
@@ -119,8 +119,8 @@ namespace Steelbreeze.Behavior
 				case PseudoStateKind.Terminated:
 					return null;
 
-				default:
-					return Enumerable.Single( completions );
+				default: // the initial pseudo states
+					return completions.ElementAt( 0 );
 			}
 		}
 
@@ -129,12 +129,12 @@ namespace Steelbreeze.Behavior
 			var items = c.Where( t => t.Guard() );
 			var count = items.Count();
 
-			return count > 0 ? items.ElementAt( random.Next( count ) ) : c.Single( t => t is Completion.Else );
+			return count > 0 ? items.ElementAt( random.Next( count ) ) : c.Single( t => t.IsElse );
 		}
 
 		private static Completion GetJunctionCompletion( IEnumerable<Completion> c )
 		{
-			return c.SingleOrDefault( t => t.Guard() ) ?? c.Single( t => t is Completion.Else );
+			return c.SingleOrDefault( t => t.Guard() ) ?? c.Single( t => t.IsElse );
 		}
 	}
 }
