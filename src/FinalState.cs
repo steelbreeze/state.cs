@@ -22,6 +22,8 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public class FinalState : SimpleState
 	{
+		internal override bool IsFinalState { get { return true; } }
+
 		/// <summary>
 		/// The final state's entry action (do not set this)
 		/// </summary>

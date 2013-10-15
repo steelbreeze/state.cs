@@ -25,10 +25,10 @@ namespace Steelbreeze.Behavior
 	/// <typeparam name="TMessage">The type of the message that can trigger the transition.</typeparam>
 	public class Transition<TMessage> : ITransition where TMessage : class
 	{
-		private Action<IState> onExit;
-		private Action<IState> onBeginEnter;
-		private Func<TMessage, Boolean> guard;
 		private IVertex target;
+		private Action<IState> exit;
+		private Action<IState> enter;
+		private Func<TMessage, Boolean> guard;
 
 		/// <summary>
 		/// The action(s) to perform while traversing the transition.
@@ -47,7 +47,7 @@ namespace Steelbreeze.Behavior
 			this.target = target;
 			this.guard = guard;
 
-			Completion.Path( source, target, ref onExit, ref onBeginEnter );
+			Completion.Path( source, target, ref exit, ref enter );
 
 			( source.transitions ?? ( source.transitions = new HashSet<ITransition>() ) ).Add( this );
 		}
@@ -63,7 +63,7 @@ namespace Steelbreeze.Behavior
 			this.target = target;
 			this.guard = guard;
 
-			Completion.Path( source, target, ref onExit, ref onBeginEnter );
+			Completion.Path( source, target, ref exit, ref enter );
 
 			( source.transitions ?? ( source.transitions = new HashSet<ITransition>() ) ).Add( this );
 		}
@@ -93,16 +93,16 @@ namespace Steelbreeze.Behavior
 
 		void ITransition.Traverse( IState context, Object message )
 		{
-			if( onExit != null )
-				onExit( context );
+			if( exit != null )
+				exit( context );
 
 			OnEffect( message );
 
-			if( onBeginEnter != null )
-				onBeginEnter( context );
+			if( enter != null )
+				enter( context );
 
 			if( this.target != null )
-				this.target.OnEndEnter( context, false );
+				this.target.Complete( context, false );
 		}
 
 		/// <summary>

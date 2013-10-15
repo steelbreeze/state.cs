@@ -73,19 +73,19 @@ namespace Steelbreeze.Behavior
 				this.owner.Initial = this;
 		}
 
-		void IElement.OnExit( IState context )
+		void IElement.Exit( IState context )
 		{
 			Debug.WriteLine( this, "Leave" );
 
 			context.SetActive( this, false );
 		}
 
-		void IElement.OnBeginEnter( IState context )
+		void IElement.Enter( IState context )
 		{
 			IVertex vertex = this;
 
 			if( context.GetActive( this ) )
-				vertex.OnExit( context );
+				vertex.Exit( context );
 
 			Debug.WriteLine( this, "Enter" );
 
@@ -95,12 +95,9 @@ namespace Steelbreeze.Behavior
 				context.IsTerminated = true;
 		}
 
-		void IVertex.OnEndEnter( IState context, Boolean deepHistory )
+		void IVertex.Complete( IState context, Boolean deepHistory )
 		{
-			var completion = Kind.Completion( completions );
-
-			if( completion != null )
-				completion.Traverse( context, deepHistory );
+			this.Kind.Completion( completions ).Traverse( context, deepHistory );
 		}
 
 		/// <summary>

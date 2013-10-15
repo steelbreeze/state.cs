@@ -31,6 +31,7 @@ namespace Steelbreeze.Behavior
 
 		internal ICollection<Completion> completions { get; set; }
 		internal ICollection<ITransition> transitions { get; set; }
+		internal virtual Boolean IsFinalState { get { return false; } }
 
 		/// <summary>
 		/// The name of the state.
@@ -79,16 +80,6 @@ namespace Steelbreeze.Behavior
 		}
 
 		/// <summary>
-		/// Invokes the state entry action.
-		/// </summary>
-		/// <remarks>Override this method to create custom entry behaviour.</remarks>
-		protected virtual void OnEnter()
-		{
-			if( Entry != null )
-				Entry();
-		}
-
-		/// <summary>
 		/// Invokes the state exit action.
 		/// </summary>
 		/// <remarks>Override this method to create custom exit behaviour.</remarks>
@@ -98,12 +89,7 @@ namespace Steelbreeze.Behavior
 				Exit();
 		}
 
-		void IElement.OnExit( IState context )
-		{
-			DoOnExit( context );
-		}
-
-		internal virtual void DoOnExit( IState context )
+		internal virtual void OnExit( IState context )
 		{
 			this.OnExit();
 
@@ -112,17 +98,27 @@ namespace Steelbreeze.Behavior
 			context.SetActive( this, false );
 		}
 
-		void IElement.OnBeginEnter( IState context )
+		void IElement.Exit( IState context )
 		{
-			DoOnBeginEnter( context );
+			OnExit( context );
 		}
 
-		internal virtual void DoOnBeginEnter( IState context )
+		/// <summary>
+		/// Invokes the state entry action.
+		/// </summary>
+		/// <remarks>Override this method to create custom entry behaviour.</remarks>
+		protected virtual void OnEnter()
+		{
+			if( Entry != null )
+				Entry();
+		}
+
+		internal virtual void OnEnter( IState context )
 		{
 			IVertex vertex = this;
 
 			if( context.GetActive( this ) )
-				vertex.OnExit( context );
+				vertex.Exit( context );
 
 			Debug.WriteLine( this, "Enter" );
 
@@ -134,12 +130,12 @@ namespace Steelbreeze.Behavior
 			this.OnEnter();
 		}
 
-		void IVertex.OnEndEnter( IState context, Boolean deepHistory )
+		void IElement.Enter( IState context )
 		{
-			DoOnEndEnter( context, deepHistory );
+			OnEnter( context );
 		}
 
-		internal virtual void DoOnEndEnter( IState context, Boolean deepHistory )
+		internal virtual void OnComplete( IState context, Boolean deepHistory )
 		{
 			if( completions != null )
 			{
@@ -151,6 +147,11 @@ namespace Steelbreeze.Behavior
 						completion.Traverse( context, deepHistory );
 				}
 			}
+		}
+
+		void IVertex.Complete( IState context, Boolean deepHistory )
+		{
+			OnComplete( context, deepHistory );
 		}
 
 		/// <summary>

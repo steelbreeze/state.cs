@@ -23,8 +23,8 @@ namespace Steelbreeze.Behavior
 		String Name { get; }
 		IElement Owner { get; }
 
-		void OnExit( IState context );
-		void OnBeginEnter( IState context );
+		void Exit( IState context );
+		void Enter( IState context );
 	}
 
 	internal static class IElementMethods

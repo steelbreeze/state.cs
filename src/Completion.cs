@@ -28,9 +28,9 @@ namespace Steelbreeze.Behavior
 	/// </remarks>
 	public partial class Completion
 	{
-		private Action<IState> onExit;
-		private Action<IState> onBeginEnter;
 		private IVertex target;
+		private Action<IState> exit;
+		private Action<IState> enter;
 		private Func<Boolean> guard;
 
 		internal virtual Boolean IsElse { get { return false; } }
@@ -52,7 +52,7 @@ namespace Steelbreeze.Behavior
 			this.target = target;
 			this.guard = guard;
 
-			Completion.Path( source, target, ref onExit, ref onBeginEnter );
+			Completion.Path( source, target, ref exit, ref enter );
 
 			if( source.Kind.IsInitial() )
 				Trace.Assert( source.completions == null, "initial pseudo states can have at most one outbound completion transition" );
@@ -72,7 +72,7 @@ namespace Steelbreeze.Behavior
 			this.target = target;
 			this.guard = guard;
 
-			Completion.Path( source, target, ref onExit, ref onBeginEnter );
+			Completion.Path( source, target, ref exit, ref enter );
 
 			if( source.Kind.IsInitial() )
 				Trace.Assert( source.completions == null, "initial pseudo states can have at most one outbound completion transition" );
@@ -93,7 +93,7 @@ namespace Steelbreeze.Behavior
 			this.target = target;
 			this.guard = guard;
 
-			Completion.Path( source, target, ref onExit, ref onBeginEnter );
+			Completion.Path( source, target, ref exit, ref enter );
 
 			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
 		}
@@ -110,7 +110,7 @@ namespace Steelbreeze.Behavior
 			this.target = target;
 			this.guard = guard;
 
-			Completion.Path( source, target, ref onExit, ref onBeginEnter );
+			Completion.Path( source, target, ref exit, ref enter );
 
 			( source.completions ?? ( source.completions = new HashSet<Completion>() ) ).Add( this );
 		}
@@ -122,16 +122,16 @@ namespace Steelbreeze.Behavior
 
 		internal void Traverse( IState context, Boolean deepHistory )
 		{
-			if( onExit != null )
-				onExit( context );
+			if( exit != null )
+				exit( context );
 
 			OnEffect();
 
-			if( onBeginEnter != null )
-				onBeginEnter( context );
+			if( enter != null )
+				enter( context );
 
 			if( target != null )
-				target.OnEndEnter( context, deepHistory );
+				target.Complete( context, deepHistory );
 		}
 
 		/// <summary>
@@ -144,19 +144,19 @@ namespace Steelbreeze.Behavior
 				Effect();
 		}
 
-		internal static void Path( IVertex source, IVertex target, ref Action<IState> onExit, ref Action<IState> onBeginEnter )
+		internal static void Path( IVertex source, IVertex target, ref Action<IState> exit, ref Action<IState> enter )
 		{
 			var sourceAncestors = source.Ancestors().Reverse().GetEnumerator();
 			var targetAncestors = target.Ancestors().Reverse().GetEnumerator();
 
 			while( sourceAncestors.MoveNext() && targetAncestors.MoveNext() && sourceAncestors.Current.Equals( targetAncestors.Current ) ) { }
 
-			if( source is PseudoState && !sourceAncestors.Current.Equals( source ) )
-				onExit += source.OnExit;
+//			if( source is PseudoState && !sourceAncestors.Current.Equals( source ) )
+//				exit += source.Exit;
 
-			onExit += sourceAncestors.Current.OnExit;
+			exit += sourceAncestors.Current.Exit;
 
-			do { onBeginEnter += targetAncestors.Current.OnBeginEnter; } while( targetAncestors.MoveNext() );
+			do { enter += targetAncestors.Current.Enter; } while( targetAncestors.MoveNext() );
 		}
 	}
 }

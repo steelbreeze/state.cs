@@ -67,7 +67,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>A region is deemed to be completed when its current child state is a final state.</remarks>
 		public Boolean IsComplete( IState context )
 		{
-			return context.IsTerminated || context.GetCurrent( this ) is FinalState;
+			return context.IsTerminated || context.GetCurrent( this ).IsFinalState;
 		}
 
 		/// <summary>
@@ -78,41 +78,41 @@ namespace Steelbreeze.Behavior
 		{
 			IRegion region = this;
 
-			region.OnBeginEnter( context );
-			OnEndEnter( context, false );
+			region.Enter( context );
+			Complete( context, false );
 		}
 
-		void IElement.OnExit( IState context )
+		void IElement.Exit( IState context )
 		{
 			var current = context.GetCurrent( this ) as IVertex;
 
 			if( current != null )
-				current.OnExit( context );
+				current.Exit( context );
 
 			Debug.WriteLine( this, "Leave" );
 
 			context.SetActive( this, false );
 		}
 
-		void IElement.OnBeginEnter( IState context )
+		void IElement.Enter( IState context )
 		{
 			IRegion region = this;
 
 			if( context.GetActive( region ) )
-				region.OnExit( context );
+				region.Exit( context );
 
 			Debug.WriteLine( this, "Enter" );
 
 			context.SetActive( region, true );
 		}
 
-		internal void OnEndEnter( IState context, Boolean deepHistory )
+		internal void Complete( IState context, Boolean deepHistory )
 		{
 			IRegion region = this;
 			IVertex current = deepHistory || region.Initial.Kind.IsHistory() ? context.GetCurrent( this ) as IVertex ?? region.Initial : region.Initial;
 
-			current.OnBeginEnter( context );
-			current.OnEndEnter( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );
+			current.Enter( context );
+			current.Complete( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );
 		}
 
 		/// <summary>

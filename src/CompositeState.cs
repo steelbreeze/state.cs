@@ -53,7 +53,7 @@ namespace Steelbreeze.Behavior
 		/// <returns>True if the current state of the state machine state is a final state.</returns>
 		public override bool IsComplete( IState context )
 		{
-			return context.IsTerminated || context.GetCurrent( this ) is FinalState;
+			return context.IsTerminated || context.GetCurrent( this ).IsFinalState;
 		}
 
 		/// <summary>
@@ -62,29 +62,29 @@ namespace Steelbreeze.Behavior
 		/// <param name="context">The state machine state context to initialise.</param>
 		public void Initialise( IState context )
 		{
-			DoOnBeginEnter( context );
-			DoOnEndEnter( context, false );
+			OnEnter( context );
+			OnComplete( context, false );
 		}
 
-		internal override void DoOnExit( IState context )
+		internal override void OnExit( IState context )
 		{
 			var current = context.GetCurrent( this ) as IVertex;
 
 			if( current != null )
-				current.OnExit( context );
+				current.Exit( context );
 
-			base.DoOnExit( context );
+			base.OnExit( context );
 		}
 
-		internal override void DoOnEndEnter( IState context, bool deepHistory )
+		internal override void OnComplete( IState context, bool deepHistory )
 		{
 			IRegion region = this;
 			IVertex current = deepHistory || region.Initial.Kind.IsHistory() ? context.GetCurrent( this ) as IVertex ?? region.Initial : region.Initial;
 
-			current.OnBeginEnter( context );
-			current.OnEndEnter( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );
+			current.Enter( context );
+			current.Complete( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );
 
-			base.DoOnEndEnter( context, deepHistory );
+			base.OnComplete( context, deepHistory );
 		}
 
 		/// <summary>
