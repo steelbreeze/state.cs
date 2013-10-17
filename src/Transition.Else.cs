@@ -20,12 +20,12 @@ using System.Linq;
 
 namespace Steelbreeze.Behavior
 {
-	public partial class Completion
+	public partial class Transition
 	{
 		/// <summary>
 		/// An else continuation transition; used as the default path from choice or junction pseudo states
 		/// </summary>
-		public sealed class Else : Completion
+		public sealed class Else : Transition
 		{
 			private static Func<Boolean> alwaysFalse = () => false;
 

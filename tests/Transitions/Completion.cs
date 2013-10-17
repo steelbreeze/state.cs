@@ -14,7 +14,7 @@ namespace Steelbreeze.Behavior.Test.Transitions
 			public Activity( String name, Region region )
 				: base(  name, region )
 			{
-				new Completion( new PseudoState( "initial", PseudoStateKind.Initial, this ), new FinalState( "final", this ) );
+				new Transition( new PseudoState( "initial", PseudoStateKind.Initial, this ), new FinalState( "final", this ) );
 			}
 		}
 
@@ -32,12 +32,12 @@ namespace Steelbreeze.Behavior.Test.Transitions
 				var activity3 = new SimpleState( "activity3", stateMachine );
 				var final = new FinalState( "final", stateMachine );
 
-				new Completion( initial, activity1 );
-				new Completion( activity1, activity2 );
-				new Completion( activity2, junction1 );
-				new Completion( junction1, junction2 );
-				new Completion( junction2, activity3 );
-				new Completion( activity3, final );
+				new Transition( initial, activity1 );
+				new Transition( activity1, activity2 );
+				new Transition( activity2, junction1 );
+				new Transition( junction1, junction2 );
+				new Transition( junction2, activity3 );
+				new Transition( activity3, final );
 
 				var state = new State();
 

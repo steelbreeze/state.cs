@@ -43,8 +43,8 @@ namespace Steelbreeze.Examples
 			running.Exit += StopMotor;
 
 			// create transitions between states (one with transition behaviour)
-			new Completion( initial, operational );
-			new Completion( history, stopped );
+			new Transition( initial, operational );
+			new Transition( history, stopped );
 			new Transition<String>( stopped, running, s => s.Equals( "play" ) );
 			new Transition<String>( active, stopped, s => s.Equals( "stop" ) );
 			new Transition<String>( running, paused, s => s.Equals( "pause" ) );

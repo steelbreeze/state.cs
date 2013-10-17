@@ -29,18 +29,18 @@ namespace Steelbreeze.Behavior.Test.Transitions
 
 			var j1 = new PseudoState( "junction", PseudoStateKind.Junction, region2 );
 
-			new Completion( initial, composite );
-			new Completion( new PseudoState( "initial", PseudoStateKind.Initial, composite ), c1 );
+			new Transition( initial, composite );
+			new Transition( new PseudoState( "initial", PseudoStateKind.Initial, composite ), c1 );
 			new Transition<String>( c2, c1, command => command == "1" );
 			new Transition<String>( c1, j1, command => command == "2" );
-			new Completion.Else( j1, o1 );
+			new Transition.Else( j1, o1 );
 			new Transition<String>( o1, o2, command => command == "3" );
 			new Transition<String>( o2, c2, command => command == "4" );
 			new Transition<String>( composite, orthogonal, command => command == "5" );
 			new Transition<String>( composite, final, command => command == "x" );
 
-			new Completion( new PseudoState( "initial", PseudoStateKind.Initial, region1 ), o1 );
-			new Completion( new PseudoState( "initial", PseudoStateKind.Initial, region2 ), o2 );
+			new Transition( new PseudoState( "initial", PseudoStateKind.Initial, region1 ), o1 );
+			new Transition( new PseudoState( "initial", PseudoStateKind.Initial, region2 ), o2 );
 
 			var state = new State();
 

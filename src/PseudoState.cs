@@ -29,7 +29,7 @@ namespace Steelbreeze.Behavior
 
 		private readonly IRegion owner;
 
-		internal ICollection<Completion> completions { get; set; }
+		internal ICollection<Transition> completions { get; set; }
 
 		/// <summary>
 		/// The name of the pseudo state.
