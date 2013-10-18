@@ -184,7 +184,7 @@ namespace Steelbreeze.Behavior
 		/// <returns>The fully qualified name of the state.</returns>
 		public override String ToString()
 		{
-			return this.Ancestors().Select( ancestor => ancestor.Name ).Aggregate( ( right, left ) => left + "." + right );
+			return this.owner != null ? this.owner + "." + this.Name : this.Name;
 		}
 	}
 }

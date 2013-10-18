@@ -106,7 +106,8 @@ namespace Steelbreeze.Behavior
 		/// <returns>The fully qualified name of the pseudo state.</returns>
 		public override string ToString()
 		{
-			return this.Ancestors().Select( ancestor => ancestor.Name ).Aggregate( ( right, left ) => left + "." + right );
+			return this.owner + "." + this.Name;
+//			return this.Ancestors().Select( ancestor => ancestor.Name ).Aggregate( ( right, left ) => left + "." + right );
 		}
 	}
 }
