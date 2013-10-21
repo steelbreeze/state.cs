@@ -3,8 +3,6 @@
 using System;
 using Steelbreeze.Behavior;
 
-using StateMachine = Steelbreeze.Behavior.Region;
-
 namespace Steelbreeze.Examples
 {
 	/// <summary>
@@ -19,7 +17,7 @@ namespace Steelbreeze.Examples
 		static void Main()
 		{
 			// create the state machine
-			var player = new StateMachine( "player" );
+			var player = new Region( "player" );
 			
 			// create some states
 			var initial = new PseudoState( "initial", PseudoStateKind.Initial, player );
