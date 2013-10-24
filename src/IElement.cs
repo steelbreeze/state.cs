@@ -20,7 +20,6 @@ namespace Steelbreeze.Behavior
 {
 	internal interface IElement
 	{
-		String Name { get; }
 		IElement Owner { get; }
 
 		void Exit( IState context );

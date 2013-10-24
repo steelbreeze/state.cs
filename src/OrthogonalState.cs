@@ -30,7 +30,7 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// The set of child regions.
 		/// </summary>
-		internal ICollection<Region> regions { get; set; }
+		internal ICollection<Region> regions = new HashSet<Region>();
 
 		/// <summary>
 		/// Creates an orthogonal state within an owning (parent) region.

@@ -56,7 +56,7 @@ namespace Steelbreeze.Behavior
 			this.owner = owner;
 
 			if( this.owner != null )
-				( this.owner.regions ?? ( this.owner.regions = new HashSet<Region>() ) ).Add( this );
+				this.owner.regions.Add( this );
 		}
 
 		/// <summary>
