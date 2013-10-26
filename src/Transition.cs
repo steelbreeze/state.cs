@@ -27,8 +27,7 @@ namespace Steelbreeze.Behavior
 	public class Transition<TMessage> : ITransition where TMessage : class
 	{
 		private IVertex target;
-		private Action<IState> exit;
-		private Action<IState> enter;
+		private Path path;
 		private Func<TMessage, Boolean> guard;
 
 		/// <summary>
@@ -47,8 +46,7 @@ namespace Steelbreeze.Behavior
 		{
 			this.target = target;
 			this.guard = guard;
-
-			Transition.Path( source, target, ref exit, ref enter );
+			this.path = new Path( source, target );
 
 			( source.transitions ?? ( source.transitions = new HashSet<ITransition>() ) ).Add( this );
 		}
@@ -63,8 +61,7 @@ namespace Steelbreeze.Behavior
 		{
 			this.target = target;
 			this.guard = guard;
-
-			Transition.Path( source, target, ref exit, ref enter );
+			this.path = new Path( source, target );
 
 			( source.transitions ?? ( source.transitions = new HashSet<ITransition>() ) ).Add( this );
 		}
@@ -94,13 +91,13 @@ namespace Steelbreeze.Behavior
 
 		void ITransition.Traverse( IState context, Object message )
 		{
-			if( exit != null )
-				exit( context );
+			if( path != null )
+				path.exit( context );
 
 			OnEffect( message );
 
-			if( enter != null )
-				enter( context );
+			if( path != null )
+				path.enter( context );
 
 			if( this.target != null )
 				this.target.Complete( context, false );
@@ -127,8 +124,7 @@ namespace Steelbreeze.Behavior
 	public partial class Transition
 	{
 		private IVertex target;
-		private Action<IState> exit;
-		private Action<IState> enter;
+		private Path path;
 		private Func<Boolean> guard;
 
 		internal virtual Boolean IsElse { get { return false; } }
@@ -149,8 +145,7 @@ namespace Steelbreeze.Behavior
 		{
 			this.target = target;
 			this.guard = guard;
-
-			Transition.Path( source, target, ref exit, ref enter );
+			this.path = new Path( source, target );
 
 			if( source.Kind.IsInitial() )
 				Trace.Assert( source.completions == null, "initial pseudo states can have at most one outbound completion transition" );
@@ -169,8 +164,7 @@ namespace Steelbreeze.Behavior
 		{
 			this.target = target;
 			this.guard = guard;
-
-			Transition.Path( source, target, ref exit, ref enter );
+			this.path = new Path( source, target );
 
 			if( source.Kind.IsInitial() )
 				Trace.Assert( source.completions == null, "initial pseudo states can have at most one outbound completion transition" );
@@ -190,8 +184,7 @@ namespace Steelbreeze.Behavior
 		{
 			this.target = target;
 			this.guard = guard;
-
-			Transition.Path( source, target, ref exit, ref enter );
+			this.path = new Path( source, target );
 
 			( source.completions ?? ( source.completions = new HashSet<Transition>() ) ).Add( this );
 		}
@@ -207,8 +200,7 @@ namespace Steelbreeze.Behavior
 		{
 			this.target = target;
 			this.guard = guard;
-
-			Transition.Path( source, target, ref exit, ref enter );
+			this.path = new Path( source, target );
 
 			( source.completions ?? ( source.completions = new HashSet<Transition>() ) ).Add( this );
 		}
@@ -220,13 +212,11 @@ namespace Steelbreeze.Behavior
 
 		internal void Traverse( IState context, Boolean deepHistory )
 		{
-			if( exit != null )
-				exit( context );
+			path.exit( context );
 
 			OnEffect();
 
-			if( enter != null )
-				enter( context );
+			path.enter( context );
 
 			if( target != null )
 				target.Complete( context, deepHistory );
@@ -240,21 +230,6 @@ namespace Steelbreeze.Behavior
 		{
 			if( Effect != null )
 				Effect();
-		}
-
-		internal static void Path( IVertex source, IVertex target, ref Action<IState> exit, ref Action<IState> enter )
-		{
-			var sourceAncestors = source.Ancestors().Reverse().GetEnumerator();
-			var targetAncestors = target.Ancestors().Reverse().GetEnumerator();
-
-			while( sourceAncestors.MoveNext() && targetAncestors.MoveNext() && sourceAncestors.Current.Equals( targetAncestors.Current ) ) { }
-
-			if( source is PseudoState && !sourceAncestors.Current.Equals( source ) )
-				exit += source.Exit;
-
-			exit += sourceAncestors.Current.Exit;
-
-			do { enter += targetAncestors.Current.Enter; } while( targetAncestors.MoveNext() );
 		}
 	}
 }

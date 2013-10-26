@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
-using System.Collections.Generic;
 
 namespace Steelbreeze.Behavior
 {
@@ -24,16 +23,5 @@ namespace Steelbreeze.Behavior
 
 		void Exit( IState context );
 		void Enter( IState context );
-	}
-
-	internal static class IElementMethods
-	{
-		internal static IEnumerable<IElement> Ancestors( this IElement vertex )
-		{
-			do
-			{
-				yield return vertex;
-			} while( ( vertex = vertex.Owner ) != null );
-		}
 	}
 }
