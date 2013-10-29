@@ -41,12 +41,12 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// Optional action(s) that can be called when the state is entered.
 		/// </summary>
-		public Action Entry { get; set; }
+		public event Action Entry;
 
 		/// <summary>
 		/// Optional action(s) that can be calle when the state is exited.
 		/// </summary>
-		public Action Exit { get; set; }
+		public event Action Exit;
 
 		/// <summary>
 		/// Creates a state within an owning (parent) region.
@@ -79,6 +79,15 @@ namespace Steelbreeze.Behavior
 			return true;
 		}
 
+		internal virtual void DoBeginExit( IState context )
+		{
+		}
+
+		void IVertex.BeginExit( IState context )
+		{
+			DoBeginExit( context );
+		}
+
 		/// <summary>
 		/// Invokes the state exit action.
 		/// </summary>
@@ -89,18 +98,13 @@ namespace Steelbreeze.Behavior
 				Exit();
 		}
 
-		internal virtual void OnExit( IState context )
+		void IElement.EndExit( IState context )
 		{
 			this.OnExit();
 
 			Debug.WriteLine( this, "Leave" );
 
 			context.SetActive( this, false );
-		}
-
-		void IElement.Exit( IState context )
-		{
-			OnExit( context );
 		}
 
 		/// <summary>
@@ -113,12 +117,12 @@ namespace Steelbreeze.Behavior
 				Entry();
 		}
 
-		internal virtual void OnEnter( IState context )
+		void IElement.BeginEnter( IState context )
 		{
 			IVertex vertex = this;
 
 			if( context.GetActive( this ) )
-				vertex.Exit( context );
+				vertex.EndExit( context );
 
 			Debug.WriteLine( this, "Enter" );
 
@@ -130,12 +134,7 @@ namespace Steelbreeze.Behavior
 			this.OnEnter();
 		}
 
-		void IElement.Enter( IState context )
-		{
-			OnEnter( context );
-		}
-
-		internal virtual void OnComplete( IState context, Boolean deepHistory )
+		internal virtual void DoEndEnter( IState context, Boolean deepHistory )
 		{
 			if( completions != null )
 			{
@@ -149,9 +148,9 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
-		void IVertex.Complete( IState context, Boolean deepHistory )
+		void IVertex.EndEnter( IState context, Boolean deepHistory )
 		{
-			OnComplete( context, deepHistory );
+			DoEndEnter( context, deepHistory );
 		}
 
 		/// <summary>

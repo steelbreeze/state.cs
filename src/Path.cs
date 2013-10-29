@@ -18,33 +18,52 @@ using System.Collections.Generic;
 
 namespace Steelbreeze.Behavior
 {
-	internal class Path
+	internal sealed class Path
 	{
-		internal Action<IState> exit;
-		internal Action<IState> enter;
+		private readonly Action<IState> exit;
+		private readonly Action<IState> beginEnter;
+		private readonly Action<IState, Boolean> endEnter;
 
 		internal Path( IVertex source, IVertex target )
 		{
-			var sourceAncestors = Ancestors( source ).GetEnumerator();
-			var targetAncestors = Ancestors( target ).GetEnumerator();
+			var sourceAncestors = Ancestors( source );
+			var targetAncestors = Ancestors( target );
+			var uncommonAncestor = Uncommon( sourceAncestors, targetAncestors );
 
-			while( sourceAncestors.MoveNext() && targetAncestors.MoveNext() && sourceAncestors.Current.Equals( targetAncestors.Current ) ) { }
+			exit = source.BeginExit;
 
-			if( source is PseudoState && !sourceAncestors.Current.Equals( source ) )
-				exit += source.Exit;
+			for( var e = sourceAncestors.Count; e > uncommonAncestor; --e )
+				exit += sourceAncestors[ e - 1 ].EndExit;
 
-			exit += sourceAncestors.Current.Exit; // TODO: add all exits like enter
+			while( uncommonAncestor < targetAncestors.Count )
+				beginEnter += targetAncestors[ uncommonAncestor++ ].BeginEnter;
 
-			do { enter += targetAncestors.Current.Enter; } while( targetAncestors.MoveNext() );
+			endEnter = target.EndEnter;
 		}
 
-		internal static List<IElement> Ancestors( IElement element )
+		internal void Exit( IState context )
+		{
+			exit( context );
+		}
+
+		internal void Enter( IState context, Boolean deepHistory )
+		{
+			beginEnter( context );
+			endEnter( context, deepHistory );
+		}
+
+		internal static IList<IElement> Ancestors( IElement element )
 		{
 			var ancestors = element.Owner != null ? Ancestors( element.Owner ) : new List<IElement>();
 
 			ancestors.Add( element );
 
 			return ancestors;
+		}
+
+		internal static int Uncommon( IList<IElement> sourceAncestors, IList<IElement> targetAncestors, int index = 0 )
+		{
+			return sourceAncestors[ index ].Equals( targetAncestors[ index ] ) ? Uncommon( sourceAncestors, targetAncestors, ++index ) : index;
 		}
 	}
 }

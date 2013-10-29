@@ -13,15 +13,13 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-using System;
-
 namespace Steelbreeze.Behavior
 {
 	internal interface IElement
 	{
 		IElement Owner { get; }
 
-		void Exit( IState context );
-		void Enter( IState context );
+		void EndExit( IState context );
+		void BeginEnter( IState context );
 	}
 }

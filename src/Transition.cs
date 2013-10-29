@@ -26,9 +26,8 @@ namespace Steelbreeze.Behavior
 	/// <typeparam name="TMessage">The type of the message that can trigger the transition.</typeparam>
 	public class Transition<TMessage> : ITransition where TMessage : class
 	{
-		private IVertex target;
-		private Path path;
-		private Func<TMessage, Boolean> guard;
+		private readonly Path path;
+		private readonly Func<TMessage, Boolean> guard;
 
 		/// <summary>
 		/// The action(s) to perform while traversing the transition.
@@ -44,7 +43,6 @@ namespace Steelbreeze.Behavior
 		/// <remarks>This type of transition initiates a compound transition.</remarks>
 		public Transition( SimpleState source, PseudoState target, Func<TMessage, Boolean> guard = null )
 		{
-			this.target = target;
 			this.guard = guard;
 			this.path = new Path( source, target );
 
@@ -59,7 +57,6 @@ namespace Steelbreeze.Behavior
 		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
 		public Transition( SimpleState source, SimpleState target, Func<TMessage, Boolean> guard = null )
 		{
-			this.target = target;
 			this.guard = guard;
 			this.path = new Path( source, target );
 
@@ -92,15 +89,12 @@ namespace Steelbreeze.Behavior
 		void ITransition.Traverse( IState context, Object message )
 		{
 			if( path != null )
-				path.exit( context );
+				path.Exit( context );
 
 			OnEffect( message );
 
 			if( path != null )
-				path.enter( context );
-
-			if( this.target != null )
-				this.target.Complete( context, false );
+				path.Enter( context, false );
 		}
 
 		/// <summary>
@@ -123,9 +117,8 @@ namespace Steelbreeze.Behavior
 	/// </remarks>
 	public partial class Transition
 	{
-		private IVertex target;
-		private Path path;
-		private Func<Boolean> guard;
+		private readonly Path path;
+		private readonly Func<Boolean> guard;
 
 		internal virtual Boolean IsElse { get { return false; } }
 
@@ -143,7 +136,6 @@ namespace Steelbreeze.Behavior
 		/// <remarks>For initial pseudo states, this type of tranision initiates a compound transition, for others, it is a particiapnt in a compound transition.</remarks>
 		public Transition( PseudoState source, PseudoState target, Func<Boolean> guard = null )
 		{
-			this.target = target;
 			this.guard = guard;
 			this.path = new Path( source, target );
 
@@ -162,7 +154,6 @@ namespace Steelbreeze.Behavior
 		/// <remarks>This type of transition completes a compound transition.</remarks>
 		public Transition( PseudoState source, SimpleState target, Func<Boolean> guard = null )
 		{
-			this.target = target;
 			this.guard = guard;
 			this.path = new Path( source, target );
 
@@ -182,7 +173,6 @@ namespace Steelbreeze.Behavior
 		/// <remarks>This type of transition initiates a compound transition.</remarks>
 		public Transition( SimpleState source, PseudoState target, Func<Boolean> guard = null )
 		{
-			this.target = target;
 			this.guard = guard;
 			this.path = new Path( source, target );
 
@@ -198,7 +188,6 @@ namespace Steelbreeze.Behavior
 		/// <remarks>Continuation transitions are tested for after a state has been entered if the state is deemed to be completed.</remarks>
 		public Transition( SimpleState source, SimpleState target, Func<Boolean> guard = null )
 		{
-			this.target = target;
 			this.guard = guard;
 			this.path = new Path( source, target );
 
@@ -212,14 +201,11 @@ namespace Steelbreeze.Behavior
 
 		internal void Traverse( IState context, Boolean deepHistory )
 		{
-			path.exit( context );
+			path.Exit( context );
 
 			OnEffect();
 
-			path.enter( context );
-
-			if( target != null )
-				target.Complete( context, deepHistory );
+			path.Enter( context, deepHistory );
 		}
 
 		/// <summary>

@@ -78,41 +78,47 @@ namespace Steelbreeze.Behavior
 		{
 			IRegion region = this;
 
-			region.Enter( context );
-			Complete( context, false );
+			region.BeginEnter( context );
+			EndEnter( context, false );
 		}
 
-		void IElement.Exit( IState context )
+		internal void BeginExit( IState context )
 		{
 			var current = context.GetCurrent( this ) as IVertex;
 
 			if( current != null )
-				current.Exit( context );
+			{
+				current.BeginExit( context );
+				current.EndExit( context );
+			}
+		}
 
+		void IElement.EndExit( IState context )
+		{
 			Debug.WriteLine( this, "Leave" );
 
 			context.SetActive( this, false );
 		}
 
-		void IElement.Enter( IState context )
+		void IElement.BeginEnter( IState context )
 		{
 			IRegion region = this;
 
 			if( context.GetActive( region ) )
-				region.Exit( context );
+				region.EndExit( context );
 
 			Debug.WriteLine( this, "Enter" );
 
 			context.SetActive( region, true );
 		}
 
-		internal void Complete( IState context, Boolean deepHistory )
+		internal void EndEnter( IState context, Boolean deepHistory )
 		{
 			IRegion region = this;
 			IVertex current = deepHistory || region.Initial.Kind.IsHistory() ? context.GetCurrent( this ) as IVertex ?? region.Initial : region.Initial;
 
-			current.Enter( context );
-			current.Complete( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );
+			current.BeginEnter( context );
+			current.EndEnter( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );
 		}
 
 		/// <summary>

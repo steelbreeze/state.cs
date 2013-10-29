@@ -19,6 +19,7 @@ namespace Steelbreeze.Behavior
 {
 	internal interface IVertex : IElement
 	{
-		void Complete( IState context, Boolean deepHistory );
+		void BeginExit( IState context );
+		void EndEnter( IState context, Boolean deepHistory );
 	}
 }

@@ -73,19 +73,23 @@ namespace Steelbreeze.Behavior
 				this.owner.Initial = this;
 		}
 
-		void IElement.Exit( IState context )
+		void IVertex.BeginExit( IState context )
+		{
+		}
+
+		void IElement.EndExit( IState context )
 		{
 			Debug.WriteLine( this, "Leave" );
 
 			context.SetActive( this, false );
 		}
 
-		void IElement.Enter( IState context )
+		void IElement.BeginEnter( IState context )
 		{
 			IVertex vertex = this;
 
 			if( context.GetActive( this ) )
-				vertex.Exit( context );
+				vertex.EndExit( context );
 
 			Debug.WriteLine( this, "Enter" );
 
@@ -95,7 +99,7 @@ namespace Steelbreeze.Behavior
 				context.IsTerminated = true;
 		}
 
-		void IVertex.Complete( IState context, Boolean deepHistory )
+		void IVertex.EndEnter( IState context, Boolean deepHistory )
 		{
 			this.Kind.Completion( completions ).Traverse( context, deepHistory );
 		}
@@ -107,7 +111,6 @@ namespace Steelbreeze.Behavior
 		public override string ToString()
 		{
 			return this.owner + "." + this.Name;
-//			return this.Ancestors().Select( ancestor => ancestor.Name ).Aggregate( ( right, left ) => left + "." + right );
 		}
 	}
 }
