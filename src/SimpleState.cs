@@ -23,11 +23,11 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A state (invariant condition) within a state machine model.
 	/// </summary>
-	public class SimpleState : IVertex
+	public class SimpleState : IElement
 	{
 		IElement IElement.Owner { get { return owner; } }
 
-		private readonly IRegion owner;
+		private readonly IElement owner;
 
 		internal ICollection<Transition> completions { get; set; }
 		internal ICollection<ITransition> transitions { get; set; }
@@ -83,7 +83,7 @@ namespace Steelbreeze.Behavior
 		{
 		}
 
-		void IVertex.BeginExit( IState context )
+		void IElement.BeginExit( IState context )
 		{
 			DoBeginExit( context );
 		}
@@ -119,10 +119,11 @@ namespace Steelbreeze.Behavior
 
 		void IElement.BeginEnter( IState context )
 		{
-			IVertex vertex = this;
-
 			if( context.GetActive( this ) )
-				vertex.EndExit( context );
+			{
+				IElement element = this;
+				element.EndExit( context );
+			}
 
 			Debug.WriteLine( this, "Enter" );
 
@@ -148,7 +149,7 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
-		void IVertex.EndEnter( IState context, Boolean deepHistory )
+		void IElement.EndEnter( IState context, Boolean deepHistory )
 		{
 			DoEndEnter( context, deepHistory );
 		}

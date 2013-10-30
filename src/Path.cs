@@ -18,13 +18,14 @@ using System.Collections.Generic;
 
 namespace Steelbreeze.Behavior
 {
+	// the path between any pair of elements within a state machine hierarchy
 	internal sealed class Path
 	{
 		private readonly Action<IState> exit;
 		private readonly Action<IState> beginEnter;
 		private readonly Action<IState, Boolean> endEnter;
 
-		internal Path( IVertex source, IVertex target )
+		internal Path( IElement source, IElement target )
 		{
 			var sourceAncestors = Ancestors( source );
 			var targetAncestors = Ancestors( target );

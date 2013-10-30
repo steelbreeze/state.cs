@@ -23,11 +23,11 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A transient state within a pseudo state model.
 	/// </summary>
-	public class PseudoState : IVertex
+	public class PseudoState : IElement
 	{
 		IElement IElement.Owner { get { return owner; } }
 
-		private readonly IRegion owner;
+		private readonly IElement owner;
 
 		internal ICollection<Transition> completions { get; set; }
 
@@ -54,7 +54,7 @@ namespace Steelbreeze.Behavior
 			this.owner = owner;
 
 			if( this.Kind.IsInitial() )
-				this.owner.Initial = this;
+				( owner as IRegion ).Initial = this;
 		}
 
 		/// <summary>
@@ -70,10 +70,11 @@ namespace Steelbreeze.Behavior
 			this.owner = owner;
 
 			if( this.Kind.IsInitial() )
-				this.owner.Initial = this;
+				( owner as IRegion ).Initial = this;
 		}
 
-		void IVertex.BeginExit( IState context )
+		// recursive entry, therefore no implementation
+		void IElement.BeginExit( IState context )
 		{
 		}
 
@@ -86,10 +87,11 @@ namespace Steelbreeze.Behavior
 
 		void IElement.BeginEnter( IState context )
 		{
-			IVertex vertex = this;
-
 			if( context.GetActive( this ) )
+			{
+				IElement vertex = this;
 				vertex.EndExit( context );
+			}
 
 			Debug.WriteLine( this, "Enter" );
 
@@ -99,7 +101,7 @@ namespace Steelbreeze.Behavior
 				context.IsTerminated = true;
 		}
 
-		void IVertex.EndEnter( IState context, Boolean deepHistory )
+		void IElement.EndEnter( IState context, Boolean deepHistory )
 		{
 			this.Kind.Completion( completions ).Traverse( context, deepHistory );
 		}

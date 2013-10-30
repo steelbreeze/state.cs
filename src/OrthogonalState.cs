@@ -64,22 +64,22 @@ namespace Steelbreeze.Behavior
 
 		internal override void DoBeginExit( IState context )
 		{
-			foreach( var region in regions )
+			foreach( IElement element in regions )
 			{
-				if( context.GetActive( region ) )
+				if( context.GetActive( element ) )
 				{
-					region.BeginExit( context );
-					( region as IRegion ).EndExit( context );
+					element.BeginExit( context );
+					element.EndExit( context );
 				}
 			}
 		}
 
 		internal override void DoEndEnter( IState context, bool deepHistory )
 		{
-			foreach( var region in regions )
+			foreach( IElement element in regions )
 			{
-				( region as IRegion ).BeginEnter( context );
-				region.EndEnter( context, deepHistory );
+				element.BeginEnter( context );
+				element.EndEnter( context, deepHistory );
 			}
 
 			base.DoEndEnter( context, deepHistory );

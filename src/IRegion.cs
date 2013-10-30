@@ -15,8 +15,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace Steelbreeze.Behavior
 {
-	internal interface IRegion : IElement
+	// representes a container of states and pseudo states
+	internal interface IRegion
 	{
+		// the initial state when entering the region
 		PseudoState Initial { get; set; }
 	}
 }

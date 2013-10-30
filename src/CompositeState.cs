@@ -63,14 +63,15 @@ namespace Steelbreeze.Behavior
 		/// <param name="context">The state machine state context to initialise.</param>
 		public void Initialise( IState context )
 		{
-			IElement vertex = this;
-			vertex.BeginEnter( context );
-			DoEndEnter( context, false );
+			IElement element = this;
+
+			element.BeginEnter( context );
+			element.EndEnter( context, false );
 		}
 
 		internal override void DoBeginExit( IState context )
 		{
-			IVertex current = context.GetCurrent( this );
+			IElement current = context.GetCurrent( this );
 
 			if( current != null )
 			{
@@ -82,7 +83,7 @@ namespace Steelbreeze.Behavior
 		internal override void DoEndEnter( IState context, bool deepHistory )
 		{
 			IRegion region = this;
-			IVertex current = deepHistory || region.Initial.Kind.IsHistory() ? context.GetCurrent( this ) as IVertex ?? region.Initial : region.Initial;
+			IElement current = deepHistory || region.Initial.Kind.IsHistory() ? context.GetCurrent( this ) as IElement ?? region.Initial : region.Initial;
 
 			current.BeginEnter( context );
 			current.EndEnter( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );

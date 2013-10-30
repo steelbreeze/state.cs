@@ -26,16 +26,13 @@ namespace Steelbreeze.Behavior
 	/// <remarks>
 	/// A region is a container for states and pseudo states.
 	/// </remarks>
-	public class Region : IRegion
+	public class Region : IElement, IRegion
 	{
+		private readonly OrthogonalState owner;
+
 		IElement IElement.Owner { get { return owner; } }
 
-		/// <summary>
-		/// Holds the initial pseudo state for the composote state upon initial entry or subsiquent entry without history
-		/// </summary>
 		PseudoState IRegion.Initial { get; set; }
-
-		private readonly OrthogonalState owner;
 
 		/// <summary>
 		/// The name of the region.
@@ -76,15 +73,15 @@ namespace Steelbreeze.Behavior
 		/// <param name="context">The state machine state context to initialise.</param>
 		public void Initialise( IState context )
 		{
-			IRegion region = this;
+			IElement element = this;
 
-			region.BeginEnter( context );
-			EndEnter( context, false );
+			element.BeginEnter( context );
+			element.EndEnter( context, false );
 		}
 
-		internal void BeginExit( IState context )
+		void IElement.BeginExit( IState context )
 		{
-			var current = context.GetCurrent( this ) as IVertex;
+			IElement current = context.GetCurrent( this );
 
 			if( current != null )
 			{
@@ -102,7 +99,7 @@ namespace Steelbreeze.Behavior
 
 		void IElement.BeginEnter( IState context )
 		{
-			IRegion region = this;
+			IElement region = this;
 
 			if( context.GetActive( region ) )
 				region.EndExit( context );
@@ -112,10 +109,10 @@ namespace Steelbreeze.Behavior
 			context.SetActive( region, true );
 		}
 
-		internal void EndEnter( IState context, Boolean deepHistory )
+		void IElement.EndEnter( IState context, Boolean deepHistory )
 		{
 			IRegion region = this;
-			IVertex current = deepHistory || region.Initial.Kind.IsHistory() ? context.GetCurrent( this ) as IVertex ?? region.Initial : region.Initial;
+			IElement current = deepHistory || region.Initial.Kind.IsHistory() ? context.GetCurrent( this ) as IElement ?? region.Initial : region.Initial;
 
 			current.BeginEnter( context );
 			current.EndEnter( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );

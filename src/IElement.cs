@@ -13,13 +13,26 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+using System;
+
 namespace Steelbreeze.Behavior
 {
+	// Represents an element within a state machine hierarchy
 	internal interface IElement
 	{
+		// The owning (parent) element of the element
 		IElement Owner { get; }
 
+		// recursive exiting of an element
+		void BeginExit( IState context );
+
+		// non-recursive exit of an element
 		void EndExit( IState context );
+
+		// non-recursive entry to an element
 		void BeginEnter( IState context );
+
+		// recursive exiting of an element
+		void EndEnter( IState context, Boolean deepHistory );
 	}
 }
