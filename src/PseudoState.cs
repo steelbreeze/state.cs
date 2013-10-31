@@ -23,18 +23,9 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A transient state within a pseudo state model.
 	/// </summary>
-	public class PseudoState : IElement
+	public class PseudoState : Element
 	{
-		IElement IElement.Owner { get { return owner; } }
-
-		private readonly IElement owner;
-
-		internal ICollection<Transition> completions { get; set; }
-
-		/// <summary>
-		/// The name of the pseudo state.
-		/// </summary>
-		public String Name { get; private set; }
+		internal ICollection<Transition> completions;
 
 		/// <summary>
 		/// The kind of the pseudo state.
@@ -48,13 +39,12 @@ namespace Steelbreeze.Behavior
 		/// <param name="kind">The kind of the pseudo state.</param>
 		/// <param name="owner">The owenr of the pseudo state.</param>
 		public PseudoState( String name, PseudoStateKind kind, Region owner )
+			: base( name, owner )
 		{
-			this.Name = name;
 			this.Kind = kind;
-			this.owner = owner;
 
 			if( this.Kind.IsInitial() )
-				( owner as IRegion ).Initial = this;
+				owner.initial = this;
 		}
 
 		/// <summary>
@@ -64,55 +54,25 @@ namespace Steelbreeze.Behavior
 		/// <param name="kind">The kind of the pseudo state.</param>
 		/// <param name="owner">The owenr of the pseudo state.</param>
 		public PseudoState( String name, PseudoStateKind kind, CompositeState owner )
+			: base( name, owner )
 		{
-			this.Name = name;
 			this.Kind = kind;
-			this.owner = owner;
 
 			if( this.Kind.IsInitial() )
-				( owner as IRegion ).Initial = this;
+				owner.initial = this;
 		}
 
-		// recursive entry, therefore no implementation
-		void IElement.BeginExit( IState context )
+		internal override void BeginEnter( IState context )
 		{
-		}
-
-		void IElement.EndExit( IState context )
-		{
-			Debug.WriteLine( this, "Leave" );
-
-			context.SetActive( this, false );
-		}
-
-		void IElement.BeginEnter( IState context )
-		{
-			if( context.GetActive( this ) )
-			{
-				IElement vertex = this;
-				vertex.EndExit( context );
-			}
-
-			Debug.WriteLine( this, "Enter" );
-
-			context.SetActive( this, true );
+			base.BeginEnter( context );
 
 			if( this.Kind == PseudoStateKind.Terminated )
 				context.IsTerminated = true;
 		}
 
-		void IElement.EndEnter( IState context, Boolean deepHistory )
+		internal override void EndEnter( IState context, Boolean deepHistory )
 		{
 			this.Kind.Completion( completions ).Traverse( context, deepHistory );
-		}
-
-		/// <summary>
-		/// Returns the fully qualified name of the pseudo state.
-		/// </summary>
-		/// <returns>The fully qualified name of the pseudo state.</returns>
-		public override string ToString()
-		{
-			return this.owner + "." + this.Name;
 		}
 	}
 }

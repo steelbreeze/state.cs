@@ -23,21 +23,11 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A state (invariant condition) within a state machine model.
 	/// </summary>
-	public class SimpleState : IElement
+	public class SimpleState : Element
 	{
-		IElement IElement.Owner { get { return owner; } }
+		internal ICollection<Transition> completions;
+		internal ICollection<ITransition> transitions;
 
-		private readonly IElement owner;
-
-		internal ICollection<Transition> completions { get; set; }
-		internal ICollection<ITransition> transitions { get; set; }
-		internal virtual Boolean IsFinalState { get { return false; } }
-
-		/// <summary>
-		/// The name of the state.
-		/// </summary>
-		public String Name { get; private set; }
-	
 		/// <summary>
 		/// Optional action(s) that can be called when the state is entered.
 		/// </summary>
@@ -53,22 +43,14 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="name">The name of the state.</param>
 		/// <param name="owner">The owning (parent) region.</param>
-		public SimpleState( String name, Region owner )
-		{
-			this.Name = name;
-			this.owner = owner;
-		}
+		public SimpleState( String name, Region owner ) : base( name, owner ) { }
 
 		/// <summary>
 		/// Creates a state within an owning (parent) composite state.
 		/// </summary>
 		/// <param name="name">The name of the state.</param>
 		/// <param name="owner">The owning (parent) composite state.</param>
-		public SimpleState( String name, CompositeState owner )
-		{
-			this.Name = name;
-			this.owner = owner;
-		}
+		public SimpleState( String name, CompositeState owner ) : base( name, owner ) { }
 
 		/// <summary>
 		/// Tests the state for completeness.
@@ -77,15 +59,6 @@ namespace Steelbreeze.Behavior
 		public virtual Boolean IsComplete( IState context )
 		{
 			return true;
-		}
-
-		internal virtual void DoBeginExit( IState context )
-		{
-		}
-
-		void IElement.BeginExit( IState context )
-		{
-			DoBeginExit( context );
 		}
 
 		/// <summary>
@@ -98,15 +71,6 @@ namespace Steelbreeze.Behavior
 				Exit();
 		}
 
-		void IElement.EndExit( IState context )
-		{
-			this.OnExit();
-
-			Debug.WriteLine( this, "Leave" );
-
-			context.SetActive( this, false );
-		}
-
 		/// <summary>
 		/// Invokes the state entry action.
 		/// </summary>
@@ -117,25 +81,23 @@ namespace Steelbreeze.Behavior
 				Entry();
 		}
 
-		void IElement.BeginEnter( IState context )
+		internal override void EndExit( IState context )
 		{
-			if( context.GetActive( this ) )
-			{
-				IElement element = this;
-				element.EndExit( context );
-			}
+			this.OnExit();
+			base.EndExit( context );
+		}
 
-			Debug.WriteLine( this, "Enter" );
+		internal override void BeginEnter( IState context )
+		{
+			base.BeginEnter( context );
 
-			context.SetActive( this, true );
-
-			if( this.owner != null )
-				context.SetCurrent( owner, this );
+			if( this.Owner != null )
+				context.SetCurrent( this.Owner, this );
 
 			this.OnEnter();
 		}
 
-		internal virtual void DoEndEnter( IState context, Boolean deepHistory )
+		internal override void EndEnter( IState context, Boolean deepHistory )
 		{
 			if( completions != null )
 			{
@@ -147,11 +109,6 @@ namespace Steelbreeze.Behavior
 						completion.Traverse( context, deepHistory );
 				}
 			}
-		}
-
-		void IElement.EndEnter( IState context, Boolean deepHistory )
-		{
-			DoEndEnter( context, deepHistory );
 		}
 
 		/// <summary>
@@ -176,15 +133,6 @@ namespace Steelbreeze.Behavior
 			transition.Traverse( context, message );
 
 			return true;
-		}
-
-		/// <summary>
-		/// Returns the fully qualified name of the state.
-		/// </summary>
-		/// <returns>The fully qualified name of the state.</returns>
-		public override String ToString()
-		{
-			return this.owner != null ? this.owner + "." + this.Name : this.Name;
 		}
 	}
 }

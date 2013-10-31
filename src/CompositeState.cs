@@ -20,12 +20,9 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A composite state is a state that contains states and pseudo states.
 	/// </summary>
-	public class CompositeState : SimpleState, IRegion
+	public class CompositeState : SimpleState
 	{
-		/// <summary>
-		/// Holds the initial pseudo state for the composote state upon initial entry or subsiquent entry without history
-		/// </summary>
-		PseudoState IRegion.Initial { get; set; }
+		internal PseudoState initial;
 
 		/// <summary>
 		/// Creates a composite state within an owning (parent) region.
@@ -54,24 +51,22 @@ namespace Steelbreeze.Behavior
 		/// <returns>True if the current state of the state machine state is a final state.</returns>
 		public override bool IsComplete( IState context )
 		{
-			return context.IsTerminated || context.GetCurrent( this ).IsFinalState;
+			return context.IsTerminated || context.GetCurrent( this ) is FinalState;
 		}
 
 		/// <summary>
-		/// Initialises the state machine state context with its initial state.
+		/// Initialises the state context with its initial state.
 		/// </summary>
 		/// <param name="context">The state machine state context to initialise.</param>
 		public void Initialise( IState context )
 		{
-			IElement element = this;
-
-			element.BeginEnter( context );
-			element.EndEnter( context, false );
+			BeginEnter( context );
+			EndEnter( context, false );
 		}
 
-		internal override void DoBeginExit( IState context )
+		internal override void BeginExit( IState context )
 		{
-			IElement current = context.GetCurrent( this );
+			var current = context.GetCurrent( this );
 
 			if( current != null )
 			{
@@ -80,15 +75,14 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
-		internal override void DoEndEnter( IState context, bool deepHistory )
+		internal override void EndEnter( IState context, bool deepHistory )
 		{
-			IRegion region = this;
-			IElement current = deepHistory || region.Initial.Kind.IsHistory() ? context.GetCurrent( this ) as IElement ?? region.Initial : region.Initial;
+			var current = deepHistory || this.initial.Kind.IsHistory() ? context.GetCurrent( this ) as Element ?? this.initial : this.initial;
 
 			current.BeginEnter( context );
-			current.EndEnter( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );
+			current.EndEnter( context, deepHistory || this.initial.Kind == PseudoStateKind.DeepHistory );
 
-			base.DoEndEnter( context, deepHistory );
+			base.EndEnter( context, deepHistory );
 		}
 
 		/// <summary>

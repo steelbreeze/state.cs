@@ -26,18 +26,9 @@ namespace Steelbreeze.Behavior
 	/// <remarks>
 	/// A region is a container for states and pseudo states.
 	/// </remarks>
-	public class Region : IElement, IRegion
+	public class Region : Element
 	{
-		private readonly OrthogonalState owner;
-
-		IElement IElement.Owner { get { return owner; } }
-
-		PseudoState IRegion.Initial { get; set; }
-
-		/// <summary>
-		/// The name of the region.
-		/// </summary>
-		public String Name { get; private set; }
+		internal PseudoState initial;
 
 		/// <summary>
 		/// Creates a new region within a state machine.
@@ -48,12 +39,10 @@ namespace Steelbreeze.Behavior
 		/// A region is a container of states and pseudo states within a state machine model; it can be used as a root state machine.
 		/// </remarks>
 		public Region( String name, OrthogonalState owner = null )
+			: base( name, owner )
 		{
-			this.Name = name;
-			this.owner = owner;
-
-			if( this.owner != null )
-				this.owner.regions.Add( this );
+			if( owner != null )
+				owner.regions.Add( this );
 		}
 
 		/// <summary>
@@ -64,7 +53,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>A region is deemed to be completed when its current child state is a final state.</remarks>
 		public Boolean IsComplete( IState context )
 		{
-			return context.IsTerminated || context.GetCurrent( this ).IsFinalState;
+			return context.IsTerminated || context.GetCurrent( this ) is FinalState;
 		}
 
 		/// <summary>
@@ -73,15 +62,14 @@ namespace Steelbreeze.Behavior
 		/// <param name="context">The state machine state context to initialise.</param>
 		public void Initialise( IState context )
 		{
-			IElement element = this;
-
-			element.BeginEnter( context );
-			element.EndEnter( context, false );
+			BeginEnter( context );
+			EndEnter( context, false );
 		}
 
-		void IElement.BeginExit( IState context )
+
+		internal override void BeginExit( IState context )
 		{
-			IElement current = context.GetCurrent( this );
+			var current = context.GetCurrent( this );
 
 			if( current != null )
 			{
@@ -90,32 +78,12 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
-		void IElement.EndExit( IState context )
+		internal override void EndEnter( IState context, Boolean deepHistory )
 		{
-			Debug.WriteLine( this, "Leave" );
-
-			context.SetActive( this, false );
-		}
-
-		void IElement.BeginEnter( IState context )
-		{
-			IElement region = this;
-
-			if( context.GetActive( region ) )
-				region.EndExit( context );
-
-			Debug.WriteLine( this, "Enter" );
-
-			context.SetActive( region, true );
-		}
-
-		void IElement.EndEnter( IState context, Boolean deepHistory )
-		{
-			IRegion region = this;
-			IElement current = deepHistory || region.Initial.Kind.IsHistory() ? context.GetCurrent( this ) as IElement ?? region.Initial : region.Initial;
+			var current = deepHistory || this.initial.Kind.IsHistory() ? context.GetCurrent( this ) as Element ?? this.initial : this.initial;
 
 			current.BeginEnter( context );
-			current.EndEnter( context, deepHistory || region.Initial.Kind == PseudoStateKind.DeepHistory );
+			current.EndEnter( context, deepHistory || this.initial.Kind == PseudoStateKind.DeepHistory );
 		}
 
 		/// <summary>
@@ -130,15 +98,6 @@ namespace Steelbreeze.Behavior
 				return false;
 
 			return context.GetActive( this ) && context.GetCurrent( this ).Process( context, message );
-		}
-
-		/// <summary>
-		/// Returns the fully qualified name of the region.
-		/// </summary>
-		/// <returns>The fully qualified name of the region.</returns>
-		public override string ToString()
-		{
-			return this.owner != null ? this.owner + "." + this.Name : this.Name;
 		}
 	}
 }

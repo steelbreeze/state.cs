@@ -25,10 +25,10 @@ namespace Steelbreeze.Behavior
 		private readonly Action<IState> beginEnter;
 		private readonly Action<IState, Boolean> endEnter;
 
-		internal Path( IElement source, IElement target )
+		internal Path( Element source, Element target )
 		{
-			var sourceAncestors = Ancestors( source );
-			var targetAncestors = Ancestors( target );
+			var sourceAncestors = source.Ancestors;
+			var targetAncestors = target.Ancestors;
 			var uncommonAncestor = Uncommon( sourceAncestors, targetAncestors );
 
 			exit = source.BeginExit;
@@ -53,16 +53,7 @@ namespace Steelbreeze.Behavior
 			endEnter( context, deepHistory );
 		}
 
-		internal static IList<IElement> Ancestors( IElement element )
-		{
-			var ancestors = element.Owner != null ? Ancestors( element.Owner ) : new List<IElement>();
-
-			ancestors.Add( element );
-
-			return ancestors;
-		}
-
-		internal static int Uncommon( IList<IElement> sourceAncestors, IList<IElement> targetAncestors, int index = 0 )
+		internal static int Uncommon( IList<Element> sourceAncestors, IList<Element> targetAncestors, int index = 0 )
 		{
 			return sourceAncestors[ index ].Equals( targetAncestors[ index ] ) ? Uncommon( sourceAncestors, targetAncestors, ++index ) : index;
 		}

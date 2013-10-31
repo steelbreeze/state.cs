@@ -27,9 +27,6 @@ namespace Steelbreeze.Behavior
 	/// </remarks>
 	public class OrthogonalState : SimpleState
 	{
-		/// <summary>
-		/// The set of child regions.
-		/// </summary>
 		internal ICollection<Region> regions = new HashSet<Region>();
 
 		/// <summary>
@@ -62,27 +59,27 @@ namespace Steelbreeze.Behavior
 			return context.IsTerminated || regions.All( region => region.IsComplete( context ) );
 		}
 
-		internal override void DoBeginExit( IState context )
+		internal override void BeginExit( IState context )
 		{
-			foreach( IElement element in regions )
+			foreach( var region in regions )
 			{
-				if( context.GetActive( element ) )
+				if( context.GetActive( region ) )
 				{
-					element.BeginExit( context );
-					element.EndExit( context );
+					region.BeginExit( context );
+					region.EndExit( context );
 				}
 			}
 		}
 
-		internal override void DoEndEnter( IState context, bool deepHistory )
+		internal override void EndEnter( IState context, bool deepHistory )
 		{
-			foreach( IElement element in regions )
+			foreach( var region in regions )
 			{
-				element.BeginEnter( context );
-				element.EndEnter( context, deepHistory );
+				region.BeginEnter( context );
+				region.EndEnter( context, deepHistory );
 			}
 
-			base.DoEndEnter( context, deepHistory );
+			base.EndEnter( context, deepHistory );
 		}
 
 		/// <summary>
