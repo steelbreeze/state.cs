@@ -1,6 +1,10 @@
 # Welcome to state.cs
 
+<<<<<<< HEAD
 The current stable release is 3.2.4
+=======
+The current stable release is 3.2.3
+>>>>>>> 903497534a6ac8e177956fefd2c7a58014001513
 
 If you're using state.cs I'd love to hear about it; please e-mail me at mesmo@steelbreeze.net 
 
