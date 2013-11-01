@@ -24,8 +24,8 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public class SimpleState : Element
 	{
-		internal ICollection<Transition> completions;
-		internal ICollection<ITransition> transitions;
+		private ICollection<Transition> completions;
+		private ICollection<ITransition> transitions;
 
 		/// <summary>
 		/// Optional action(s) that can be called when the state is entered.
@@ -50,6 +50,22 @@ namespace Steelbreeze.Behavior
 		/// <param name="name">The name of the state.</param>
 		/// <param name="owner">The owning (parent) composite state.</param>
 		public SimpleState( String name, CompositeState owner ) : base( name, owner ) { }
+
+		internal void Add( Transition completion )
+		{
+			if( completions == null )
+				completions = new HashSet<Transition>();
+			
+			completions.Add( completion );
+		}
+
+		internal void Add( ITransition transition )
+		{
+			if( transitions == null )
+				transitions = new HashSet<ITransition>();
+			
+			transitions.Add( transition );
+		}
 
 		/// <summary>
 		/// Tests the state for completeness.

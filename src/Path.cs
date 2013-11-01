@@ -53,7 +53,7 @@ namespace Steelbreeze.Behavior
 			endEnter( context, deepHistory );
 		}
 
-		internal static int Uncommon( IList<Element> sourceAncestors, IList<Element> targetAncestors, int index = 0 )
+		private static int Uncommon( IList<Element> sourceAncestors, IList<Element> targetAncestors, int index = 0 )
 		{
 			return sourceAncestors[ index ].Equals( targetAncestors[ index ] ) ? Uncommon( sourceAncestors, targetAncestors, ++index ) : index;
 		}

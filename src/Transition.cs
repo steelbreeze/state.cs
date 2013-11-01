@@ -46,7 +46,7 @@ namespace Steelbreeze.Behavior
 			this.guard = guard;
 			this.path = new Path( source, target );
 
-			( source.transitions ?? ( source.transitions = new HashSet<ITransition>() ) ).Add( this );
+			source.Add( this );
 		}
 
 		/// <summary>
@@ -60,7 +60,7 @@ namespace Steelbreeze.Behavior
 			this.guard = guard;
 			this.path = new Path( source, target );
 
-			( source.transitions ?? ( source.transitions = new HashSet<ITransition>() ) ).Add( this );
+			source.Add( this );
 		}
 
 		/// <summary>
@@ -73,7 +73,7 @@ namespace Steelbreeze.Behavior
 		{
 			this.guard = guard;
 
-			( state.transitions ?? ( state.transitions = new HashSet<ITransition>() ) ).Add( this );
+			state.Add( this );
 		}
 
 		Boolean ITransition.Guard( Object message )
@@ -139,10 +139,7 @@ namespace Steelbreeze.Behavior
 			this.guard = guard;
 			this.path = new Path( source, target );
 
-			if( source.Kind.IsInitial() )
-				Trace.Assert( source.completions == null, "initial pseudo states can have at most one outbound completion transition" );
-
-			( source.completions ?? ( source.completions = new HashSet<Transition>() ) ).Add( this );
+			source.Add( this );
 		}
 
 		/// <summary>
@@ -157,10 +154,7 @@ namespace Steelbreeze.Behavior
 			this.guard = guard;
 			this.path = new Path( source, target );
 
-			if( source.Kind.IsInitial() )
-				Trace.Assert( source.completions == null, "initial pseudo states can have at most one outbound completion transition" );
-
-			( source.completions ?? ( source.completions = new HashSet<Transition>() ) ).Add( this );
+			source.Add( this );
 		}
 
 		/// <summary>
@@ -176,7 +170,7 @@ namespace Steelbreeze.Behavior
 			this.guard = guard;
 			this.path = new Path( source, target );
 
-			( source.completions ?? ( source.completions = new HashSet<Transition>() ) ).Add( this );
+			source.Add( this );
 		}
 
 		/// <summary>
@@ -191,7 +185,7 @@ namespace Steelbreeze.Behavior
 			this.guard = guard;
 			this.path = new Path( source, target );
 
-			( source.completions ?? ( source.completions = new HashSet<Transition>() ) ).Add( this );
+			source.Add( this );
 		}
 
 		internal Boolean Guard()

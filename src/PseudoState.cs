@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Steelbreeze.Behavior
 {
@@ -23,7 +24,7 @@ namespace Steelbreeze.Behavior
 	/// </summary>
 	public class PseudoState : Element
 	{
-		internal ICollection<Transition> completions;
+		private ICollection<Transition> completions;
 
 		/// <summary>
 		/// The kind of the pseudo state.
@@ -42,7 +43,7 @@ namespace Steelbreeze.Behavior
 			this.Kind = kind;
 
 			if( this.Kind.IsInitial() )
-				owner.initial = this;
+				owner.Initial = this;
 		}
 
 		/// <summary>
@@ -57,7 +58,17 @@ namespace Steelbreeze.Behavior
 			this.Kind = kind;
 
 			if( this.Kind.IsInitial() )
-				owner.initial = this;
+				owner.Initial = this;
+		}
+
+		internal void Add( Transition completion )
+		{
+			Trace.Assert( !( this.Kind.IsInitial() && completions != null ), "initial pseudo states can have at most one outbound completion transition" );
+
+			if( completions == null )
+				completions = new HashSet<Transition>();
+
+			completions.Add( completion );
 		}
 
 		internal override void BeginEnter( IState context )

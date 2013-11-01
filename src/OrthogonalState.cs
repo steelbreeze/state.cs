@@ -27,7 +27,7 @@ namespace Steelbreeze.Behavior
 	/// </remarks>
 	public class OrthogonalState : SimpleState
 	{
-		internal ICollection<Region> regions = new HashSet<Region>();
+		private ICollection<Region> regions;
 
 		/// <summary>
 		/// Creates an orthogonal state within an owning (parent) region.
@@ -48,6 +48,14 @@ namespace Steelbreeze.Behavior
 		/// An orthogonal state is a container of regions within a state machine model; it can be used as a root state machine.
 		/// </remarks>
 		public OrthogonalState( String name, CompositeState owner ) : base( name, owner ) { }
+
+		internal void Add( Region region )
+		{
+			if( regions == null )
+				regions = new HashSet<Region>();
+
+			regions.Add( region );
+		}
 
 		/// <summary>
 		/// Tests the orthogonal state for completeness.

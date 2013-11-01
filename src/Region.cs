@@ -25,7 +25,7 @@ namespace Steelbreeze.Behavior
 	/// </remarks>
 	public class Region : Element
 	{
-		internal PseudoState initial;
+		internal PseudoState Initial { private get; set; }
 
 		/// <summary>
 		/// Creates a new region within a state machine.
@@ -39,7 +39,7 @@ namespace Steelbreeze.Behavior
 			: base( name, owner )
 		{
 			if( owner != null )
-				owner.regions.Add( this );
+				owner.Add( this );
 		}
 
 		/// <summary>
@@ -77,10 +77,10 @@ namespace Steelbreeze.Behavior
 
 		internal override void EndEnter( IState context, Boolean deepHistory )
 		{
-			var current = deepHistory || this.initial.Kind.IsHistory() ? context.GetCurrent( this ) as Element ?? this.initial : this.initial;
+			var current = deepHistory || this.Initial.Kind.IsHistory() ? context.GetCurrent( this ) as Element ?? this.Initial : this.Initial;
 
 			current.BeginEnter( context );
-			current.EndEnter( context, deepHistory || this.initial.Kind == PseudoStateKind.DeepHistory );
+			current.EndEnter( context, deepHistory || this.Initial.Kind == PseudoStateKind.DeepHistory );
 		}
 
 		/// <summary>
