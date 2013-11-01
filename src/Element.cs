@@ -70,12 +70,14 @@ namespace Steelbreeze.Behavior
 		internal virtual void BeginEnter( IState context )
 		{
 			if( context.GetActive( this ) )
+			{
+				BeginExit( context );
 				EndExit( context );
-
+			}
+	
 			Debug.WriteLine( this, "Enter" );
 
 			context.SetActive( this, true );
-
 		}
 
 		internal virtual void EndEnter( IState context, bool deepHistory ) { }
