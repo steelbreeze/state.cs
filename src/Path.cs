@@ -21,36 +21,39 @@ namespace Steelbreeze.Behavior
 	// the path between any pair of elements within a state machine hierarchy
 	internal sealed class Path
 	{
-		private readonly Action<IState> exit;
-		private readonly Action<IState> beginEnter;
-		private readonly Action<IState, Boolean> endEnter;
+		private readonly Element[] exit;
+		private readonly Element[] enter;
 
 		internal Path( Element source, Element target )
 		{
 			var sourceAncestors = source.Ancestors;
 			var targetAncestors = target.Ancestors;
-			var uncommonAncestor = Uncommon( sourceAncestors, targetAncestors );
+			var uncommonAncestor = source.Equals( target ) ? sourceAncestors.Count - 1 : Uncommon( sourceAncestors, targetAncestors );
 
-			exit = source.BeginExit;
+			this.exit = new Element[ sourceAncestors.Count - uncommonAncestor ];
+			this.enter = new Element[ targetAncestors.Count - uncommonAncestor ];
 
-			for( var e = sourceAncestors.Count; e > uncommonAncestor; --e )
-				exit += sourceAncestors[ e - 1 ].EndExit;
+			for( int i = uncommonAncestor, s = sourceAncestors.Count; i < s; i++ )
+				this.exit[ s - i - 1 ] = sourceAncestors[ i ];
 
-			while( uncommonAncestor < targetAncestors.Count )
-				beginEnter += targetAncestors[ uncommonAncestor++ ].BeginEnter;
-
-			endEnter = target.EndEnter;
+			for( int i = uncommonAncestor, s = targetAncestors.Count; i < s; i++ )
+				this.enter[ i - uncommonAncestor ] = targetAncestors[ i ];
 		}
 
 		internal void Exit( IState context )
 		{
-			exit( context );
+			exit[ 0 ].BeginExit( context );
+
+			foreach( var element in exit )
+				element.EndExit( context );
 		}
 
 		internal void Enter( IState context, Boolean deepHistory )
 		{
-			beginEnter( context );
-			endEnter( context, deepHistory );
+			foreach( var element in enter )
+				element.BeginEnter( context );
+
+			enter[ enter.Length - 1 ].EndEnter( context, deepHistory );
 		}
 
 		private static int Uncommon( IList<Element> sourceAncestors, IList<Element> targetAncestors, int index = 0 )

@@ -41,7 +41,7 @@ namespace Steelbreeze.Examples
 			running.Exit += StopMotor;
 
 			// create transitions between states (one with transition behaviour)
-			new Transition( initial, operational );
+			var t0 = new Transition( initial, operational );
 			new Transition( history, stopped );
 			new Transition<String>( stopped, running, s => s.Equals( "play" ) );
 			new Transition<String>( active, stopped, s => s.Equals( "stop" ) );
@@ -51,7 +51,12 @@ namespace Steelbreeze.Examples
 			new Transition<String>( flipped, operational, s => s.Equals( "flip" ) );
 			new Transition<String>( operational, final, s => s.Equals( "off" ) );
 			new Transition<String>( operational, terminated, s => s.Equals( "term" ) );
-	
+			var help = new Transition<String>( operational, operational, s => s.StartsWith( "help" ) );
+
+			t0.Effect += DisengageHead;
+			t0.Effect += StopMotor;
+			help.Effect += s => Console.WriteLine( "help yourself" );
+
 			var state = new State();
 
 			// initialises the state machine (enters the region for the first time, causing transition from the initial PseudoState)

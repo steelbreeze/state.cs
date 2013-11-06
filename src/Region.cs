@@ -39,7 +39,7 @@ namespace Steelbreeze.Behavior
 			: base( name, owner )
 		{
 			if( owner != null )
-				owner.Add( this );
+				owner.regions.Add( this );
 		}
 
 		/// <summary>
