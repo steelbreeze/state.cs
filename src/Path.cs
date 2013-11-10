@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Steelbreeze.Behavior
 {
@@ -28,32 +29,26 @@ namespace Steelbreeze.Behavior
 		{
 			var sourceAncestors = source.Ancestors;
 			var targetAncestors = target.Ancestors;
-			var uncommonAncestor = source.Equals( target ) ? sourceAncestors.Count - 1 : Uncommon( sourceAncestors, targetAncestors );
+			var uncommonAncestor = source.Owner.Equals( target.Owner ) ? sourceAncestors.Count - 1 : Uncommon( sourceAncestors, targetAncestors );
 
-			this.exit = new Element[ sourceAncestors.Count - uncommonAncestor ];
-			this.enter = new Element[ targetAncestors.Count - uncommonAncestor ];
-
-			for( int i = uncommonAncestor, s = sourceAncestors.Count; i < s; i++ )
-				this.exit[ s - i - 1 ] = sourceAncestors[ i ];
-
-			for( int i = uncommonAncestor, s = targetAncestors.Count; i < s; i++ )
-				this.enter[ i - uncommonAncestor ] = targetAncestors[ i ];
+			this.exit = sourceAncestors.Skip( uncommonAncestor ).Reverse().ToArray();
+			this.enter = targetAncestors.Skip( uncommonAncestor ).ToArray();
 		}
 
 		internal void Exit( IState context )
 		{
-			exit[ 0 ].BeginExit( context );
+			this.exit[ 0 ].BeginExit( context );
 
-			foreach( var element in exit )
+			foreach( var element in this.exit )
 				element.EndExit( context );
 		}
 
 		internal void Enter( IState context, Boolean deepHistory )
 		{
-			foreach( var element in enter )
+			foreach( var element in this.enter )
 				element.BeginEnter( context );
 
-			enter[ enter.Length - 1 ].EndEnter( context, deepHistory );
+			this.enter[ this.enter.Length - 1 ].EndEnter( context, deepHistory );
 		}
 
 		private static int Uncommon( IList<Element> sourceAncestors, IList<Element> targetAncestors, int index = 0 )
