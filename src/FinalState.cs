@@ -20,7 +20,7 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A final state is a state that denotes its parent region or composite state is complete.
 	/// </summary>
-	public class FinalState : SimpleState
+	public sealed class FinalState : SimpleState
 	{
 		/// <summary>
 		/// The final state's entry action (do not set this)

@@ -24,8 +24,8 @@ namespace Steelbreeze.Examples
 	/// </summary>
 	public sealed class State : IState
 	{
-		private Dictionary<Object, Boolean> active = new Dictionary<Object, Boolean>();
-		private Dictionary<Object, SimpleState> current = new Dictionary<Object, SimpleState>();
+		private Dictionary<Element, Boolean> active = new Dictionary<Element, Boolean>();
+		private Dictionary<Element, SimpleState> current = new Dictionary<Element, SimpleState>();
 		
 		/// <summary>
 		/// Indicates that the state machine state has been terminated
@@ -40,7 +40,7 @@ namespace Steelbreeze.Examples
 		/// </summary>
 		/// <param name="element">The region to get the state for</param>
 		/// <returns>The uncommitted state of the region</returns>
-		public SimpleState GetCurrent( Object element )
+		public SimpleState GetCurrent( Element element )
 		{
 			SimpleState current = null;
 
@@ -54,7 +54,7 @@ namespace Steelbreeze.Examples
 		/// </summary>
 		/// <param name="element">The state to get the active status for</param>
 		/// <returns>The uncommitted active status</returns>
-		public Boolean GetActive( Object element )
+		public Boolean GetActive( Element element )
 		{
 			Boolean active = false;
 
@@ -68,7 +68,7 @@ namespace Steelbreeze.Examples
 		/// </summary>
 		/// <param name="element">The state to set the active status for</param>
 		/// <param name="value">The valuse to set the active status to</param>
-		public void SetActive( Object element, Boolean value )
+		public void SetActive( Element element, Boolean value )
 		{
 			this.active[ element ] = value;
 		}
@@ -78,7 +78,7 @@ namespace Steelbreeze.Examples
 		/// </summary>
 		/// <param name="element">The region to set the current state for</param>
 		/// <param name="value">The value to set the current state to</param>
-		public void SetCurrent( Object element, SimpleState value )
+		public void SetCurrent( Element element, SimpleState value )
 		{
 			this.current[ element ] = value;
 		}

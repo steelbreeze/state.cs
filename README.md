@@ -1,8 +1,10 @@
 # Welcome to state.cs
 
-The current stable release is 3.2.7
+The current stable release is 3.3.0.
 
 If you're using state.cs I'd love to hear about it; please e-mail me at mesmo@steelbreeze.net 
+
+Version 3.3 brings a few small API changes: removed CompositeState.Initialise as it was not intended to be the root state machine; use Region instead; FinalState and PseudoState are now sealed; IState now takes an Element rather than Object as the element type.
 
 ## Version 3 notes - please read before downloading
 Version 3 has focused on creating a clean public and protected API; there should be no implementation details visible in the namespace.

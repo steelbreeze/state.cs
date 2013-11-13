@@ -22,7 +22,7 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A transient state within a pseudo state model.
 	/// </summary>
-	public class PseudoState : Element
+	public sealed class PseudoState : Element
 	{
 		private ICollection<Transition> completions;
 

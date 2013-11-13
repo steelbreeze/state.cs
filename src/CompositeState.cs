@@ -54,16 +54,6 @@ namespace Steelbreeze.Behavior
 			return context.IsTerminated || context.GetCurrent( this ) is FinalState;
 		}
 
-		/// <summary>
-		/// Initialises the state context with its initial state.
-		/// </summary>
-		/// <param name="context">The state machine state context to initialise.</param>
-		public void Initialise( IState context )
-		{
-			BeginEnter( context );
-			EndEnter( context, false );
-		}
-
 		internal override void BeginExit( IState context )
 		{
 			var current = context.GetCurrent( this );
