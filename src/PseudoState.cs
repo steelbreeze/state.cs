@@ -75,7 +75,7 @@ namespace Steelbreeze.Behavior
 		{
 			base.BeginEnter( context );
 
-			if( this.Kind == PseudoStateKind.Terminated )
+			if( this.Kind == PseudoStateKind.Terminate )
 				context.IsTerminated = true;
 		}
 

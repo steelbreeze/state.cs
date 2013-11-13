@@ -72,7 +72,7 @@ namespace Steelbreeze.Behavior
 		/// The state machine ceases to be active upon entry to the terminate pseudo state.
 		/// No further actions are performed and the state machine will not respond to messages.
 		/// </remarks>
-		Terminated
+		Terminate
 	}
 
 	internal static class PseudoStateKindMethods
@@ -116,7 +116,7 @@ namespace Steelbreeze.Behavior
 				case PseudoStateKind.Junction:
 					return GetJunctionCompletion( completions );
 
-				case PseudoStateKind.Terminated:
+				case PseudoStateKind.Terminate:
 					return null;
 
 				default: // the initial pseudo states

@@ -24,7 +24,7 @@ namespace Steelbreeze.Examples
 			var operational = new CompositeState( "operational", player );
 			var flipped = new SimpleState( "flipped", player );
 			var final = new FinalState( "final", player );
-			var terminated = new PseudoState( "terminated", PseudoStateKind.Terminated, player );
+			var terminated = new PseudoState( "terminated", PseudoStateKind.Terminate, player );
 
 			var history = new PseudoState( "history", PseudoStateKind.DeepHistory, operational );
 			var stopped = new SimpleState( "stopped", operational );
