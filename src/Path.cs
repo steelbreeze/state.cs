@@ -22,8 +22,8 @@ namespace Steelbreeze.Behavior
 	// the path between any pair of elements within a state machine hierarchy
 	internal sealed class Path
 	{
-		private readonly Element[] exit;
-		private readonly Element[] enter;
+		private readonly IEnumerable<Element> exit;
+		private readonly IEnumerable<Element> enter;
 
 		internal Path( Element source, Element target )
 		{
@@ -31,24 +31,37 @@ namespace Steelbreeze.Behavior
 			var targetAncestors = target.Ancestors;
 			var uncommonAncestor = source.Owner.Equals( target.Owner ) ? sourceAncestors.Count - 1 : Uncommon( sourceAncestors, targetAncestors );
 
-			this.exit = sourceAncestors.Skip( uncommonAncestor ).Reverse().ToArray();
-			this.enter = targetAncestors.Skip( uncommonAncestor ).ToArray();
+			this.exit = sourceAncestors.Skip( uncommonAncestor ).Reverse();
+			this.enter = targetAncestors.Skip( uncommonAncestor);
 		}
 
 		internal void Exit( IState context )
 		{
-			this.exit[ 0 ].BeginExit( context );
+			Boolean first = true;
 
 			foreach( var element in this.exit )
+			{
+				if( first )
+				{
+					element.BeginExit( context );
+					first = false;
+				}
+
 				element.EndExit( context );
+			}
 		}
 
 		internal void Enter( IState context, Boolean deepHistory )
 		{
-			foreach( var element in this.enter )
-				element.BeginEnter( context );
+			Element last = null;
 
-			this.enter[ this.enter.Length - 1 ].EndEnter( context, deepHistory );
+			foreach( var element in this.enter )
+			{
+				element.BeginEnter( context );
+				last = element;
+			}
+
+			last.EndEnter( context, deepHistory );
 		}
 
 		private static int Uncommon( IList<Element> sourceAncestors, IList<Element> targetAncestors, int index = 0 )
