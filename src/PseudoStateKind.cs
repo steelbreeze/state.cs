@@ -120,13 +120,16 @@ namespace Steelbreeze.Behavior
 					return null;
 
 				default: // the initial pseudo states
+					if( completions.Count != 1 )
+						throw new Exception( "Initial pseudo states must have a single outbound transition" );
+
 					return completions.ElementAt( 0 );
 			}
 		}
 
 		private static Transition GetChoiceCompletion( IEnumerable<Transition> c )
 		{
-			var items = c.Where( t => t.Guard() );
+			var items = c.Where( t => !t.IsElse && t.Guard() );
 			var count = items.Count();
 
 			return count > 0 ? items.ElementAt( random.Next( count ) ) : c.Single( t => t.IsElse );
@@ -134,7 +137,7 @@ namespace Steelbreeze.Behavior
 
 		private static Transition GetJunctionCompletion( IEnumerable<Transition> c )
 		{
-			return c.SingleOrDefault( t => t.Guard() ) ?? c.Single( t => t.IsElse );
+			return c.SingleOrDefault( t => !t.IsElse && t.Guard() ) ?? c.Single( t => t.IsElse );
 		}
 	}
 }

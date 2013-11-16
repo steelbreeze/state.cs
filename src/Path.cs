@@ -29,10 +29,11 @@ namespace Steelbreeze.Behavior
 		{
 			var sourceAncestors = source.Ancestors;
 			var targetAncestors = target.Ancestors;
+
 			var uncommonAncestor = source.Owner.Equals( target.Owner ) ? sourceAncestors.Count - 1 : Uncommon( sourceAncestors, targetAncestors );
 
 			this.exit = sourceAncestors.Skip( uncommonAncestor ).Reverse();
-			this.enter = targetAncestors.Skip( uncommonAncestor);
+			this.enter = targetAncestors.Skip( uncommonAncestor );
 		}
 
 		internal void Exit( IState context )

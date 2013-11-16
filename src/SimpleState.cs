@@ -114,17 +114,18 @@ namespace Steelbreeze.Behavior
 
 		internal override void EndEnter( IState context, Boolean deepHistory )
 		{
-			if( completions != null )
-			{
-				if( IsComplete( context ) )
-				{
-					var completion = completions.SingleOrDefault( t => t.Guard() );
+			if( completions == null )
+				return;
 
-					if( completion != null )
-						completion.Traverse( context, deepHistory );
-				}
-			}
+			if( !IsComplete( context ) )
+				return;
+
+			var completion = completions.SingleOrDefault( t => t.Guard() );
+
+			if( completion != null )
+				completion.Traverse( context, deepHistory );
 		}
+
 
 		/// <summary>
 		/// Attempts to process a message against a state.
@@ -142,12 +143,10 @@ namespace Steelbreeze.Behavior
 
 			var transition = this.transitions.SingleOrDefault( t => t.Guard( message ) );
 
-			if( transition == null )
-				return false;
+			if( transition != null )
+				transition.Traverse( context, message );
 
-			transition.Traverse( context, message );
-
-			return true;
+			return transition != null;
 		}
 	}
 }
