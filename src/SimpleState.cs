@@ -67,11 +67,7 @@ namespace Steelbreeze.Behavior
 			transitions.Add( transition );
 		}
 
-		/// <summary>
-		/// Tests the state for completeness.
-		/// </summary>
-		/// <param name="context">The state machine state to test.</param>
-		public virtual Boolean IsComplete( IState context )
+		internal virtual Boolean IsComplete( IState context )
 		{
 			return true;
 		}
@@ -126,14 +122,7 @@ namespace Steelbreeze.Behavior
 				completion.Traverse( context, deepHistory );
 		}
 
-
-		/// <summary>
-		/// Attempts to process a message against a state.
-		/// </summary>
-		/// <param name="context">The state machine state.</param>
-		/// <param name="message">The message to evaluate.</param>
-		/// <returns>A boolean indicating if the message caused a state change.</returns>
-		public virtual Boolean Process( IState context, Object message )
+		internal virtual Boolean Process( IState context, Object message )
 		{
 			if( context.IsTerminated )
 				return false;

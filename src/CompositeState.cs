@@ -44,12 +44,7 @@ namespace Steelbreeze.Behavior
 		/// </remarks>
 		public CompositeState( String name, CompositeState owner ) : base( name, owner ) { }
 
-		/// <summary>
-		/// Tests the composite state for completeness.
-		/// </summary>
-		/// <param name="context">The state machine state to test.</param>
-		/// <returns>True if the current state of the state machine state is a final state.</returns>
-		public override bool IsComplete( IState context )
+		internal override bool IsComplete( IState context )
 		{
 			return context.IsTerminated || context.GetCurrent( this ) is FinalState;
 		}
@@ -75,13 +70,7 @@ namespace Steelbreeze.Behavior
 			base.EndEnter( context, deepHistory );
 		}
 
-		/// <summary>
-		/// Attempts to process a message against a composite state.
-		/// </summary>
-		/// <param name="context">The state machine state.</param>
-		/// <param name="message">The message to evaluate.</param>
-		/// <returns>A boolean indicating if the message caused a state change.</returns>
-		public override Boolean Process( IState context, Object message )
+		internal override Boolean Process( IState context, Object message )
 		{
 			if( context.IsTerminated )
 				return false;

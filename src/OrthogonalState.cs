@@ -49,12 +49,7 @@ namespace Steelbreeze.Behavior
 		/// </remarks>
 		public OrthogonalState( String name, CompositeState owner ) : base( name, owner ) { }
 
-		/// <summary>
-		/// Tests the orthogonal state for completeness.
-		/// </summary>
-		/// <param name="context">The state machine state to test.</param>
-		/// <returns>True if the all the child regions are complete.</returns>
-		public override bool IsComplete( IState context )
+		internal override bool IsComplete( IState context )
 		{
 			return context.IsTerminated || regions.All( region => region.IsComplete( context ) );
 		}
@@ -82,13 +77,7 @@ namespace Steelbreeze.Behavior
 			base.EndEnter( context, deepHistory );
 		}
 
-		/// <summary>
-		/// Attempts to process a message against an orthogonal state.
-		/// </summary>
-		/// <param name="context">The state machine state.</param>
-		/// <param name="message">The message to evaluate.</param>
-		/// <returns>A boolean indicating if the message caused a state change.</returns>
-		public override bool Process( IState context, object message )
+		internal override bool Process( IState context, object message )
 		{
 			if( context.IsTerminated )
 				return false;

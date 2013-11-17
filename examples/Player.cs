@@ -17,8 +17,8 @@ namespace Steelbreeze.Examples
 		static void Main()
 		{
 			// create the state machine
-			var player = new Region( "player" );
-			
+			var player = new StateMachine( "player" );
+
 			// create some states
 			var initial = new PseudoState( "initial", PseudoStateKind.Initial, player );
 			var operational = new CompositeState( "operational", player );

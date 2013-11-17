@@ -31,6 +31,21 @@ namespace Steelbreeze.Behavior
 		/// Creates a new region within a state machine.
 		/// </summary>
 		/// <param name="name">The name of the region.</param>
+		/// <param name="owner">The parent state machine.</param>
+		/// <remarks>
+		/// A state machine is a container of states and pseudo states within a state machine model; it can be used as a root state machine.
+		/// </remarks>
+		public Region( String name, StateMachine owner )
+			: base( name, owner )
+		{
+			if( owner != null )
+				owner.regions.Add( this );
+		}
+
+		/// <summary>
+		/// Creates a new region within an orthogonal state.
+		/// </summary>
+		/// <param name="name">The name of the region.</param>
 		/// <param name="owner">The optional parent orthogonal state.</param>
 		/// <remarks>
 		/// A region is a container of states and pseudo states within a state machine model; it can be used as a root state machine.

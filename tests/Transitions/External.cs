@@ -11,12 +11,13 @@ namespace Steelbreeze.Behavior.Test.Transitions
 	{
 		public static void Test()
 		{
-			var stateMachine = new Region( "external" ); 
+			var stateMachine = new StateMachine( "external" );
+			var region = new Region( "external", stateMachine );
 
-			var initial = new PseudoState( "initial", PseudoStateKind.Initial, stateMachine );
-			var composite = new CompositeState( "composite", stateMachine );
-			var orthogonal = new OrthogonalState( "orthogonal", stateMachine );
-			var final = new FinalState( "final", stateMachine);
+			var initial = new PseudoState( "initial", PseudoStateKind.Initial, region );
+			var composite = new CompositeState( "composite", region );
+			var orthogonal = new OrthogonalState( "orthogonal", region );
+			var final = new FinalState( "final", region);
 
 			var c1 = new SimpleState( "c1", composite );
 			var c2 = new SimpleState( "c2", composite );
