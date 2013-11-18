@@ -43,7 +43,12 @@ namespace Steelbreeze.Behavior
 			this.Kind = kind;
 
 			if( this.Kind.IsInitial() )
-				owner.Initial = this;
+			{
+				if( owner.initial != null )
+					throw new Exception( "Region can have only one initial PseudoState: " + owner );
+
+				owner.initial = this;
+			}
 		}
 
 		/// <summary>
@@ -58,7 +63,12 @@ namespace Steelbreeze.Behavior
 			this.Kind = kind;
 
 			if( this.Kind.IsInitial() )
-				owner.Initial = this;
+			{
+				if( owner.initial != null )
+					throw new Exception( "Region can have only one initial PseudoState: " + owner );
+
+				owner.initial = this;
+			}
 		}
 
 		internal void Add( Transition completion )
