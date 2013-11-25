@@ -22,49 +22,42 @@ namespace Steelbreeze.Behavior
 	// the path between any pair of elements within a state machine hierarchy
 	internal sealed class Path
 	{
+		private readonly Element source;
+		private readonly Element target;
 		private readonly IEnumerable<Element> exit;
 		private readonly IEnumerable<Element> enter;
 
 		internal Path( Element source, Element target )
 		{
-			var sourceAncestors = source.Ancestors;
-			var targetAncestors = target.Ancestors;
-			var ignoreAncestors = LCA( sourceAncestors, targetAncestors ) + ( source.Equals( target ) ? 0 : 1 );
+			var sourceAncestors = source.Owner.Ancestors;
+			var targetAncestors = target.Owner.Ancestors;
+			var lca = LCA( sourceAncestors, targetAncestors );
 
-			this.exit = sourceAncestors.Skip( ignoreAncestors ).Reverse();
-			this.enter = targetAncestors.Skip( ignoreAncestors );
+			this.exit = sourceAncestors.Skip( lca + 1 ).Reverse();
+			this.enter = targetAncestors.Skip( lca + 1 );
+
+			this.source = source;
+			this.target = target;
 		}
 
 		internal void Exit( IState context )
 		{
-			Boolean first = true;
+			source.BeginExit( context );
+			source.EndExit( context );
 
 			foreach( var element in this.exit )
-			{
-				if( first )
-				{
-					element.BeginExit( context );
-					first = false;
-				}
-
 				element.EndExit( context );
-			}
 		}
 
 		internal void Enter( IState context, Boolean deepHistory )
 		{
-			Element last = null;
-
 			foreach( var element in this.enter )
-			{
 				element.BeginEnter( context );
-				last = element;
-			}
 
-			last.EndEnter( context, deepHistory );
+			target.BeginEnter( context );
+			target.EndEnter( context, deepHistory );
 		}
 
-		// returns the index of the least (lowest) common ancestor, or -1 if the nodes are not in the same hierarchy
 		private static int LCA( IList<Element> sourceAncestry, IList<Element> targetAncestry ) 
 		{
 			int common = 0;
