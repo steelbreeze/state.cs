@@ -23,9 +23,9 @@ namespace Steelbreeze.Behavior
 	internal sealed class Path
 	{
 		private readonly Element source;
+		private readonly IEnumerable<Element> sourceAncestorsToExit;
+		private readonly IEnumerable<Element> targetAncestorsToEnter;
 		private readonly Element target;
-		private readonly IEnumerable<Element> exit;
-		private readonly IEnumerable<Element> enter;
 
 		internal Path( Element source, Element target )
 		{
@@ -33,8 +33,8 @@ namespace Steelbreeze.Behavior
 			var targetAncestors = target.Owner.Ancestors;
 			var lca = LCA( sourceAncestors, targetAncestors );
 
-			this.exit = sourceAncestors.Skip( lca + 1 ).Reverse();
-			this.enter = targetAncestors.Skip( lca + 1 );
+			this.sourceAncestorsToExit = sourceAncestors.Skip( lca + 1 ).Reverse();
+			this.targetAncestorsToEnter = targetAncestors.Skip( lca + 1 );
 
 			this.source = source;
 			this.target = target;
@@ -42,20 +42,20 @@ namespace Steelbreeze.Behavior
 
 		internal void Exit( IState context )
 		{
-			source.BeginExit( context );
-			source.EndExit( context );
+			this.source.BeginExit( context );
+			this.source.EndExit( context );
 
-			foreach( var element in this.exit )
-				element.EndExit( context );
+			foreach( var ancestor in this.sourceAncestorsToExit )
+				ancestor.EndExit( context );
 		}
 
 		internal void Enter( IState context, Boolean deepHistory )
 		{
-			foreach( var element in this.enter )
-				element.BeginEnter( context );
+			foreach( var ancestor in this.targetAncestorsToEnter )
+				ancestor.BeginEnter( context );
 
-			target.BeginEnter( context );
-			target.EndEnter( context, deepHistory );
+			this.target.BeginEnter( context );
+			this.target.EndEnter( context, deepHistory );
 		}
 
 		private static int LCA( IList<Element> sourceAncestry, IList<Element> targetAncestry ) 
