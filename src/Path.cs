@@ -29,11 +29,10 @@ namespace Steelbreeze.Behavior
 		{
 			var sourceAncestors = source.Ancestors;
 			var targetAncestors = target.Ancestors;
+			var ignoreAncestors = LCA( sourceAncestors, targetAncestors ) + ( source.Equals( target ) ? 0 : 1 );
 
-			var uncommonAncestor = source.Owner.Equals( target.Owner ) ? sourceAncestors.Count - 1 : Uncommon( sourceAncestors, targetAncestors );
-
-			this.exit = sourceAncestors.Skip( uncommonAncestor ).Reverse();
-			this.enter = targetAncestors.Skip( uncommonAncestor );
+			this.exit = sourceAncestors.Skip( ignoreAncestors ).Reverse();
+			this.enter = targetAncestors.Skip( ignoreAncestors );
 		}
 
 		internal void Exit( IState context )
@@ -65,9 +64,15 @@ namespace Steelbreeze.Behavior
 			last.EndEnter( context, deepHistory );
 		}
 
-		private static int Uncommon( IList<Element> sourceAncestors, IList<Element> targetAncestors, int index = 0 )
+		// returns the index of the least (lowest) common ancestor, or -1 if the nodes are not in the same hierarchy
+		private static int LCA( IList<Element> sourceAncestry, IList<Element> targetAncestry ) 
 		{
-			return sourceAncestors[ index ].Equals( targetAncestors[ index ] ) ? Uncommon( sourceAncestors, targetAncestors, ++index ) : index;
+			int common = 0;
+
+			while( sourceAncestry.Count > common && targetAncestry.Count > common && sourceAncestry[ common ].Equals( targetAncestry[ common ] ) )
+				common ++;
+
+			return common - 1;
 		}
 	}
 }
