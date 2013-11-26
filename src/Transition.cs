@@ -81,7 +81,7 @@ namespace Steelbreeze.Behavior
 			if( guard == null )
 				return true;
 
-			var typed = message as TMessage;
+			var typed = message as TMessage; // NOTE: do not attempt to remove case as this performs the message type check
 
 			return typed != null && guard( typed );
 		}
@@ -105,7 +105,7 @@ namespace Steelbreeze.Behavior
 		protected virtual void OnEffect( Object message )
 		{
 			if( Effect != null )
-				Effect( message as TMessage );
+				Effect( message as TMessage ); // NOTE: cast is ok as this won't be called unless the guard passed
 		}
 	}
 

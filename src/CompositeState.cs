@@ -62,7 +62,13 @@ namespace Steelbreeze.Behavior
 
 		internal override void EndEnter( IState context, bool deepHistory )
 		{
-			var current = deepHistory || this.initial.Kind.IsHistory() ? context.GetCurrent( this ) as Element ?? this.initial : this.initial;
+			Element current = null;
+
+			if( deepHistory || this.initial.Kind.IsHistory() )
+				current = context.GetCurrent( this );
+
+			if( current == null )
+				current = initial;
 
 			current.BeginEnter( context );
 			current.EndEnter( context, deepHistory || this.initial.Kind == PseudoStateKind.DeepHistory );
