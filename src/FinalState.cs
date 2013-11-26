@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
+using System.ComponentModel;
 
 namespace Steelbreeze.Behavior
 {
@@ -25,12 +26,14 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// The final state's entry action (do not set this)
 		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Obsolete( "Entry actions are not permitted for FinalState", true )]
 		new public Action Entry { get { return null; } set { throw new Exception( "FinalState cannot have an entry action" ); } }
 
 		/// <summary>
 		/// The final state's exit action (do not set this)
 		/// </summary>
+		[EditorBrowsable( EditorBrowsableState.Never )]
 		[Obsolete( "Exit actions are not permitted for FinalState", true )]
 		new public Action Exit { get { return null; } set { throw new Exception( "FinalState cannot have an exit action" ); } }
 
