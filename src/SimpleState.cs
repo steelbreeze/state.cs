@@ -129,10 +129,12 @@ namespace Steelbreeze.Behavior
 
 			var transition = this.transitions.SingleOrDefault( t => t.Guard( message ) );
 
-			if( transition != null )
-				transition.Traverse( context, message );
+			if( transition == null )
+				return false;
 
-			return transition != null;
+			transition.Traverse( context, message );
+
+			return true;
 		}
 	}
 }

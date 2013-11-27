@@ -78,12 +78,12 @@ namespace Steelbreeze.Behavior
 
 		Boolean ITransition.Guard( Object message )
 		{
-			if( guard == null )
-				return true;
-
 			var typed = message as TMessage; // NOTE: do not attempt to remove case as this performs the message type check
 
-			return typed != null && guard( typed );
+			if( typed == null )
+				return false;
+
+			return guard == null || guard( typed );
 		}
 
 		void ITransition.Traverse( IState context, Object message )

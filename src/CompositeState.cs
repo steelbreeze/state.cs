@@ -46,7 +46,9 @@ namespace Steelbreeze.Behavior
 
 		internal override bool IsComplete( IState context )
 		{
-			return context.IsTerminated || context.GetCurrent( this ) is FinalState;
+			var current = context.GetCurrent( this );
+
+			return context.IsTerminated || current == null || current is FinalState || context.GetActive( current ) == false;
 		}
 
 		internal override void BeginExit( IState context )

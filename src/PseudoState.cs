@@ -81,17 +81,12 @@ namespace Steelbreeze.Behavior
 			completions.Add( completion );
 		}
 
-		internal override void BeginEnter( IState context )
-		{
-			base.BeginEnter( context );
-
-			if( this.Kind == PseudoStateKind.Terminate )
-				context.IsTerminated = true;
-		}
-
 		internal override void EndEnter( IState context, Boolean deepHistory )
 		{
-			this.Kind.Completion( completions ).Traverse( context, deepHistory );
+			if( this.Kind == PseudoStateKind.Terminate )
+				context.IsTerminated = true;
+			else
+				this.Kind.Completion( completions ).Traverse( context, deepHistory );
 		}
 	}
 }

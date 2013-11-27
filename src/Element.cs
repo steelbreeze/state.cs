@@ -69,7 +69,7 @@ namespace Steelbreeze.Behavior
 
 		internal virtual void BeginEnter( IState context )
 		{
-			if( context.GetActive( this ) )
+			if( context.GetActive( this ) ) // NOTE: this check is required to cater for edge cases involving external transitions between orthogonal regions; we like to keep the entry/exit count for elements the same, so we exit an element that active before reentering it
 			{
 				BeginExit( context );
 				EndExit( context );

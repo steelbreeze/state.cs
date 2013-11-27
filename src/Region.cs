@@ -65,7 +65,9 @@ namespace Steelbreeze.Behavior
 		/// <remarks>A region is deemed to be completed when its current child state is a final state.</remarks>
 		public Boolean IsComplete( IState context )
 		{
-			return context.IsTerminated || context.GetCurrent( this ) is FinalState;
+			var current = context.GetCurrent( this );
+
+			return context.IsTerminated || current == null || current is FinalState || context.GetActive( current ) == false;
 		}
 
 		/// <summary>
@@ -89,6 +91,8 @@ namespace Steelbreeze.Behavior
 				current.EndExit( context );
 			}
 		}
+
+
 
 		internal override void EndEnter( IState context, Boolean deepHistory )
 		{
