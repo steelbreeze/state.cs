@@ -124,9 +124,6 @@ namespace Steelbreeze.Behavior
 
 		internal virtual Boolean Process( IState context, Object message )
 		{
-			if( context.IsTerminated )
-				return false;
-
 			if( this.transitions == null )
 				return false;
 

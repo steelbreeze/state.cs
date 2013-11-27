@@ -79,9 +79,6 @@ namespace Steelbreeze.Behavior
 
 		internal override bool Process( IState context, object message )
 		{
-			if( context.IsTerminated )
-				return false;
-
 			return base.Process( context, message ) || regions.Aggregate( false, ( result, region ) => region.Process( context, message ) || result );
 		}
 	}
