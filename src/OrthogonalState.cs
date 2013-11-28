@@ -27,7 +27,7 @@ namespace Steelbreeze.Behavior
 	/// </remarks>
 	public class OrthogonalState : SimpleState
 	{
-		internal ICollection<Region> regions = new HashSet<Region>();
+		internal readonly ICollection<Region> regions = new HashSet<Region>();
 
 		/// <summary>
 		/// Creates an orthogonal state within an owning (parent) region.

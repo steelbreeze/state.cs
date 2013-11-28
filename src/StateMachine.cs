@@ -40,7 +40,7 @@ namespace Steelbreeze.Behavior
 			return stateMachine.regions.SingleOrDefault( region => region.Name.Equals( DefaultRegionName( stateMachine ) ) ) ?? new Region( DefaultRegionName( stateMachine ), stateMachine );
 		}
 
-		internal ICollection<Region> regions = new HashSet<Region>();
+		internal readonly ICollection<Region> regions = new HashSet<Region>();
 
 		/// <summary>
 		/// Creates a new instance of the StateMachine class

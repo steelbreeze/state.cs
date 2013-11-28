@@ -28,17 +28,17 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// The name of the element.
 		/// </summary>
-		public String Name { get; private set; }
+		public readonly String Name;
 
 		/// <summary>
 		/// The owning parent element of the element
 		/// </summary>
-		public Element Owner { get; private set; }
+		public readonly Element Owner;
 
 		/// <summary>
 		/// Returns the fully qualified name of the element
 		/// </summary>
-		public String QualifiedName { get { return this.Ancestors.Select( element => element.Name ).Aggregate( ( left, right ) => left + "." + right ); } }
+		public String QualifiedName { get { return this.Ancestors.Select( element => element.Name ).Aggregate( ( result, element ) => result + "." + element ); } }
 
 		internal Element( String name, Element owner )
 		{

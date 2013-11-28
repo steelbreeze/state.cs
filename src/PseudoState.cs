@@ -29,7 +29,7 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// The kind of the pseudo state.
 		/// </summary>
-		public PseudoStateKind Kind { get; private set; }
+		public readonly PseudoStateKind Kind;// { get; private set; }
 
 		/// <summary>
 		/// Creates a pseudo state within an owning region.
