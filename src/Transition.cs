@@ -89,12 +89,15 @@ namespace Steelbreeze.Behavior
 		void ITransition.Traverse( IState context, Object message )
 		{
 			if( path != null )
-				path.Exit( context );
+				path.exit( context );
 
 			OnEffect( message );
 
 			if( path != null )
-				path.Enter( context, false );
+			{
+				path.beginEnter( context );
+				path.endEnter( context, false );
+			}
 		}
 
 		/// <summary>
@@ -119,8 +122,6 @@ namespace Steelbreeze.Behavior
 	{
 		private readonly Path path;
 		private readonly Func<Boolean> guard;
-
-		internal virtual Boolean IsElse { get { return false; } }
 
 		/// <summary>
 		/// The action(s) to perform while traversing the transition.
@@ -195,11 +196,12 @@ namespace Steelbreeze.Behavior
 
 		internal void Traverse( IState context, Boolean deepHistory )
 		{
-			path.Exit( context );
+			path.exit( context );
 
 			OnEffect();
 
-			path.Enter( context, deepHistory );
+			path.beginEnter( context );
+			path.endEnter( context, deepHistory );
 		}
 
 		/// <summary>

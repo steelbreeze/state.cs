@@ -38,7 +38,7 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// Returns the fully qualified name of the element
 		/// </summary>
-		public String QualifiedName { get { return this.Ancestors.Select( element => element.Name ).Aggregate( ( result, element ) => result + "." + element ); } }
+		public String QualifiedName { get { return this.Ancestors.Select( element => element.Name ).Aggregate( ( result, element ) => result + "." + element ); } } // NOTE: this is only referenced internally in Debug.WriteLine statements
 
 		internal Element( String name, Element owner )
 		{
@@ -62,7 +62,7 @@ namespace Steelbreeze.Behavior
 
 		internal virtual void EndExit( IState context )
 		{
-			Debug.WriteLine( this, "Leave" );
+			Debug.WriteLine( this.QualifiedName, "Leave" );
 
 			context.SetActive( this, false );
 		}
@@ -75,7 +75,7 @@ namespace Steelbreeze.Behavior
 				EndExit( context );
 			}
 	
-			Debug.WriteLine( this, "Enter" );
+			Debug.WriteLine( this.QualifiedName, "Enter" );
 
 			context.SetActive( this, true );
 		}
@@ -88,7 +88,7 @@ namespace Steelbreeze.Behavior
 		/// <returns>The fully qualified name of the element.</returns>
 		public override string ToString()
 		{
-			return this.QualifiedName;
+			return this.Name;
 		}
 	}
 }

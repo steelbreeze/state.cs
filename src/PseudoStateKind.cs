@@ -111,33 +111,20 @@ namespace Steelbreeze.Behavior
 			switch( pseudoStateKind )
 			{
 				case PseudoStateKind.Choice:
-					return GetChoiceCompletion( completions );
+					var items = completions.Where( t => t.Guard() );
+					var count = items.Count();
+
+					return count > 0 ? items.ElementAt( random.Next( count ) ) : completions.Single( t => t is Transition.Else );
 
 				case PseudoStateKind.Junction:
-					return GetJunctionCompletion( completions );
+					return completions.SingleOrDefault( t => t.Guard() ) ?? completions.Single( t => t is Transition.Else );
 
 				case PseudoStateKind.Terminate:
 					return null;
 
 				default: // the initial pseudo states
-					if( completions.Count != 1 )
-						throw new Exception( "Initial pseudo states must have a single outbound transition" );
-
 					return completions.ElementAt( 0 );
 			}
-		}
-
-		private static Transition GetChoiceCompletion( IEnumerable<Transition> c )
-		{
-			var items = c.Where( t => !t.IsElse && t.Guard() );
-			var count = items.Count();
-
-			return count > 0 ? items.ElementAt( random.Next( count ) ) : c.Single( t => t.IsElse );
-		}
-
-		private static Transition GetJunctionCompletion( IEnumerable<Transition> c )
-		{
-			return c.SingleOrDefault( t => !t.IsElse && t.Guard() ) ?? c.Single( t => t.IsElse );
 		}
 	}
 }

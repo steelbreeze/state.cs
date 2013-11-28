@@ -22,10 +22,9 @@ namespace Steelbreeze.Behavior
 	// the path between any pair of elements within a state machine hierarchy
 	internal sealed class Path
 	{
-		private readonly Element source;
-		private readonly Action<IState> elementsToExit;
-		private readonly Action<IState> elementsToEnter;
-		private readonly Element target;
+		internal readonly Action<IState> exit;
+		internal readonly Action<IState> beginEnter;
+		internal readonly Action<IState, Boolean> endEnter;
 
 		internal Path( Element source, Element target )
 		{
@@ -33,29 +32,17 @@ namespace Steelbreeze.Behavior
 			var targetAncestors = target.Owner.Ancestors;
 			var lca = LCA( sourceAncestors, targetAncestors );
 
-			this.source = source;
-			this.elementsToExit += source.EndExit;
+			this.exit = source.BeginExit;
+			this.exit += source.EndExit;
 
 			foreach( var sourceAncestor in sourceAncestors.Skip( lca + 1 ).Reverse() )
-				this.elementsToExit += sourceAncestor.EndExit;
+				this.exit += sourceAncestor.EndExit;
 
 			foreach( var targetAncestor in targetAncestors.Skip( lca + 1 ) )
-				this.elementsToEnter += targetAncestor.BeginEnter;
+				this.beginEnter += targetAncestor.BeginEnter;
 	
-			this.elementsToEnter += target.BeginEnter;
-			this.target = target;
-		}
-
-		internal void Exit( IState context )
-		{
-			this.source.BeginExit( context );
-			this.elementsToExit( context );
-		}
-
-		internal void Enter( IState context, Boolean deepHistory )
-		{
-			this.elementsToEnter( context );
-			this.target.EndEnter( context, deepHistory );
+			this.beginEnter += target.BeginEnter;
+			this.endEnter = target.EndEnter;
 		}
 
 		private static int LCA( IList<Element> sourceAncestry, IList<Element> targetAncestry ) 

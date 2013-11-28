@@ -29,8 +29,6 @@ namespace Steelbreeze.Behavior
 		{
 			private static Func<Boolean> alwaysFalse = () => false;
 
-			internal override bool IsElse { get { return true; } }
-
 			/// <summary>
 			/// Creates an else completion transition between pseudo states.
 			/// </summary>

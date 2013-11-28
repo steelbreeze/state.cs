@@ -29,7 +29,7 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// The kind of the pseudo state.
 		/// </summary>
-		public readonly PseudoStateKind Kind;// { get; private set; }
+		public readonly PseudoStateKind Kind;
 
 		/// <summary>
 		/// Creates a pseudo state within an owning region.
@@ -75,10 +75,10 @@ namespace Steelbreeze.Behavior
 		{
 			Trace.Assert( !( this.Kind.IsInitial() && completions != null ), "initial pseudo states can have at most one outbound completion transition" );
 
-			if( completions == null )
-				completions = new HashSet<Transition>();
+			if( this.completions == null )
+				this.completions = new HashSet<Transition>();
 
-			completions.Add( completion );
+			this.completions.Add( completion );
 		}
 
 		internal override void EndEnter( IState context, Boolean deepHistory )
