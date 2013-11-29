@@ -27,15 +27,13 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		public sealed class Else : Transition
 		{
-			private static Func<Boolean> alwaysFalse = () => false;
-
 			/// <summary>
 			/// Creates an else completion transition between pseudo states.
 			/// </summary>
 			/// <param name="source">The source pseudo state.</param>
 			/// <param name="target">The target pseudo state.</param>
 			public Else( PseudoState source, PseudoState target )
-				: base( source, target, alwaysFalse )
+				: base( source, target, False )
 			{
 				Trace.Assert( source.Kind == PseudoStateKind.Choice || source.Kind == PseudoStateKind.Junction, "Else can only originate from choice or junction pseudo states" );
 			}
@@ -46,7 +44,7 @@ namespace Steelbreeze.Behavior
 			/// <param name="source">The source pseudo state.</param>
 			/// <param name="target">The target state.</param>
 			public Else( PseudoState source, SimpleState target )
-				: base( source, target, alwaysFalse )
+				: base( source, target, False )
 			{
 				Trace.Assert( source.Kind == PseudoStateKind.Choice || source.Kind == PseudoStateKind.Junction, "Else can only originate from choice or junction pseudo states" );
 			}

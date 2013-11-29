@@ -116,7 +116,7 @@ namespace Steelbreeze.Behavior
 			if( !IsComplete( context ) )
 				return;
 
-			var completion = completions.SingleOrDefault( t => t.Guard() );
+			var completion = completions.SingleOrDefault( t => t.guard() );
 
 			if( completion != null )
 				completion.Traverse( context, deepHistory );

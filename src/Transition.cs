@@ -120,8 +120,10 @@ namespace Steelbreeze.Behavior
 	/// </remarks>
 	public partial class Transition
 	{
+		internal static Func<Boolean> True = () => true;
+		internal static Func<Boolean> False = () => false;
+		internal readonly Func<Boolean> guard;
 		private readonly Path path;
-		private readonly Func<Boolean> guard;
 
 		/// <summary>
 		/// The action(s) to perform while traversing the transition.
@@ -137,7 +139,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>For initial pseudo states, this type of tranision initiates a compound transition, for others, it is a particiapnt in a compound transition.</remarks>
 		public Transition( PseudoState source, PseudoState target, Func<Boolean> guard = null )
 		{
-			this.guard = guard;
+			this.guard = guard ?? True;
 			this.path = new Path( source, target );
 
 			source.Add( this );
@@ -152,7 +154,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>This type of transition completes a compound transition.</remarks>
 		public Transition( PseudoState source, SimpleState target, Func<Boolean> guard = null )
 		{
-			this.guard = guard;
+			this.guard = guard ?? True;
 			this.path = new Path( source, target );
 
 			source.Add( this );
@@ -168,7 +170,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>This type of transition initiates a compound transition.</remarks>
 		public Transition( SimpleState source, PseudoState target, Func<Boolean> guard = null )
 		{
-			this.guard = guard;
+			this.guard = guard ?? True;
 			this.path = new Path( source, target );
 
 			source.Add( this );
@@ -183,15 +185,10 @@ namespace Steelbreeze.Behavior
 		/// <remarks>Continuation transitions are tested for after a state has been entered if the state is deemed to be completed.</remarks>
 		public Transition( SimpleState source, SimpleState target, Func<Boolean> guard = null )
 		{
-			this.guard = guard;
+			this.guard = guard ?? True;
 			this.path = new Path( source, target );
 
 			source.Add( this );
-		}
-
-		internal Boolean Guard()
-		{
-			return guard == null || guard();
 		}
 
 		internal void Traverse( IState context, Boolean deepHistory )

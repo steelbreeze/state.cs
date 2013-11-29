@@ -111,13 +111,13 @@ namespace Steelbreeze.Behavior
 			switch( pseudoStateKind )
 			{
 				case PseudoStateKind.Choice:
-					var items = completions.Where( t => t.Guard() );
+					var items = completions.Where( t => t.guard() );
 					var count = items.Count();
 
 					return count > 0 ? items.ElementAt( random.Next( count ) ) : completions.Single( t => t is Transition.Else );
 
 				case PseudoStateKind.Junction:
-					return completions.SingleOrDefault( t => t.Guard() ) ?? completions.Single( t => t is Transition.Else );
+					return completions.SingleOrDefault( t => t.guard() ) ?? completions.Single( t => t is Transition.Else );
 
 				case PseudoStateKind.Terminate:
 					return null;
