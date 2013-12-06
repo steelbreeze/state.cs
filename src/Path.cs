@@ -30,29 +30,22 @@ namespace Steelbreeze.Behavior
 		{
 			var sourceAncestors = source.Owner.Ancestors;
 			var targetAncestors = target.Owner.Ancestors;
-			var lca = LCA( sourceAncestors, targetAncestors );
+			var ignoreAncestors = 0;
+
+			while( sourceAncestors.Count > ignoreAncestors && targetAncestors.Count > ignoreAncestors && sourceAncestors[ ignoreAncestors ].Equals( targetAncestors[ ignoreAncestors ] ) )
+				ignoreAncestors++;
 
 			this.exit = source.BeginExit;
 			this.exit += source.EndExit;
 
-			foreach( var sourceAncestor in sourceAncestors.Skip( lca + 1 ).Reverse() )
+			foreach( var sourceAncestor in sourceAncestors.Skip( ignoreAncestors ).Reverse() )
 				this.exit += sourceAncestor.EndExit;
 
-			foreach( var targetAncestor in targetAncestors.Skip( lca + 1 ) )
+			foreach( var targetAncestor in targetAncestors.Skip( ignoreAncestors ) )
 				this.beginEnter += targetAncestor.BeginEnter;
 	
 			this.beginEnter += target.BeginEnter;
 			this.endEnter = target.EndEnter;
-		}
-
-		private static int LCA( IList<Element> sourceAncestry, IList<Element> targetAncestry ) 
-		{
-			int common = 0;
-
-			while( sourceAncestry.Count > common && targetAncestry.Count > common && sourceAncestry[ common ].Equals( targetAncestry[ common ] ) )
-				common ++;
-
-			return common - 1;
 		}
 	}
 }
