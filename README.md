@@ -1,6 +1,6 @@
 # Welcome to state.cs
 
-The current stable release is 3.5.3.
+The current stable release is 3.5.4.
 
 If you're using state.cs I'd love to hear about it; please e-mail me at mesmo@steelbreeze.net 
 

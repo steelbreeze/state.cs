@@ -80,6 +80,9 @@ namespace Steelbreeze.Behavior
 
 		internal override Boolean Process( IState context, Object message )
 		{
+			if( context.IsTerminated )
+				return false;
+
 			return base.Process( context, message ) || context.GetCurrent( this ).Process( context, message );
 		}
 	}
