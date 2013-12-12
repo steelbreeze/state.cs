@@ -51,12 +51,17 @@ namespace Steelbreeze.Behavior
 
 		internal override bool IsComplete( IState context )
 		{
-			return context.IsTerminated || regions.All( region => region.IsComplete( context ) );
+			if( !context.IsTerminated )
+				foreach( var region in this.regions )
+					if( !region.IsComplete( context ) )
+						return false;
+
+			return true;
 		}
 
 		internal override void BeginExit( IState context )
 		{
-			foreach( var region in regions )
+			foreach( var region in this.regions )
 			{
 				if( context.GetActive( region ) )
 				{
@@ -68,7 +73,7 @@ namespace Steelbreeze.Behavior
 
 		internal override void EndEnter( IState context, bool deepHistory )
 		{
-			foreach( var region in regions )
+			foreach( var region in this.regions )
 			{
 				region.BeginEnter( context );
 				region.EndEnter( context, deepHistory );

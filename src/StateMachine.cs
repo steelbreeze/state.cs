@@ -55,7 +55,12 @@ namespace Steelbreeze.Behavior
 		/// <returns>True if the all the child regions are complete.</returns>
 		public bool IsComplete( IState context )
 		{
-			return context.IsTerminated || regions.All( region => region.IsComplete( context ) );
+			if( !context.IsTerminated )
+				foreach( var region in this.regions )
+					if( !region.IsComplete( context ) )
+						return false;
+
+			return true;
 		}
 
 		/// <summary>

@@ -83,7 +83,7 @@ namespace Steelbreeze.Behavior
 		internal virtual void EndEnter( IState context, bool deepHistory ) { }
 
 		/// <summary>
-		/// Returns the fully qualified name of the element.
+		/// Returns the name of the element.
 		/// </summary>
 		/// <returns>The fully qualified name of the element.</returns>
 		public override string ToString()
