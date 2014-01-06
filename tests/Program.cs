@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Steelbreeze.Behavior.Test
+namespace Steelbreeze.Behavior.Tests
 {
 	public class Program
 	{

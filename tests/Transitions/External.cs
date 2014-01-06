@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using Steelbreeze.Behavior;
 
-namespace Steelbreeze.Behavior.Test.Transitions
+namespace Steelbreeze.Behavior.Tests.Transitions
 {
 	public class External
 	{

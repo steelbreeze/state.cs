@@ -17,7 +17,7 @@ using System;
 using System.Collections.Generic;
 using Steelbreeze.Behavior;
 
-namespace Steelbreeze.Behavior.Test
+namespace Steelbreeze.Behavior.Tests
 {
 	/// <summary>
 	/// Basic example of state machine state implementation

@@ -3,7 +3,7 @@
 using System;
 using Steelbreeze.Behavior;
 
-namespace Steelbreeze.Examples
+namespace Steelbreeze.Behavior.Examples
 {
 	/// <summary>
 	/// A controller for a simple cassette player

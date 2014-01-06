@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using Steelbreeze.Behavior;
 
-namespace Steelbreeze.Behavior.Test.History
+namespace Steelbreeze.Behavior.Tests.History
 {
 	public class Shallow
 	{
