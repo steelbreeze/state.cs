@@ -37,7 +37,7 @@ Simply add all the .cs files and the resources to an existing or new assembly. T
 If you're using state.cs, please drop me a mail; I'd love to hear about how this is getting used...
 
 ## Licence
-Copyright © 2013 Steelbreeze Limited.
+Copyright © 2013-4 Steelbreeze Limited.
 
 State.cs is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
