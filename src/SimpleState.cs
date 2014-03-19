@@ -1,4 +1,4 @@
-﻿// Copyright © 2013 Steelbreeze Limited.
+﻿// Copyright © 2014 Steelbreeze Limited.
 // This file is part of state.cs.
 //
 // state.cs is free software: you can redistribute it and/or modify
@@ -22,52 +22,52 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A state (invariant condition) within a state machine model.
 	/// </summary>
-	public class SimpleState : Element
+	public class SimpleState<TState> : Element<TState> where TState : IState<TState>
 	{
-		private ICollection<Transition> completions;
-		private ICollection<ITransition> transitions;
+		private ICollection<Transition<TState>> completions;
+		private ICollection<ITransition<TState>> transitions;
 
 		/// <summary>
 		/// Optional action(s) that can be called when the state is entered.
 		/// </summary>
-		public event Action Entry;
+		public event Action<TState> Entry;
 
 		/// <summary>
 		/// Optional action(s) that can be calle when the state is exited.
 		/// </summary>
-		public event Action Exit;
+		public event Action<TState> Exit;
 
 		/// <summary>
 		/// Creates a state within an owning (parent) region.
 		/// </summary>
 		/// <param name="name">The name of the state.</param>
 		/// <param name="owner">The owning (parent) region.</param>
-		public SimpleState( String name, Region owner ) : base( name, owner ) { }
+		public SimpleState( String name, Region<TState> owner ) : base( name, owner ) { }
 
 		/// <summary>
 		/// Creates a state within an owning (parent) composite state.
 		/// </summary>
 		/// <param name="name">The name of the state.</param>
 		/// <param name="owner">The owning (parent) composite state.</param>
-		public SimpleState( String name, CompositeState owner ) : base( name, owner ) { }
+		public SimpleState( String name, CompositeState<TState> owner ) : base( name, owner ) { }
 
-		internal void Add( Transition completion )
+		internal void Add( Transition<TState> completion )
 		{
 			if( completions == null )
-				completions = new HashSet<Transition>();
-			
+				completions = new HashSet<Transition<TState>>();
+
 			completions.Add( completion );
 		}
 
-		internal void Add( ITransition transition )
+		internal void Add( ITransition<TState> transition )
 		{
 			if( transitions == null )
-				transitions = new HashSet<ITransition>();
-			
+				transitions = new HashSet<ITransition<TState>>();
+
 			transitions.Add( transition );
 		}
 
-		internal virtual Boolean IsComplete( IState context )
+		internal virtual Boolean IsComplete( TState state )
 		{
 			return true;
 		}
@@ -76,53 +76,53 @@ namespace Steelbreeze.Behavior
 		/// Invokes the state exit action.
 		/// </summary>
 		/// <remarks>Override this method to create custom exit behaviour.</remarks>
-		protected virtual void OnExit()
+		protected virtual void OnExit( TState state )
 		{
 			if( Exit != null )
-				Exit();
+				Exit( state );
 		}
 
 		/// <summary>
 		/// Invokes the state entry action.
 		/// </summary>
 		/// <remarks>Override this method to create custom entry behaviour.</remarks>
-		protected virtual void OnEnter()
+		protected virtual void OnEntry( TState state )
 		{
 			if( Entry != null )
-				Entry();
+				Entry( state );
 		}
 
-		internal override void EndExit( IState context )
+		internal override void EndExit( TState state )
 		{
-			this.OnExit();
-			base.EndExit( context );
+			this.OnExit( state );
+			base.EndExit( state );
 		}
 
-		internal override void BeginEnter( IState context )
+		internal override void BeginEntry( TState state )
 		{
-			base.BeginEnter( context );
+			base.BeginEntry( state );
 
 			if( this.Owner != null )
-				context.SetCurrent( this.Owner, this );
+				state.SetCurrent( this.Owner, this );
 
-			this.OnEnter();
+			this.OnEntry( state );
 		}
 
-		internal override void EndEnter( IState context, Boolean deepHistory )
+		internal override void EndEntry( TState state, Boolean deepHistory )
 		{
 			if( completions == null )
 				return;
 
-			if( !IsComplete( context ) )
+			if( !IsComplete( state ) )
 				return;
 
 			var completion = completions.SingleOrDefault( t => t.guard() );
 
 			if( completion != null )
-				completion.Traverse( context, deepHistory );
+				completion.Traverse( state, deepHistory );
 		}
 
-		internal virtual Boolean Process( IState context, Object message )
+		internal virtual Boolean Process( TState state, Object message )
 		{
 			if( this.transitions == null )
 				return false;
@@ -132,7 +132,7 @@ namespace Steelbreeze.Behavior
 			if( transition == null )
 				return false;
 
-			transition.Traverse( context, message );
+			transition.Traverse( state, message );
 
 			return true;
 		}

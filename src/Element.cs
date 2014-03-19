@@ -1,4 +1,4 @@
-﻿// Copyright © 2013 Steelbreeze Limited.
+﻿// Copyright © 2014 Steelbreeze Limited.
 // This file is part of state.cs.
 //
 // state.cs is free software: you can redistribute it and/or modify
@@ -14,16 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Steelbreeze.Behavior
 {
 	/// <summary>
 	/// Represents an element within a state machine heirarchy
 	/// </summary>
-	public abstract class Element
+	public abstract class Element<TState> where TState : IState<TState>
 	{
 		/// <summary>
 		/// The name of the element.
@@ -33,54 +31,42 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// The owning parent element of the element
 		/// </summary>
-		public readonly Element Owner;
+		public readonly Element<TState> Owner;
 
 		/// <summary>
 		/// Returns the fully qualified name of the element
 		/// </summary>
-		public String QualifiedName { get { return this.Ancestors.Select( element => element.Name ).Aggregate( ( result, element ) => result + "." + element ); } } // NOTE: this is only referenced internally in Debug.WriteLine statements
+		public String QualifiedName { get { return this.Owner != null ? this.Owner.QualifiedName + "." + this.Name : this.Name; } }
 
-		internal Element( String name, Element owner )
+		internal Element( String name, Element<TState> owner )
 		{
 			this.Name = name;
 			this.Owner = owner;
 		}
 
-		internal IList<Element> Ancestors
-		{
-			get
-			{
-				var ancestors = this.Owner != null ? this.Owner.Ancestors : new List<Element>();
+		internal virtual void BeginExit( TState state ) { }
 
-				ancestors.Add( this );
-
-				return ancestors;
-			}
-		}
-
-		internal virtual void BeginExit( IState context ) { }
-
-		internal virtual void EndExit( IState context )
+		internal virtual void EndExit( TState state )
 		{
 			Debug.WriteLine( this.QualifiedName, "Leave" );
 
-			context.SetActive( this, false );
+			state.SetActive( this, false );
 		}
 
-		internal virtual void BeginEnter( IState context )
+		internal virtual void BeginEntry( TState state )
 		{
-			if( context.GetActive( this ) ) // NOTE: this check is required to cater for edge cases involving external transitions between orthogonal regions; we like to keep the entry/exit count for elements the same, so we exit an element that active before reentering it
+			if( state.GetActive( this ) ) // NOTE: this check is required to cater for edge cases involving external transitions between orthogonal regions; we like to keep the entry/exit count for elements the same, so we exit an element that active before reentering it
 			{
-				BeginExit( context );
-				EndExit( context );
+				BeginExit( state );
+				EndExit( state );
 			}
-	
+
 			Debug.WriteLine( this.QualifiedName, "Enter" );
 
-			context.SetActive( this, true );
+			state.SetActive( this, true );
 		}
 
-		internal virtual void EndEnter( IState context, bool deepHistory ) { }
+		internal virtual void EndEntry( TState state, bool deepHistory ) { }
 
 		/// <summary>
 		/// Returns the name of the element.

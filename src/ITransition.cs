@@ -1,4 +1,4 @@
-﻿// Copyright © 2013 Steelbreeze Limited.
+﻿// Copyright © 2014 Steelbreeze Limited.
 // This file is part of state.cs.
 //
 // state.cs is free software: you can redistribute it and/or modify
@@ -17,10 +17,10 @@ using System;
 
 namespace Steelbreeze.Behavior
 {
-	internal interface ITransition
+	internal interface ITransition<TState> where TState : IState<TState>
 	{
 		Boolean Guard( Object message );
 
-		void Traverse( IState context, Object message );
+		void Traverse( TState state, Object message );
 	}
 }

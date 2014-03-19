@@ -1,4 +1,4 @@
-﻿// Copyright © 2013 Steelbreeze Limited.
+﻿// Copyright © 2014 Steelbreeze Limited.
 // This file is part of state.cs.
 //
 // state.cs is free software: you can redistribute it and/or modify
@@ -20,16 +20,16 @@ using System.Linq;
 namespace Steelbreeze.Behavior
 {
 	// the path between any pair of elements within a state machine hierarchy
-	internal sealed class Path
+	internal sealed class Path<TState> where TState : IState<TState>
 	{
-		internal readonly Action<IState> exit;
-		internal readonly Action<IState> beginEnter;
-		internal readonly Action<IState, Boolean> endEnter;
+		internal readonly Action<TState> exit;
+		internal readonly Action<TState> beginEntry;
+		internal readonly Action<TState, Boolean> endEntry;
 
-		internal Path( Element source, Element target )
+		internal Path( Element<TState> source, Element<TState> target )
 		{
-			var sourceAncestors = source.Owner.Ancestors;
-			var targetAncestors = target.Owner.Ancestors;
+			var sourceAncestors = Ancestors( source.Owner );
+			var targetAncestors = Ancestors( target.Owner );
 			var ignoreAncestors = 0;
 
 			while( sourceAncestors.Count > ignoreAncestors && targetAncestors.Count > ignoreAncestors && sourceAncestors[ ignoreAncestors ].Equals( targetAncestors[ ignoreAncestors ] ) )
@@ -42,10 +42,19 @@ namespace Steelbreeze.Behavior
 				this.exit += sourceAncestor.EndExit;
 
 			foreach( var targetAncestor in targetAncestors.Skip( ignoreAncestors ) )
-				this.beginEnter += targetAncestor.BeginEnter;
-	
-			this.beginEnter += target.BeginEnter;
-			this.endEnter = target.EndEnter;
+				this.beginEntry += targetAncestor.BeginEntry;
+
+			this.beginEntry += target.BeginEntry;
+			this.endEntry = target.EndEntry;
+		}
+
+		private static IList<Element<TState>> Ancestors( Element<TState> element )
+		{
+			var ancestors = element.Owner != null ? Ancestors( element.Owner ) : new List<Element<TState>>();
+
+			ancestors.Add( element );
+
+			return ancestors;
 		}
 	}
 }

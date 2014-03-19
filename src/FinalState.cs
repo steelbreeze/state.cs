@@ -1,4 +1,4 @@
-﻿// Copyright © 2013 Steelbreeze Limited.
+﻿// Copyright © 2014 Steelbreeze Limited.
 // This file is part of state.cs.
 //
 // state.cs is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A final state is a state that denotes its parent region or composite state is complete.
 	/// </summary>
-	public sealed class FinalState : SimpleState
+	public sealed class FinalState<TState> : SimpleState<TState> where TState : IState<TState>
 	{
 		/// <summary>
 		/// The final state's entry action (do not set this)
@@ -42,13 +42,13 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="name">The name of the final state.</param>
 		/// <param name="owner">The owning (parent) region.</param>
-		public FinalState( String name, Region owner ) : base( name, owner ) { }
+		public FinalState( String name, Region<TState> owner ) : base( name, owner ) { }
 
 		/// <summary>
 		/// Creates a final state within an owning (parent) composite state.
 		/// </summary>
 		/// <param name="name">The name of the final state.</param>
 		/// <param name="owner">The owning (parent) composite state.</param>
-		public FinalState( String name, CompositeState owner ) : base( name, owner ) { }
+		public FinalState( String name, CompositeState<TState> owner ) : base( name, owner ) { }
 	}
 }

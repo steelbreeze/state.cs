@@ -1,4 +1,4 @@
-﻿// Copyright © 2013 Steelbreeze Limited.
+﻿// Copyright © 2014 Steelbreeze Limited.
 // This file is part of state.cs.
 //
 // state.cs is free software: you can redistribute it and/or modify
@@ -25,9 +25,9 @@ namespace Steelbreeze.Behavior
 	/// <remarks>
 	/// Orthogonal states allow seperation of mutually exclusive child states allowing them to independantly respond to messages. 
 	/// </remarks>
-	public class OrthogonalState : SimpleState
+	public class OrthogonalState<TState> : SimpleState<TState> where TState : IState<TState>
 	{
-		internal readonly ICollection<Region> regions = new HashSet<Region>();
+		internal readonly ICollection<Region<TState>> regions = new HashSet<Region<TState>>();
 
 		/// <summary>
 		/// Creates an orthogonal state within an owning (parent) region.
@@ -37,7 +37,7 @@ namespace Steelbreeze.Behavior
 		/// <remarks>
 		/// An orthogonal state is a container of regions within a state machine model; it can be used as a root state machine.
 		/// </remarks>
-		public OrthogonalState( String name, Region owner ) : base( name, owner ) { }
+		public OrthogonalState( String name, Region<TState> owner ) : base( name, owner ) { }
 
 		/// <summary>
 		/// Creates an orthogonal state within an owning (parent) composite state.
@@ -47,47 +47,57 @@ namespace Steelbreeze.Behavior
 		/// <remarks>
 		/// An orthogonal state is a container of regions within a state machine model; it can be used as a root state machine.
 		/// </remarks>
-		public OrthogonalState( String name, CompositeState owner ) : base( name, owner ) { }
+		public OrthogonalState( String name, CompositeState<TState> owner ) : base( name, owner ) { }
 
-		internal override bool IsComplete( IState context )
+		/// <summary>
+		/// Creates a new child Region within the StateMachine
+		/// </summary>
+		/// <param name="name">The name of the Region</param>
+		/// <returns>The new child Region</returns>
+		public Region<TState> CreateRegion( String name )
 		{
-			if( !context.IsTerminated )
+			return new Region<TState>( name, this );
+		}
+
+		internal override bool IsComplete( TState state )
+		{
+			if( !state.IsTerminated )
 				foreach( var region in this.regions )
-					if( !region.IsComplete( context ) )
+					if( !region.IsComplete( state ) )
 						return false;
 
 			return true;
 		}
 
-		internal override void BeginExit( IState context )
+		internal override void BeginExit( TState state )
 		{
 			foreach( var region in this.regions )
 			{
-				if( context.GetActive( region ) )
+				if( state.GetActive( region ) )
 				{
-					region.BeginExit( context );
-					region.EndExit( context );
+					region.BeginExit( state );
+					region.EndExit( state );
 				}
 			}
 		}
 
-		internal override void EndEnter( IState context, bool deepHistory )
+		internal override void EndEntry( TState state, bool deepHistory )
 		{
 			foreach( var region in this.regions )
 			{
-				region.BeginEnter( context );
-				region.EndEnter( context, deepHistory );
+				region.BeginEntry( state );
+				region.EndEntry( state, deepHistory );
 			}
 
-			base.EndEnter( context, deepHistory );
+			base.EndEntry( state, deepHistory );
 		}
 
-		internal override bool Process( IState context, object message )
+		internal override bool Process( TState state, object message )
 		{
-			if( context.IsTerminated )
+			if( state.IsTerminated )
 				return false;
 
-			return base.Process( context, message ) || regions.Aggregate( false, ( result, region ) => region.Process( context, message ) || result );
+			return base.Process( state, message ) || regions.Aggregate( false, ( result, region ) => region.Process( state, message ) || result );
 		}
 	}
 }

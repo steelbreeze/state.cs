@@ -1,4 +1,4 @@
-﻿// Copyright © 2013 Steelbreeze Limited.
+﻿// Copyright © 2014 Steelbreeze Limited.
 // This file is part of state.cs.
 //
 // state.cs is free software: you can redistribute it and/or modify
@@ -22,9 +22,9 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// A transient state within a pseudo state model.
 	/// </summary>
-	public sealed class PseudoState : Element
+	public sealed class PseudoState<TState> : Element<TState> where TState : IState<TState>
 	{
-		private ICollection<Transition> completions;
+		private readonly ICollection<Transition<TState>> completions = new HashSet<Transition<TState>>();
 
 		/// <summary>
 		/// The kind of the pseudo state.
@@ -37,7 +37,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="name">The name of the pseudo state.</param>
 		/// <param name="kind">The kind of the pseudo state.</param>
 		/// <param name="owner">The owenr of the pseudo state.</param>
-		public PseudoState( String name, PseudoStateKind kind, Region owner )
+		public PseudoState( String name, PseudoStateKind kind, Region<TState> owner )
 			: base( name, owner )
 		{
 			this.Kind = kind;
@@ -57,7 +57,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="name">The name of the pseudo state.</param>
 		/// <param name="kind">The kind of the pseudo state.</param>
 		/// <param name="owner">The owenr of the pseudo state.</param>
-		public PseudoState( String name, PseudoStateKind kind, CompositeState owner )
+		public PseudoState( String name, PseudoStateKind kind, CompositeState<TState> owner )
 			: base( name, owner )
 		{
 			this.Kind = kind;
@@ -71,22 +71,19 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
-		internal void Add( Transition completion )
+		internal void Add( Transition<TState> completion )
 		{
-			Trace.Assert( !( this.Kind.IsInitial() && completions != null ), "initial pseudo states can have at most one outbound completion transition" );
-
-			if( this.completions == null )
-				this.completions = new HashSet<Transition>();
+			Trace.Assert( !( this.Kind.IsInitial() && completions.Count != 0 ), "initial pseudo states can have at most one outbound completion transition" );
 
 			this.completions.Add( completion );
 		}
 
-		internal override void EndEnter( IState context, Boolean deepHistory )
+		internal override void EndEntry( TState state, Boolean deepHistory )
 		{
 			if( this.Kind == PseudoStateKind.Terminate )
-				context.IsTerminated = true;
+				state.IsTerminated = true;
 			else
-				this.Kind.Completion( completions ).Traverse( context, deepHistory );
+				this.Kind.Completion<TState>( completions ).Traverse( state, deepHistory );
 		}
 	}
 }

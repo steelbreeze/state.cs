@@ -1,4 +1,4 @@
-﻿// Copyright © 2013 Steelbreeze Limited.
+﻿// Copyright © 2014 Steelbreeze Limited.
 // This file is part of state.cs.
 //
 // state.cs is free software: you can redistribute it and/or modify
@@ -20,19 +20,25 @@ using System.Linq;
 
 namespace Steelbreeze.Behavior
 {
-	public partial class Transition
+	/// <summary>
+	/// A continuation transition between states or pseudo states within a state machine.
+	/// </summary>
+	/// <remarks>
+	/// Continuation transitions are tested for after sucessful entry to pseudo states or completed states.
+	/// </remarks>
+	public partial class Transition<TState>
 	{
 		/// <summary>
 		/// An else continuation transition; used as the default path from choice or junction pseudo states
 		/// </summary>
-		public sealed class Else : Transition
+		public sealed class Else : Transition<TState>
 		{
 			/// <summary>
 			/// Creates an else completion transition between pseudo states.
 			/// </summary>
 			/// <param name="source">The source pseudo state.</param>
 			/// <param name="target">The target pseudo state.</param>
-			public Else( PseudoState source, PseudoState target )
+			public Else( PseudoState<TState> source, PseudoState<TState> target )
 				: base( source, target, False )
 			{
 				Trace.Assert( source.Kind == PseudoStateKind.Choice || source.Kind == PseudoStateKind.Junction, "Else can only originate from choice or junction pseudo states" );
@@ -43,7 +49,7 @@ namespace Steelbreeze.Behavior
 			/// </summary>
 			/// <param name="source">The source pseudo state.</param>
 			/// <param name="target">The target state.</param>
-			public Else( PseudoState source, SimpleState target )
+			public Else( PseudoState<TState> source, SimpleState<TState> target )
 				: base( source, target, False )
 			{
 				Trace.Assert( source.Kind == PseudoStateKind.Choice || source.Kind == PseudoStateKind.Junction, "Else can only originate from choice or junction pseudo states" );

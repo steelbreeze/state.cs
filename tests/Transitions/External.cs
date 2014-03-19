@@ -1,6 +1,18 @@
-﻿// Alamo Project
-// Copyright © 2008-13 Steelbreeze, all rights reserved
-// All code contained herein is provided to you 'AS IS' without warantees of any kind.
+﻿// Copyright © 2014 Steelbreeze Limited.
+// This file is part of state.cs.
+//
+// state.cs is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Diagnostics;
 using Steelbreeze.Behavior;
@@ -11,37 +23,37 @@ namespace Steelbreeze.Behavior.Tests.Transitions
 	{
 		public static void Test()
 		{
-			var stateMachine = new StateMachine( "external" );
-			var region = new Region( "external", stateMachine );
+			var stateMachine = new StateMachine<State>( "external" );
+			var region = stateMachine.CreateRegion( "external" );
 
-			var initial = new PseudoState( "initial", PseudoStateKind.Initial, region );
-			var composite = new CompositeState( "composite", region );
-			var orthogonal = new OrthogonalState( "orthogonal", region );
-			var final = new FinalState( "final", region);
+			var initial = region.CreatePseudoState( "initial", PseudoStateKind.Initial );
+			var composite = region.CreateCompositeState( "composite" );
+			var orthogonal = region.CreateOrthogonalState( "orthogonal" );
+			var final = region.CreateFinalState( "final" );
 
-			var c1 = new SimpleState( "c1", composite );
-			var c2 = new SimpleState( "c2", composite );
+			var c1 = composite.CreateSimpleState( "c1" );
+			var c2 = composite.CreateSimpleState( "c2" );
 		
-			var region1 = new Region( "region1", orthogonal );
-			var region2 = new Region( "region2", orthogonal );
+			var region1 = orthogonal.CreateRegion( "region1" );
+			var region2 = orthogonal.CreateRegion( "region2" );
 
-			var o1 = new SimpleState( "o1", region1 );
-			var o2 = new SimpleState( "o2", region2 );
+			var o1 = region1.CreateSimpleState( "o1" );
+			var o2 = region2.CreateSimpleState( "o2" );
 
-			var j1 = new PseudoState( "junction", PseudoStateKind.Junction, region2 );
+			var j1 = region2.CreatePseudoState( "junction", PseudoStateKind.Junction );
 
-			new Transition( initial, composite );
-			new Transition( new PseudoState( "initial", PseudoStateKind.Initial, composite ), c1 );
-			new Transition<String>( c2, c1, command => command == "1" );
-			new Transition<String>( c1, j1, command => command == "2" );
-			new Transition.Else( j1, o1 );
-			new Transition<String>( o1, o2, command => command == "3" );
-			new Transition<String>( o2, c2, command => command == "4" );
-			new Transition<String>( composite, orthogonal, command => command == "5" );
-			new Transition<String>( composite, final, command => command == "x" );
+			stateMachine.CreateTransition( initial, composite );
+			stateMachine.CreateTransition( composite.CreatePseudoState( "initial", PseudoStateKind.Initial ), c1 );
+			stateMachine.CreateTransition<String>( c2, c1, command => command == "1" );
+			stateMachine.CreateTransition<String>( c1, j1, command => command == "2" );
+			stateMachine.CreateElse( j1, o1 );
+			stateMachine.CreateTransition<String>( o1, o2, command => command == "3" );
+			stateMachine.CreateTransition<String>( o2, c2, command => command == "4" );
+			stateMachine.CreateTransition<String>( composite, orthogonal, command => command == "5" );
+			stateMachine.CreateTransition<String>( composite, final, command => command == "x" );
 
-			new Transition( new PseudoState( "initial", PseudoStateKind.Initial, region1 ), o1 );
-			new Transition( new PseudoState( "initial", PseudoStateKind.Initial, region2 ), o2 );
+			stateMachine.CreateTransition( region1.CreatePseudoState( "initial", PseudoStateKind.Initial ), o1 );
+			stateMachine.CreateTransition( region2.CreatePseudoState( "initial", PseudoStateKind.Initial ), o2 );
 
 			var state = new State();
 

@@ -1,4 +1,4 @@
-﻿// Copyright © 2013 Steelbreeze Limited.
+﻿// Copyright © 2014 Steelbreeze Limited.
 // This file is part of state.cs.
 //
 // state.cs is free software: you can redistribute it and/or modify
@@ -106,7 +106,7 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
-		internal static Transition Completion( this PseudoStateKind pseudoStateKind, ICollection<Transition> completions )
+		internal static Transition<TState> Completion<TState>( this PseudoStateKind pseudoStateKind, ICollection<Transition<TState>> completions ) where TState : IState<TState>
 		{
 			switch( pseudoStateKind )
 			{
@@ -114,10 +114,10 @@ namespace Steelbreeze.Behavior
 					var items = completions.Where( t => t.guard() );
 					var count = items.Count();
 
-					return count > 0 ? items.ElementAt( random.Next( count ) ) : completions.Single( t => t is Transition.Else );
+					return count > 0 ? items.ElementAt( random.Next( count ) ) : completions.Single( t => t is Transition<TState>.Else );
 
 				case PseudoStateKind.Junction:
-					return completions.SingleOrDefault( t => t.guard() ) ?? completions.Single( t => t is Transition.Else );
+					return completions.SingleOrDefault( t => t.guard() ) ?? completions.Single( t => t is Transition<TState>.Else );
 
 				case PseudoStateKind.Terminate:
 					return null;

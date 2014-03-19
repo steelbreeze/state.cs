@@ -1,4 +1,4 @@
-﻿// Copyright © 2013 Steelbreeze Limited.
+﻿// Copyright © 2014 Steelbreeze Limited.
 // This file is part of state.cs.
 //
 // state.cs is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@ namespace Steelbreeze.Behavior
 	/// <summary>
 	/// Abstraction of a state machines state.
 	/// </summary>
-	public interface IState
+	public interface IState<TState> where TState : IState<TState>
 	{
 		/// <summary>
 		/// Boolean indicating that the state machine is terminated.
@@ -32,27 +32,27 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="element">The element to set the active flag for.</param>
 		/// <param name="value">The value of the active flag.</param>
-		void SetActive( Element element, Boolean value );
+		void SetActive( Element<TState> element, Boolean value );
 
 		/// <summary>
 		/// Returns the active flag for an element within the state machine model hierarchy.
 		/// </summary>
 		/// <param name="element">The element to get the active flag for.</param>
 		/// <returns>The active flag for the given element.</returns>
-		Boolean GetActive( Element element );
+		Boolean GetActive( Element<TState> element );
 
 		/// <summary>
 		/// Sets the current state for a given region or composite state.
 		/// </summary>
-		/// <param name="region">The region or composite state to set the current state for.</param>
-		/// <param name="state">The current state.</param>
-		void SetCurrent( Element region, SimpleState state );
+		/// <param name="element">The region or composite state to set the current state for.</param>
+		/// <param name="value">The current state.</param>
+		void SetCurrent( Element<TState> element, SimpleState<TState> value );
 
 		/// <summary>
 		/// Gets the current state for a given region or composite state.
 		/// </summary>
-		/// <param name="region">The region or composite state to get the current state for.</param>
+		/// <param name="element">The region or composite state to get the current state for.</param>
 		/// <returns>The current state of the region or composite state.</returns>
-		SimpleState GetCurrent( Element region );
+		SimpleState<TState> GetCurrent( Element<TState> element );
 	}
 }

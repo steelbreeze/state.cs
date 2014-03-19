@@ -1,5 +1,18 @@
-﻿// Copyright © 2008-13 Steelbreeze, all rights reserved.
-// All code contained herein is provided to you 'AS IS' without warantees of any kind.
+﻿// Copyright © 2014 Steelbreeze Limited.
+// This file is part of state.cs.
+//
+// state.cs is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation, either version 3 of the License,
+// or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using Steelbreeze.Behavior;
 
@@ -17,22 +30,22 @@ namespace Steelbreeze.Behavior.Examples
 		static void Main()
 		{
 			// create the state machine
-			var player = new StateMachine( "player" );
+			var player = new StateMachine<State>( "player" );
 
 			// create some states
-			var initial = new PseudoState( "initial", PseudoStateKind.Initial, player );
-			var operational = new CompositeState( "operational", player );
-			var flipped = new SimpleState( "flipped", player );
-			var final = new FinalState( "final", player );
-			var terminated = new PseudoState( "terminated", PseudoStateKind.Terminate, player );
+			var initial = player.CreatePseudoState( "initial", PseudoStateKind.Initial );
+			var operational = player.CreateCompositeState( "operational" );
+			var flipped = player.CreateSimpleState( "flipped" );
+			var final = player.CreateFinalState( "final" );
+			var terminated = player.CreatePseudoState( "terminated", PseudoStateKind.Terminate );
 
-			var history = new PseudoState( "history", PseudoStateKind.DeepHistory, operational );
-			var stopped = new SimpleState( "stopped", operational );
-			var active = new CompositeState( "active", operational );
+			var history = operational.CreatePseudoState( "history", PseudoStateKind.DeepHistory );
+			var stopped = operational.CreateSimpleState( "stopped" );
+			var active = operational.CreateCompositeState( "active" );
 
-			var running = new SimpleState( "running", active );
-			var paused = new SimpleState( "paused", active );
-			
+			var running = active.CreateSimpleState( "running" );
+			var paused = active.CreateSimpleState( "paused" );
+
 			// some state behaviour
 			active.Entry += EngageHead;
 			active.Exit += DisengageHead;
@@ -41,21 +54,21 @@ namespace Steelbreeze.Behavior.Examples
 			running.Exit += StopMotor;
 
 			// create transitions between states (one with transition behaviour)
-			var t0 = new Transition( initial, operational );
-			new Transition( history, stopped );
-			new Transition<String>( stopped, running, s => s.Equals( "play" ) );
-			new Transition<String>( active, stopped, s => s.Equals( "stop" ) );
-			new Transition<String>( running, paused, s => s.Equals( "pause" ) );
-			new Transition<String>( paused, running, s => s.Equals( "play" ) );
-			new Transition<String>( operational, flipped, s => s.Equals( "flip" ) );
-			new Transition<String>( flipped, operational, s => s.Equals( "flip" ) );
-			new Transition<String>( operational, final, s => s.Equals( "off" ) );
-			new Transition<String>( operational, terminated, s => s.Equals( "term" ) );
-			var help = new Transition<String>( operational, operational, s => s.StartsWith( "help" ) );
+			var t0 = player.CreateTransition( initial, operational );
+			player.CreateTransition( history, stopped );
+			player.CreateTransition<String>( stopped, running, s => s.Equals( "play" ) );
+			player.CreateTransition<String>( active, stopped, s => s.Equals( "stop" ) );
+			player.CreateTransition<String>( running, paused, s => s.Equals( "pause" ) );
+			player.CreateTransition<String>( paused, running, s => s.Equals( "play" ) );
+			player.CreateTransition<String>( operational, flipped, s => s.Equals( "flip" ) );
+			player.CreateTransition<String>( flipped, operational, s => s.Equals( "flip" ) );
+			player.CreateTransition<String>( operational, final, s => s.Equals( "off" ) );
+			player.CreateTransition<String>( operational, terminated, s => s.Equals( "term" ) );
+			var help = player.CreateTransition<String>( operational, operational, s => s.StartsWith( "help" ) );
 
 			t0.Effect += DisengageHead;
 			t0.Effect += StopMotor;
-			help.Effect += s => Console.WriteLine( "help yourself" );
+			help.Effect += ( c, s ) => Console.WriteLine( "help yourself" );
 
 			var state = new State();
 
@@ -77,29 +90,24 @@ namespace Steelbreeze.Behavior.Examples
 			Console.ReadKey();
 		}
 
-		private static void EngageHead()
+		private static void EngageHead( State context )
 		{
 			Console.WriteLine( "- engaging head" );
 		}
 
-		private static void DisengageHead()
+		private static void DisengageHead( State context )
 		{
 			Console.WriteLine( "- disengaging head" );
 		}
 
-		private static void StartMotor()
+		private static void StartMotor( State context )
 		{
 			Console.WriteLine( "- starting motor" );
 		}
 
-		private static void StopMotor()
+		private static void StopMotor( State context )
 		{
 			Console.WriteLine( "- stopping motor" );
-		}
-
-		private static void PowerDown( String command )
-		{
-			Console.WriteLine( "- powering down" );
 		}
 	}
 }
