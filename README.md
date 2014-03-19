@@ -1,20 +1,17 @@
 # Welcome to state.cs
 
-The current stable release is 3.5.4.
+The current stable release is 4.0.0.
 
 If you're using state.cs I'd love to hear about it; please e-mail me at mesmo@steelbreeze.net 
 
-Version 3.3 brings a few small API changes: removed CompositeState.Initialise as it was not intended to be the root state machine; use Region instead; FinalState and PseudoState are now sealed; IState now takes an Element rather than Object as the element type.
+## Version 4 notes
+Version 4 passes the state machine state through to the Entry, Exit and Effect callbacks; it also preserves the full type of the state machine state (the subclass of IState).
 
-## Version 3 notes - please read before downloading
-Version 3 has focused on creating a clean public and protected API; there should be no implementation details visible in the namespace.
+In order to do this, all element classes have had to be parameterised; in order to keep code cruft to a minimum, helper classes have been added to each parent element class (StateMachine, Region, CompositeState and OrthogonalState) to create child elements and transitions.
 
-I have endevoured to keep the API as similar as possible to the version 2, but with a couple of notable changes:
-* PseudoStateKind has changed to an enum (its methods are now internal extension methods).
-* EntryPoint and ExitPoint pseudo states have been removed as they weren't really adding anything that can't be done with a choice or initial.
-* Other base classes or interfaces have become internal only.
-* FinalState now inherits from SimpleState (as per UML); note that use of the Entry and Exit actions will cause a compiler error (if anyone can help me find a way to hide them I'd love to hear about it).
-* 
+For conveniance, there is a reference StateBase abstract implementation of IState; you only need to inherit from it and pass the inherited class at the template parameter TState.
+
+Also taken the opportunity of a major version upgrade to fix some naming inconsistancies.
 
 ## Introduction
 State.js provides a hierarchical state machine capable of managing orthogonal regions; a variety of pseudo state kinds are implemented including initial, shallow & deep history, choice, junction and entry & exit points.
