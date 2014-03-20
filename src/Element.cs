@@ -54,7 +54,7 @@ namespace Steelbreeze.Behavior
 
 		internal virtual void EndExit( TState state )
 		{
-			Debug.WriteLine( this.QualifiedName, "Leave" );
+			Debug.WriteLine( String.Format("Leave: {0} ({1})", this.QualifiedName, state ) );
 
 			state.SetActive( this, false );
 		}
@@ -67,7 +67,7 @@ namespace Steelbreeze.Behavior
 				EndExit( state );
 			}
 
-			Debug.WriteLine( this.QualifiedName, "Enter" );
+			Debug.WriteLine( String.Format("Enter: {0} ({1})", this.QualifiedName, state ) );
 
 			state.SetActive( this, true );
 		}

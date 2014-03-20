@@ -28,5 +28,11 @@ namespace Steelbreeze.Behavior.Examples
 	/// <summary>
 	/// Basic example of state machine state implementation
 	/// </summary>
-	public sealed class State : StateBase<State> { }
+	public sealed class State : StateBase<State>
+	{
+		public override string ToString()
+		{
+			return "state";
+		}
+	}
 }
