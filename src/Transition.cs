@@ -33,7 +33,7 @@ namespace Steelbreeze.Behavior
 	/// <typeparam name="TMessage">The type of the message that can trigger the transition.</typeparam>
 	public class Transition<TState, TMessage> : TransitionBase<TState>, ITransition<TState> where TState : IState<TState> where TMessage : class
 	{
-		private readonly Func<TMessage, Boolean> guard;
+		private readonly Func<TState, TMessage, Boolean> guard;
 
 		/// <summary>
 		/// The action(s) to perform while traversing the transition.
@@ -47,7 +47,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="target">The target pseudo state.</param>
 		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
 		/// <remarks>This type of transition initiates a compound transition.</remarks>
-		public Transition( SimpleState<TState> source, PseudoState<TState> target, Func<TMessage, Boolean> guard = null )
+		public Transition( SimpleState<TState> source, PseudoState<TState> target, Func<TState, TMessage, Boolean> guard = null )
 			: base (source, target )
 		{
 			this.guard = guard;
@@ -61,7 +61,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The source state.</param>
 		/// <param name="target">The target state.</param>
 		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
-		public Transition( SimpleState<TState> source, SimpleState<TState> target, Func<TMessage, Boolean> guard = null )
+		public Transition( SimpleState<TState> source, SimpleState<TState> target, Func<TState, TMessage, Boolean> guard = null )
 			: base( source, target )
 		{
 			this.guard = guard;
@@ -75,7 +75,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The state to create the internal transition for.</param>
 		/// <param name="guard">The guard condition to be tested in order to call the effect action.</param>
 		/// <remarks>Internal transitions perform an action in response to an event, but do not leave the state therefore no entry or exit actions are performed.</remarks>
-		public Transition( SimpleState<TState> source, Func<TMessage, Boolean> guard = null )
+		public Transition( SimpleState<TState> source, Func<TState, TMessage, Boolean> guard = null )
 			: base( source, null )
 		{
 			this.guard = guard;
@@ -83,14 +83,14 @@ namespace Steelbreeze.Behavior
 			source.Add( this );
 		}
 
-		Boolean ITransition<TState>.Guard( Object message )
+		Boolean ITransition<TState>.Guard( TState state, Object message )
 		{
 			var typed = message as TMessage; // NOTE: do not attempt to remove case as this performs the message type check
 
 			if( typed == null )
 				return false;
 
-			return guard == null || guard( typed );
+			return guard == null || guard( state, typed );
 		}
 
 		void ITransition<TState>.Traverse( TState state, Object message )
@@ -128,9 +128,9 @@ namespace Steelbreeze.Behavior
 	/// </remarks>
 	public partial class Transition<TState> : TransitionBase<TState> where TState : IState<TState>
 	{
-		internal static Func<Boolean> True = () => true;
-		internal static Func<Boolean> False = () => false;
-		internal readonly Func<Boolean> guard;
+		internal static Func<TState, Boolean> True = state => true;
+		internal static Func<TState, Boolean> False = state => false;
+		internal readonly Func<TState, Boolean> guard;
 
 		/// <summary>
 		/// The action(s) to perform while traversing the transition.
@@ -144,7 +144,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="target">The target pseudo state.</param>
 		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
 		/// <remarks>For initial pseudo states, this type of tranision initiates a compound transition, for others, it is a particiapnt in a compound transition.</remarks>
-		public Transition( PseudoState<TState> source, PseudoState<TState> target, Func<Boolean> guard = null )
+		public Transition( PseudoState<TState> source, PseudoState<TState> target, Func<TState, Boolean> guard = null )
 			: base( source, target )
 
 		{
@@ -160,7 +160,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="target">The target state.</param>
 		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
 		/// <remarks>This type of transition completes a compound transition.</remarks>
-		public Transition( PseudoState<TState> source, SimpleState<TState> target, Func<Boolean> guard = null )
+		public Transition( PseudoState<TState> source, SimpleState<TState> target, Func<TState, Boolean> guard = null )
 			: base( source, target )
 		{
 			this.guard = guard ?? True;
@@ -176,7 +176,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
 		/// <remarks>Continuation transitions are tested for after a state has been entered if the state is deemed to be completed.</remarks>
 		/// <remarks>This type of transition initiates a compound transition.</remarks>
-		public Transition( SimpleState<TState> source, PseudoState<TState> target, Func<Boolean> guard = null )
+		public Transition( SimpleState<TState> source, PseudoState<TState> target, Func<TState, Boolean> guard = null )
 			: base( source, target )
 		{
 			this.guard = guard ?? True;
@@ -191,7 +191,7 @@ namespace Steelbreeze.Behavior
 		/// <param name="target">The target state.</param>
 		/// <param name="guard">The guard condition to be tested in order to follow the transition.</param>
 		/// <remarks>Continuation transitions are tested for after a state has been entered if the state is deemed to be completed.</remarks>
-		public Transition( SimpleState<TState> source, SimpleState<TState> target, Func<Boolean> guard = null )
+		public Transition( SimpleState<TState> source, SimpleState<TState> target, Func<TState, Boolean> guard = null )
 			: base( source, target )
 		{
 			this.guard = guard ?? True;

@@ -89,7 +89,7 @@ namespace Steelbreeze.Behavior
 			if( this.Kind == PseudoStateKind.Terminate )
 				state.IsTerminated = true;
 			else
-				this.Kind.Completion<TState>( completions ).Traverse( state, deepHistory );
+				this.Kind.Completion<TState>( state, completions ).Traverse( state, deepHistory );
 		}
 	}
 }

@@ -25,6 +25,17 @@ using Steelbreeze.Behavior;
 namespace Steelbreeze.Behavior.Examples
 {
 	/// <summary>
+	/// Basic example of state machine state implementation
+	/// </summary>
+	public sealed class State : StateBase<State>
+	{
+		public override string ToString()
+		{
+			return "state";
+		}
+	}
+
+	/// <summary>
 	/// A controller for a simple cassette player
 	/// </summary>
 	/// <remarks>
@@ -62,33 +73,33 @@ namespace Steelbreeze.Behavior.Examples
 			// create transitions between states (one with transition behaviour)
 			var t0 = player.CreateTransition( initial, operational );
 			player.CreateTransition( history, stopped );
-			player.CreateTransition<String>( stopped, running, s => s.Equals( "play" ) );
-			player.CreateTransition<String>( active, stopped, s => s.Equals( "stop" ) );
-			player.CreateTransition<String>( running, paused, s => s.Equals( "pause" ) );
-			player.CreateTransition<String>( paused, running, s => s.Equals( "play" ) );
-			player.CreateTransition<String>( operational, flipped, s => s.Equals( "flip" ) );
-			player.CreateTransition<String>( flipped, operational, s => s.Equals( "flip" ) );
-			player.CreateTransition<String>( operational, final, s => s.Equals( "off" ) );
-			player.CreateTransition<String>( operational, terminated, s => s.Equals( "term" ) );
-			var help = player.CreateTransition<String>( operational, operational, s => s.StartsWith( "help" ) );
+			player.CreateTransition<String>( stopped, running, ( state, s ) => s.Equals( "play" ) );
+			player.CreateTransition<String>( active, stopped, ( state, s ) => s.Equals( "stop" ) );
+			player.CreateTransition<String>( running, paused, ( state, s ) => s.Equals( "pause" ) );
+			player.CreateTransition<String>( paused, running, ( state, s ) => s.Equals( "play" ) );
+			player.CreateTransition<String>( operational, flipped, ( state, s ) => s.Equals( "flip" ) );
+			player.CreateTransition<String>( flipped, operational, ( state, s ) => s.Equals( "flip" ) );
+			player.CreateTransition<String>( operational, final, ( state, s ) => s.Equals( "off" ) );
+			player.CreateTransition<String>( operational, terminated, ( state, s ) => s.Equals( "term" ) );
+			var help = player.CreateTransition<String>( operational, operational, ( state, s ) => s.StartsWith( "help" ) );
 
 			t0.Effect += DisengageHead;
 			t0.Effect += StopMotor;
 			help.Effect += ( c, s ) => Console.WriteLine( "help yourself" );
 
-			var state = new State();
+			var instance = new State();
 
 			// initialises the state machine (enters the region for the first time, causing transition from the initial PseudoState)
-			player.Initialise( state );
+			player.Initialise( instance );
 
 			// main event loop
-			while( !player.IsComplete( state ) )
+			while( !player.IsComplete( instance ) )
 			{
 				// write a prompt
 				Console.Write( "alamo> " );
 
 				// process lines read from the console
-				if( !player.Process( state, Console.ReadLine() ) )
+				if( !player.Process( instance, Console.ReadLine() ) )
 					Console.WriteLine( "unknown command" );
 			}
 

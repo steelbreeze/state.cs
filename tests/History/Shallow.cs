@@ -41,21 +41,21 @@ namespace Steelbreeze.Behavior.Tests.History
 
 			new Transition<State>( initial, shallow );
 			new Transition<State>( new PseudoState<State>( "shallow", PseudoStateKind.ShallowHistory, shallow ), s1 );
-			new Transition<State, String>( s1, s2, c => c.Equals( "move" ) );
-			new Transition<State, String>( shallow, deep, c => c.Equals( "go deep" ) );
-			new Transition<State, String>( deep, shallow, c => c.Equals( "go shallow" ) );
-			new Transition<State, String>( s2, final, c => c.Equals( "end" ) );
+			new Transition<State, String>( s1, s2, ( state, c ) => c.Equals( "move" ) );
+			new Transition<State, String>( shallow, deep, ( state, c ) => c.Equals( "go deep" ) );
+			new Transition<State, String>( deep, shallow, ( state, c ) => c.Equals( "go shallow" ) );
+			new Transition<State, String>( s2, final, ( state, c ) => c.Equals( "end" ) );
 
-			var state = new State();
+			var instance = new State();
 
-			machine.Initialise( state );
+			machine.Initialise( instance );
 
-			Trace.Assert( machine.Process( state, "move" ) );
-			Trace.Assert( machine.Process( state, "go deep" ) );
-			Trace.Assert( machine.Process( state, "go shallow" ) );
-			Trace.Assert( !machine.Process( state, "go shallow" ) );
-			Trace.Assert( machine.Process( state, "end" ) );
-			Trace.Assert( machine.IsComplete( state ) );
+			Trace.Assert( machine.Process( instance, "move" ) );
+			Trace.Assert( machine.Process( instance, "go deep" ) );
+			Trace.Assert( machine.Process( instance, "go shallow" ) );
+			Trace.Assert( !machine.Process( instance, "go shallow" ) );
+			Trace.Assert( machine.Process( instance, "end" ) );
+			Trace.Assert( machine.IsComplete( instance ) );
 		}
 	}
 }

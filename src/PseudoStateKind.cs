@@ -112,18 +112,18 @@ namespace Steelbreeze.Behavior
 			}
 		}
 
-		internal static Transition<TState> Completion<TState>( this PseudoStateKind pseudoStateKind, ICollection<Transition<TState>> completions ) where TState : IState<TState>
+		internal static Transition<TState> Completion<TState>( this PseudoStateKind pseudoStateKind, TState state, ICollection<Transition<TState>> completions ) where TState : IState<TState>
 		{
 			switch( pseudoStateKind )
 			{
 				case PseudoStateKind.Choice:
-					var items = completions.Where( t => t.guard() );
+					var items = completions.Where( t => t.guard( state ) );
 					var count = items.Count();
 
 					return count > 0 ? items.ElementAt( random.Next( count ) ) : completions.Single( t => t is Transition<TState>.Else );
 
 				case PseudoStateKind.Junction:
-					return completions.SingleOrDefault( t => t.guard() ) ?? completions.Single( t => t is Transition<TState>.Else );
+					return completions.SingleOrDefault( t => t.guard( state ) ) ?? completions.Single( t => t is Transition<TState>.Else );
 
 				case PseudoStateKind.Terminate:
 					return null;

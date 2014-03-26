@@ -122,7 +122,7 @@ namespace Steelbreeze.Behavior
 			if( !IsComplete( state ) )
 				return;
 
-			var completion = completions.SingleOrDefault( t => t.guard() );
+			var completion = completions.SingleOrDefault( t => t.guard( state ) );
 
 			if( completion != null )
 				completion.Traverse( state, deepHistory );
@@ -133,7 +133,7 @@ namespace Steelbreeze.Behavior
 			if( this.transitions == null )
 				return false;
 
-			var transition = this.transitions.SingleOrDefault( t => t.Guard( message ) );
+			var transition = this.transitions.SingleOrDefault( t => t.Guard( state, message ) );
 
 			if( transition == null )
 				return false;

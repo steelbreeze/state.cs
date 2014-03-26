@@ -25,7 +25,7 @@ namespace Steelbreeze.Behavior
 {
 	internal interface ITransition<TState> where TState : IState<TState>
 	{
-		Boolean Guard( Object message );
+		Boolean Guard( TState state, Object message );
 
 		void Traverse( TState state, Object message );
 	}

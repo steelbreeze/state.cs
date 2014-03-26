@@ -1,8 +1,11 @@
 # Welcome to state.cs
 
-The current stable release is 4.0.2.
+The current stable release is 4.1.0.
 
 If you're using state.cs I'd love to hear about it; please e-mail me at mesmo@steelbreeze.net 
+
+## Version 4.1 notes
+Version 4.1 also passes the state machine state through to the transition guard conditions.
 
 ## Version 4 notes
 Version 4 passes the state machine state through to the Entry, Exit and Effect callbacks; it also preserves the full type of the state machine state (the subclass of IState).

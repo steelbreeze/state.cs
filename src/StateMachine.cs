@@ -121,10 +121,16 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The source PseudoState to transition from</param>
 		/// <param name="target">The target PseudoState to transition to</param>
 		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
+		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
 		/// <returns>The new transition</returns>
-		public Transition<TState> CreateTransition( PseudoState<TState> source, PseudoState<TState> target, Func<Boolean> guard = null )
+		public Transition<TState> CreateTransition( PseudoState<TState> source, PseudoState<TState> target, Func<TState, Boolean> guard = null, params Action<TState>[] effect )
 		{
-			return new Transition<TState>( source, target, guard );
+			var transition = new Transition<TState>( source, target, guard );
+
+			foreach( var behavior in effect )
+				transition.Effect += behavior;
+
+			return transition;
 		}
 
 		/// <summary>
@@ -133,10 +139,16 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The source PseudoState to transition from</param>
 		/// <param name="target">The target SimpleState (or subclass thereof) to transition to</param>
 		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
+		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
 		/// <returns>The new transition</returns>
-		public Transition<TState> CreateTransition( PseudoState<TState> source, SimpleState<TState> target, Func<Boolean> guard = null )
+		public Transition<TState> CreateTransition( PseudoState<TState> source, SimpleState<TState> target, Func<TState, Boolean> guard = null, params Action<TState>[] effect )
 		{
-			return new Transition<TState>( source, target, guard );
+			var transition =  new Transition<TState>( source, target, guard );
+
+			foreach( var behavior in effect )
+				transition.Effect += behavior;
+
+			return transition;
 		}
 
 		/// <summary>
@@ -145,10 +157,16 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The source SimpleState (or subclass thereof) to transition from</param>
 		/// <param name="target">The target PseudoState to transition to</param>
 		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
+		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
 		/// <returns>The new transition</returns>
-		public Transition<TState> CreateTransition( SimpleState<TState> source, PseudoState<TState> target, Func<Boolean> guard = null )
+		public Transition<TState> CreateTransition( SimpleState<TState> source, PseudoState<TState> target, Func<TState, Boolean> guard = null, params Action<TState>[] effect )
 		{
-			return new Transition<TState>( source, target, guard );
+			var transition =  new Transition<TState>( source, target, guard );
+
+			foreach( var behavior in effect )
+				transition.Effect += behavior;
+
+			return transition;
 		}
 
 		/// <summary>
@@ -157,10 +175,16 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The source SimpleState (or subclass thereof) to transition from</param>
 		/// <param name="target">The target SimpleState (or subclass thereof) to transition to</param>
 		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
+		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
 		/// <returns>The new transition</returns>
-		public Transition<TState> CreateTransition( SimpleState<TState> source, SimpleState<TState> target, Func<Boolean> guard = null )
+		public Transition<TState> CreateTransition( SimpleState<TState> source, SimpleState<TState> target, Func<TState, Boolean> guard = null, params Action<TState>[] effect )
 		{
-			return new Transition<TState>( source, target, guard );
+			var transition =  new Transition<TState>( source, target, guard );
+
+			foreach( var behavior in effect )
+				transition.Effect += behavior;
+
+			return transition;
 		}
 
 		/// <summary>
@@ -170,10 +194,16 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The source SimpleState (or subclass thereof) to transition from</param>
 		/// <param name="target">The target PseudoState to transition to</param>
 		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
+		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
 		/// <returns>The new transition</returns>
-		public Transition<TState, TMessage> CreateTransition<TMessage>( SimpleState<TState> source, PseudoState<TState> target, Func<TMessage, Boolean> guard = null ) where TMessage : class
+		public Transition<TState, TMessage> CreateTransition<TMessage>( SimpleState<TState> source, PseudoState<TState> target, Func<TState, TMessage, Boolean> guard = null, params Action<TState, TMessage>[] effect ) where TMessage : class
 		{
-			return new Transition<TState, TMessage>( source, target, guard );
+			var transition = new Transition<TState, TMessage>( source, target, guard );
+
+			foreach( var behavior in effect )
+				transition.Effect += behavior;
+
+			return transition;
 		}
 
 		/// <summary>
@@ -183,10 +213,16 @@ namespace Steelbreeze.Behavior
 		/// <param name="source">The source SimpleState (or subclass thereof) to transition from</param>
 		/// <param name="target">The target SimpleState (or subclass thereof) to transition to</param>
 		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
+		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
 		/// <returns>The new transition</returns>
-		public Transition<TState, TMessage> CreateTransition<TMessage>( SimpleState<TState> source, SimpleState<TState> target, Func<TMessage, Boolean> guard = null ) where TMessage : class
+		public Transition<TState, TMessage> CreateTransition<TMessage>( SimpleState<TState> source, SimpleState<TState> target, Func<TState, TMessage, Boolean> guard = null, params Action<TState, TMessage>[] effect ) where TMessage : class
 		{
-			return new Transition<TState, TMessage>( source, target, guard );
+			var transition = new Transition<TState, TMessage>( source, target, guard );
+
+			foreach( var behavior in effect )
+				transition.Effect += behavior;
+
+			return transition;
 		}
 
 		/// <summary>
@@ -195,10 +231,16 @@ namespace Steelbreeze.Behavior
 		/// <typeparam name="TMessage">The type of the message that may trigger the transition</typeparam>
 		/// <param name="source">The SimpleState (or subclass thereof) to transition from</param>
 		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
+		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
 		/// <returns>The new transition</returns>
-		public Transition<TState, TMessage> CreateTransition<TMessage>( SimpleState<TState> source, Func<TMessage, Boolean> guard = null ) where TMessage : class
+		public Transition<TState, TMessage> CreateTransition<TMessage>( SimpleState<TState> source, Func<TState, TMessage, Boolean> guard = null, params Action<TState, TMessage>[] effect ) where TMessage : class
 		{
-			return new Transition<TState, TMessage>( source, guard );
+			var transition = new Transition<TState, TMessage>( source, guard );
+
+			foreach( var behavior in effect )
+				transition.Effect += behavior;
+
+			return transition;
 		}
 
 		/// <summary>
@@ -206,10 +248,16 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="source">The source PseudoState to transition from</param>
 		/// <param name="target">The target PseudoState to transition to</param>
+		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
 		/// <returns>The new transition</returns>
-		public Transition<TState> CreateElse( PseudoState<TState> source, PseudoState<TState> target )
+		public Transition<TState> CreateElse( PseudoState<TState> source, PseudoState<TState> target, params Action<TState>[] effect )
 		{
-			return new Transition<TState>.Else( source, target );
+			var transition = new Transition<TState>.Else( source, target );
+
+			foreach( var behavior in effect )
+				transition.Effect += behavior;
+
+			return transition;
 		}
 
 		/// <summary>
@@ -217,10 +265,16 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		/// <param name="source">The source PseudoState to transition from</param>
 		/// <param name="target">The target SimpleState (or subclass thereof) to transition to</param>
+		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
 		/// <returns>The new transition</returns>
-		public Transition<TState> CreateElse( PseudoState<TState> source, SimpleState<TState> target )
+		public Transition<TState> CreateElse( PseudoState<TState> source, SimpleState<TState> target, params Action<TState>[] effect )
 		{
-			return new Transition<TState>.Else( source, target );
+			var transition =  new Transition<TState>.Else( source, target );
+
+			foreach( var behavior in effect )
+				transition.Effect += behavior;
+
+			return transition;
 		}
 
 		/// <summary>
