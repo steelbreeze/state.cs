@@ -39,6 +39,7 @@ namespace Steelbreeze.Behavior.Tests
 			Transitions.Completions.Test();
 			Transitions.External.Test();
 			History.Shallow.Test();
+			Users.Muximise1.Test();
 		}
 	}
 }

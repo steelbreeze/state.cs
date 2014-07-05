@@ -116,6 +116,11 @@ namespace Steelbreeze.Behavior
 
 		internal override void EndEntry( TState state, Boolean deepHistory )
 		{
+			EvaluateCompletions( state, deepHistory );
+		}
+
+		internal protected void EvaluateCompletions( TState state, Boolean deepHistory )
+		{
 			if( completions == null )
 				return;
 

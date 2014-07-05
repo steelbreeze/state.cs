@@ -131,6 +131,7 @@ namespace Steelbreeze.Behavior
 		internal static Func<TState, Boolean> True = state => true;
 		internal static Func<TState, Boolean> False = state => false;
 		internal readonly Func<TState, Boolean> guard;
+		internal virtual Boolean isElse { get { return false; } }
 
 		/// <summary>
 		/// The action(s) to perform while traversing the transition.

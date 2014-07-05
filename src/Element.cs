@@ -42,11 +42,12 @@ namespace Steelbreeze.Behavior
 		/// <summary>
 		/// Returns the fully qualified name of the element
 		/// </summary>
-		public String QualifiedName { get { return this.Owner != null ? this.Owner.QualifiedName + "." + this.Name : this.Name; } }
+		public readonly String QualifiedName;
 
 		internal Element( String name, Element<TState> owner )
 		{
 			this.Name = name;
+			this.QualifiedName = owner != null ? owner.QualifiedName + "." + name : name;
 			this.Owner = owner;
 		}
 
@@ -54,7 +55,7 @@ namespace Steelbreeze.Behavior
 
 		internal virtual void EndExit( TState state )
 		{
-			Debug.WriteLine( String.Format("Leave: {0} ({1})", this.QualifiedName, state ) );
+			Debug.WriteLine( String.Format("Leave: {1}.{0}", this.QualifiedName, state ) );
 
 			state.SetActive( this, false );
 		}
@@ -67,7 +68,7 @@ namespace Steelbreeze.Behavior
 				EndExit( state );
 			}
 
-			Debug.WriteLine( String.Format("Enter: {0} ({1})", this.QualifiedName, state ) );
+			Debug.WriteLine( String.Format("Enter: {1}.{0}", this.QualifiedName, state ) );
 
 			state.SetActive( this, true );
 		}

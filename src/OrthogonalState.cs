@@ -103,7 +103,13 @@ namespace Steelbreeze.Behavior
 			if( state.IsTerminated )
 				return false;
 
-			return base.Process( state, message ) || regions.Aggregate( false, ( result, region ) => region.Process( state, message ) || result );
+			var processed = base.Process( state, message ) || regions.Aggregate( false, ( result, region ) => region.Process( state, message ) || result );
+
+			// NOTE: this fixes an omission in all versions prior to v4.1.1 (should you get unexpected behavior, please investigate completion transtions from the state)
+			if( processed == true )
+				this.EvaluateCompletions( state, false );
+
+			return processed;
 		}
 	}
 }

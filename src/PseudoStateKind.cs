@@ -120,10 +120,10 @@ namespace Steelbreeze.Behavior
 					var items = completions.Where( t => t.guard( state ) );
 					var count = items.Count();
 
-					return count > 0 ? items.ElementAt( random.Next( count ) ) : completions.Single( t => t is Transition<TState>.Else );
+					return count > 0 ? items.ElementAt( random.Next( count ) ) : completions.Single( t => t.isElse );
 
 				case PseudoStateKind.Junction:
-					return completions.SingleOrDefault( t => t.guard( state ) ) ?? completions.Single( t => t is Transition<TState>.Else );
+					return completions.SingleOrDefault( t => t.guard( state ) ) ?? completions.Single( t => t.isElse );
 
 				case PseudoStateKind.Terminate:
 					return null;

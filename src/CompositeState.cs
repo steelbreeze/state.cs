@@ -141,7 +141,13 @@ namespace Steelbreeze.Behavior
 			if( state.IsTerminated )
 				return false;
 
-			return base.Process( state, message ) || state.GetCurrent( this ).Process( state, message );
+			var processed = base.Process( state, message ) || state.GetCurrent( this ).Process( state, message );
+
+			// NOTE: this fixes an omission in all versions prior to v4.1.1 (should you get unexpected behavior, please investigate completion transtions from the state)
+			if( processed == true )
+				this.EvaluateCompletions( state, false );
+
+			return processed;
 		}
 	}
 }

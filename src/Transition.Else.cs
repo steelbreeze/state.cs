@@ -39,6 +39,8 @@ namespace Steelbreeze.Behavior
 		/// </summary>
 		public sealed class Else : Transition<TState>
 		{
+			internal override bool isElse { get { return true; } }
+
 			/// <summary>
 			/// Creates an else completion transition between pseudo states.
 			/// </summary>
