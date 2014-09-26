@@ -1,28 +1,11 @@
-﻿// The MIT License (MIT)
-//
-// Copyright (c) 2014 Steelbreeze Limited
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+﻿/* state v5 finite state machine library
+ * Copyright (c) 2014 Steelbreeze Limited
+ * Licensed under MIT and GPL v3 licences
+ */
 using System;
 using System.Diagnostics;
 
-namespace Steelbreeze.Behavior.Tests
+namespace Steelbreeze.Behavior.StateMachines.Tests
 {
 	public class Program
 	{
@@ -30,14 +13,8 @@ namespace Steelbreeze.Behavior.Tests
 		{
 			Trace.WriteLine( "Running unit tests for Steelbreeze.Alamo.StateMachines" );
 
-			// TODO: deep history tests
-			// TODO: action tests
-			// TODO: other tests...
-			// TODO: internal tests
-			// TODO: local tests
-
+			// TODO: add more transition tests (incl. else)
 			Transitions.Completions.Test();
-			Transitions.External.Test();
 			History.Shallow.Test();
 			Users.Muximise1.Test();
 		}

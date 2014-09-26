@@ -1,136 +1,58 @@
-﻿// The MIT License (MIT)
-//
-// Copyright (c) 2014 Steelbreeze Limited
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿/* State v5 finite state machine library
+ * Copyright (c) 2014 Steelbreeze Limited
+ * Licensed under MIT and GPL v3 licences
+ */
 
-namespace Steelbreeze.Behavior
-{
+namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
-	/// Enumeration of the valid kinds of pseudo states.
+	/// Defines the specific semantics of a PseudoState in which it is used.
 	/// </summary>
-	public enum PseudoStateKind
-	{
+	public enum PseudoStateKind {
 		/// <summary>
-		/// Enables a dynamic conditional branches; within a compound transition.
-		/// </summary>
-		/// <remarks>
-		/// Choice pseudo states may have multiple outbound transitions; when reached the guards are evaluated and an appropriate outbound transition is followed.
-		/// If more than one outbound transition guard evaluates true, an arbitary one is selected.
-		/// If no outbound transition guard evaluates true an 'else' transition is looked for.
-		/// If no outbound transition or else transition are found, the state machine model is deemed to be malformed and an exception is thrown.
-		/// </remarks>
-		Choice,
-
-		/// <summary>
-		/// A type of initial pseudo state; forms the initial starting point when entering a region or composite state for the first time.
-		/// Subsiquent entry of the owning (parent) region or composite state will enter the last know active state for the region or composite state.
-		/// Deep history cascades the history behaviour to any and all child region and composite or orthogonal states.
-		/// </summary>
-		DeepHistory,
-
-		/// <summary>
-		/// A type of initial pseudo state; forms the initial starting point when entering a region or composite state for the first time.
-		/// Subsiquent entry of the owning (parent) region or composite state will enter at the initial pseudo state unless deep history is in force in some ancestor region or composite state.
+		/// An initial pseudostate represents a default vertex that is the source for a single transition to the default state of a Region.
+		/// There can be at most one initial vertex in a Region.
+		/// The outgoing transition from the initial vertex may have behavior, but not guard (as defined within the When method).
 		/// </summary>
 		Initial,
 
 		/// <summary>
-		/// Enables a static conditional branches; within a compound transition.
+		/// DeepHistory represents the most recent active configuration of the Region that directly contains this pseudostate (e.g., the state configuration that was active when the composite state was last exited).
+		/// A Region can have at most one deep history vertex.
+		/// At most one transition may originate from the history connector to the default deep history state; this transition is taken in case the composite state had never been active before.
+		/// Entry actions of states entered on the implicit direct path from the deep history to the innermost state(s) represented by a deep history are performed.
+		/// The entry action is preformed only once for each state in the active state configuration being restored.
 		/// </summary>
-		/// <remarks>
-		/// Junction pseudo states may have multiple outbound transitions; when reached the guards are evaluated and an appropriate outbound transition is followed.
-		/// If more than one outbound transition guard evaluates true, the state machine model is deemed to be malformed and an exception is thrown.
-		/// If no outbound transition guard evaluates true an 'else' transition is looked for.
-		/// If no outbound transition or else transition are found, the state machine model is deemed to be malformed and an exception is thrown.
-		/// </remarks>
-		Junction,
+		DeepHistory,
 
 		/// <summary>
-		/// A type of initial pseudo state; forms the initial starting point when entering a region or composite state for the first time.
-		/// Subsiquent entry of the owning (parent) region or composite state will enter the last know active state for the region or composite state.
+		/// ShallowHistory represents the most recent active substate of its containing state (but not the substates of that substate).
+		/// A Region can have at most one shallow history vertex.
+		/// A transition coming into the shallow history vertex is equivalent to a transition coming into the most recent active substate of a state.
+		/// At most one transition may originate from the history connector to the default shallow history state.
+		/// This transition is taken in case the composite state had never been active before. The entry action of the state represented by the shallow history is performed.
 		/// </summary>
 		ShallowHistory,
 
 		/// <summary>
-		/// Entering a terminate pseudostate implies that the execution of this state machine by means of its context object is terminated.
+		/// Junction vertices are semantic-free vertices that are used to chain together multiple transitions.
+		/// They are used to construct compound transition paths between states. For example, a junction can be used to converge multiple incoming transitions into a single outgoing transition representing a shared transition path (this is known as a merge).
+		/// Conversely, they can be used to split an incoming transition into multiple outgoing transition segments with different guard conditions. This realizes a static conditional branch. (In the latter case, outgoing transitions whose guard conditions evaluate to false are disabled. A predefined guard denoted “else” may be defined for at most one outgoing transition. This transition is enabled if all the guards labeling the other transitions are false.)
+		/// Static conditional branches are distinct from dynamic conditional branches that are realized by choice vertices.
 		/// </summary>
-		/// <remarks>
-		/// The state machine ceases to be active upon entry to the terminate pseudo state.
-		/// No further actions are performed and the state machine will not respond to messages.
-		/// </remarks>
+		Junction,
+
+		/// <summary>
+		/// Choice vertices which, when reached, result in the dynamic evaluation of the guards of the triggers of its outgoing transitions.
+		/// This realizes a dynamic conditional branch. It allows splitting of transitions into multiple outgoing paths such that the decision on which path to take may be a function of the results of prior actions performed in the same run- to-completion step.
+		/// If more than one of the guards evaluates to true, an arbitrary one is selected. If none of the guards evaluates to true, then the model is considered ill-formed. (To avoid this, it is recommended to define one outgoing transition with the predefined “else” guard for every choice vertex.)
+		/// Choice vertices should be distinguished from static branch points that are based on junction points.
+		/// </summary>
+		Choice,
+		
+		/// <summary>
+		/// Entering a Terminate pseudostate implies that the execution of this state machine by means of its context object is terminated.
+		/// The state machine does not exit any states nor does it perform any exit actions other than those associated with the transition leading to the terminate pseudostate.
+		/// </summary>
 		Terminate
-	}
-
-	internal static class PseudoStateKindMethods
-	{
-		private static readonly Random random = new Random();
-
-		internal static Boolean IsHistory( this PseudoStateKind pseudoStateKind )
-		{
-			switch( pseudoStateKind )
-			{
-				case PseudoStateKind.DeepHistory:
-				case PseudoStateKind.ShallowHistory:
-					return true;
-
-				default:
-					return false;
-			}
-		}
-
-		internal static Boolean IsInitial( this PseudoStateKind pseudoStateKind )
-		{
-			switch( pseudoStateKind )
-			{
-				case PseudoStateKind.DeepHistory:
-				case PseudoStateKind.Initial:
-				case PseudoStateKind.ShallowHistory:
-					return true;
-
-				default:
-					return false;
-			}
-		}
-
-		internal static Transition<TState> Completion<TState>( this PseudoStateKind pseudoStateKind, TState state, ICollection<Transition<TState>> completions ) where TState : IState<TState>
-		{
-			switch( pseudoStateKind )
-			{
-				case PseudoStateKind.Choice:
-					var items = completions.Where( t => t.guard( state ) );
-					var count = items.Count();
-
-					return count > 0 ? items.ElementAt( random.Next( count ) ) : completions.Single( t => t.isElse );
-
-				case PseudoStateKind.Junction:
-					return completions.SingleOrDefault( t => t.guard( state ) ) ?? completions.Single( t => t.isElse );
-
-				case PseudoStateKind.Terminate:
-					return null;
-
-				default: // the initial pseudo states
-					return completions.ElementAt( 0 );
-			}
-		}
 	}
 }

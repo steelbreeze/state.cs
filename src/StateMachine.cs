@@ -1,342 +1,149 @@
-﻿// The MIT License (MIT)
-//
-// Copyright (c) 2014 Steelbreeze Limited
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+﻿/* State v5 finite state machine library
+ * Copyright (c) 2014 Steelbreeze Limited
+ * Licensed under MIT and GPL v3 licences
+ */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
-namespace Steelbreeze.Behavior
-{
+namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
-	/// The root of a state machine; container for Regions
+	/// StateMachine is the root node of a hierarchical state machine.
 	/// </summary>
-	public class StateMachine<TState> : Element<TState> where TState : IState<TState>
-	{
+	/// <typeparam name="TContext">The type of the state machine context.</typeparam>
+	public sealed class StateMachine<TContext> : StateMachineElement<TContext> where TContext : IContext<TContext> {
 		/// <summary>
-		/// Function to name default regions for state machines.
+		/// The child Regions.
 		/// </summary>
-		public static Func<StateMachine<TState>, String> DefaultRegionName = sm => sm.Name;
+		public IEnumerable<Region<TContext>> Regions { get { return this.regions; } }
+	
+		internal Boolean Clean { get; set; }
+		internal Region<TContext>[] regions;
+	
+		/// <summary>
+		/// Returns the elements parent.
+		/// </summary>
+		/// <remarks>
+		/// A StateMachine will have no parent; this value will always be null.
+		/// </remarks>
+		public override StateMachineElement<TContext> Parent { get { return null; } }
 
 		/// <summary>
-		/// Returns (and creates if necessary) the default region for a state machine.
+		/// Initialises a new instance of the StateMachine class.
 		/// </summary>
-		/// <param name="stateMachine">The state machine to get the default region for.</param>
-		/// <returns></returns>
-		public static implicit operator Region<TState>( StateMachine<TState> stateMachine )
-		{
-			return stateMachine.regions.SingleOrDefault( region => region.Name.Equals( DefaultRegionName( stateMachine ) ) ) ?? new Region<TState>( DefaultRegionName( stateMachine ), stateMachine );
+		/// <param name="name">The name of the StateMachine.</param>
+		public StateMachine( String name )
+			: base( name, null ) {
+			Trace.Assert( name != null, "StateMachines must have a name" );
 		}
 
-		internal readonly ICollection<Region<TState>> regions = new HashSet<Region<TState>>();
+		internal void Add( Region<TContext> region ) {
+			if( this.regions == null )
+				this.regions = new Region<TContext>[ 1 ] { region };
+			else {
+				Trace.Assert( this.regions.Where( r => r.Name == region.Name ).Count() == 0, "Regions must have a unique name within the scope of their parent StateMachine" );
 
-		/// <summary>
-		/// Creates a new instance of the StateMachine class
-		/// </summary>
-		/// <param name="name">The name of the state macchine</param>
-		public StateMachine( String name ) : base( name, null ) { }
+				var regions = new Region<TContext>[ this.regions.Length + 1 ];
 
-		/// <summary>
-		/// Creates a new child Region within the StateMachine
-		/// </summary>
-		/// <param name="name">The name of the Region</param>
-		/// <returns>The new child Region</returns>
-		public Region<TState> CreateRegion( String name )
-		{
-			return new Region<TState>( name, this );
-		}
+				this.regions.CopyTo( regions, 0 );
 
-		/// <summary>
-		/// Creates a new child PseudoState within the StateMachine
-		/// </summary>
-		/// <param name="name">The name of the PseudoState</param>
-		/// <param name="kind">The kind of the PseudoState</param>
-		/// <returns>The new child PseudoState</returns>
-		public PseudoState<TState> CreatePseudoState( String name, PseudoStateKind kind )
-		{
-			return new PseudoState<TState>( name, kind, this );
-		}
+				regions[ this.regions.Length ] = region;
 
-		/// <summary>
-		/// Creates a new child SimpleState within the StateMachine
-		/// </summary>
-		/// <param name="name">The name of the SimpleState</param>
-		/// <returns>The new child SimpleState</returns>
-		public SimpleState<TState> CreateSimpleState( String name )
-		{
-			return new SimpleState<TState>( name, this );
-		}
-
-		/// <summary>
-		/// Creates a new child CompositeState within the StateMachine
-		/// </summary>
-		/// <param name="name">The name of the CompositeState</param>
-		/// <returns>The new child CompositeState</returns>
-		public CompositeState<TState> CreateCompositeState( String name )
-		{
-			return new CompositeState<TState>( name, this );
-		}
-
-		/// <summary>
-		/// Creates a new child OrthogonalState within the StateMachine
-		/// </summary>
-		/// <param name="name">The name of the OrthogonalState</param>
-		/// <returns>The new child Orthogonaltate</returns>
-		public OrthogonalState<TState> CreateOrthogonalState( String name )
-		{
-			return new OrthogonalState<TState>( name, this );
-		}
-
-		/// <summary>
-		/// Creates a new child FinalState within the StateMachine
-		/// </summary>
-		/// <param name="name">The name of the FinalState</param>
-		/// <returns>The new child FinalState</returns>
-		public FinalState<TState> CreateFinalState( String name )
-		{
-			return new FinalState<TState>( name, this );
-		}
-
-		/// <summary>
-		/// Creates a new transition between PseudoStates within the StateMachine
-		/// </summary>
-		/// <param name="source">The source PseudoState to transition from</param>
-		/// <param name="target">The target PseudoState to transition to</param>
-		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
-		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
-		/// <returns>The new transition</returns>
-		public Transition<TState> CreateTransition( PseudoState<TState> source, PseudoState<TState> target, Func<TState, Boolean> guard = null, params Action<TState>[] effect )
-		{
-			var transition = new Transition<TState>( source, target, guard );
-
-			foreach( var behavior in effect )
-				transition.Effect += behavior;
-
-			return transition;
-		}
-
-		/// <summary>
-		/// Creates a new completion transition from a PseudoState to a SimpleState (or subclass thereof) within the StateMachine
-		/// </summary>
-		/// <param name="source">The source PseudoState to transition from</param>
-		/// <param name="target">The target SimpleState (or subclass thereof) to transition to</param>
-		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
-		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
-		/// <returns>The new transition</returns>
-		public Transition<TState> CreateTransition( PseudoState<TState> source, SimpleState<TState> target, Func<TState, Boolean> guard = null, params Action<TState>[] effect )
-		{
-			var transition =  new Transition<TState>( source, target, guard );
-
-			foreach( var behavior in effect )
-				transition.Effect += behavior;
-
-			return transition;
-		}
-
-		/// <summary>
-		/// Creates a new completion transition from a SimpleState (or subclass thereof) to a PseudoState within the StateMachine
-		/// </summary>
-		/// <param name="source">The source SimpleState (or subclass thereof) to transition from</param>
-		/// <param name="target">The target PseudoState to transition to</param>
-		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
-		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
-		/// <returns>The new transition</returns>
-		public Transition<TState> CreateTransition( SimpleState<TState> source, PseudoState<TState> target, Func<TState, Boolean> guard = null, params Action<TState>[] effect )
-		{
-			var transition =  new Transition<TState>( source, target, guard );
-
-			foreach( var behavior in effect )
-				transition.Effect += behavior;
-
-			return transition;
-		}
-
-		/// <summary>
-		/// Creates a new completion transition between SimpleStates (or subclasses thereof) within the StateMachine
-		/// </summary>
-		/// <param name="source">The source SimpleState (or subclass thereof) to transition from</param>
-		/// <param name="target">The target SimpleState (or subclass thereof) to transition to</param>
-		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
-		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
-		/// <returns>The new transition</returns>
-		public Transition<TState> CreateTransition( SimpleState<TState> source, SimpleState<TState> target, Func<TState, Boolean> guard = null, params Action<TState>[] effect )
-		{
-			var transition =  new Transition<TState>( source, target, guard );
-
-			foreach( var behavior in effect )
-				transition.Effect += behavior;
-
-			return transition;
-		}
-
-		/// <summary>
-		/// Creates a new transition from a SimpleState (or subclass thereof) to a PseudoState within the StateMachine
-		/// </summary>
-		/// <typeparam name="TMessage">The type of the message that may trigger the transition</typeparam>
-		/// <param name="source">The source SimpleState (or subclass thereof) to transition from</param>
-		/// <param name="target">The target PseudoState to transition to</param>
-		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
-		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
-		/// <returns>The new transition</returns>
-		public Transition<TState, TMessage> CreateTransition<TMessage>( SimpleState<TState> source, PseudoState<TState> target, Func<TState, TMessage, Boolean> guard = null, params Action<TState, TMessage>[] effect ) where TMessage : class
-		{
-			var transition = new Transition<TState, TMessage>( source, target, guard );
-
-			foreach( var behavior in effect )
-				transition.Effect += behavior;
-
-			return transition;
-		}
-
-		/// <summary>
-		/// Creates a new transition between SimpleStates (or subclasses thereof) within the StateMachine
-		/// </summary>
-		/// <typeparam name="TMessage">The type of the message that may trigger the transition</typeparam>
-		/// <param name="source">The source SimpleState (or subclass thereof) to transition from</param>
-		/// <param name="target">The target SimpleState (or subclass thereof) to transition to</param>
-		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
-		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
-		/// <returns>The new transition</returns>
-		public Transition<TState, TMessage> CreateTransition<TMessage>( SimpleState<TState> source, SimpleState<TState> target, Func<TState, TMessage, Boolean> guard = null, params Action<TState, TMessage>[] effect ) where TMessage : class
-		{
-			var transition = new Transition<TState, TMessage>( source, target, guard );
-
-			foreach( var behavior in effect )
-				transition.Effect += behavior;
-
-			return transition;
-		}
-
-		/// <summary>
-		/// Creates a new internal transition within a SimpleState (or subclass thereof) of the StateMachine
-		/// </summary>
-		/// <typeparam name="TMessage">The type of the message that may trigger the transition</typeparam>
-		/// <param name="source">The SimpleState (or subclass thereof) to transition from</param>
-		/// <param name="guard">The optional guard condition to evaluate prior to traversal</param>
-		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
-		/// <returns>The new transition</returns>
-		public Transition<TState, TMessage> CreateTransition<TMessage>( SimpleState<TState> source, Func<TState, TMessage, Boolean> guard = null, params Action<TState, TMessage>[] effect ) where TMessage : class
-		{
-			var transition = new Transition<TState, TMessage>( source, guard );
-
-			foreach( var behavior in effect )
-				transition.Effect += behavior;
-
-			return transition;
-		}
-
-		/// <summary>
-		/// Creates a new Else completion transition between PseudoStates within a StateMachine
-		/// </summary>
-		/// <param name="source">The source PseudoState to transition from</param>
-		/// <param name="target">The target PseudoState to transition to</param>
-		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
-		/// <returns>The new transition</returns>
-		public Transition<TState> CreateElse( PseudoState<TState> source, PseudoState<TState> target, params Action<TState>[] effect )
-		{
-			var transition = new Transition<TState>.Else( source, target );
-
-			foreach( var behavior in effect )
-				transition.Effect += behavior;
-
-			return transition;
-		}
-
-		/// <summary>
-		/// Creates a new Else completion transition from a PseudoState to a SimpleState (or subclass thereof) within a StateMachine
-		/// </summary>
-		/// <param name="source">The source PseudoState to transition from</param>
-		/// <param name="target">The target SimpleState (or subclass thereof) to transition to</param>
-		/// <param name="effect">An optional set of behaviours to execute when traversing the transition</param>
-		/// <returns>The new transition</returns>
-		public Transition<TState> CreateElse( PseudoState<TState> source, SimpleState<TState> target, params Action<TState>[] effect )
-		{
-			var transition =  new Transition<TState>.Else( source, target );
-
-			foreach( var behavior in effect )
-				transition.Effect += behavior;
-
-			return transition;
-		}
-
-		/// <summary>
-		/// Tests the state machine for completeness.
-		/// </summary>
-		/// <param name="state">The state machine state to test.</param>
-		/// <returns>True if the all the child regions are complete.</returns>
-		public bool IsComplete( TState state )
-		{
-			if( !state.IsTerminated )
-				foreach( var region in this.regions )
-					if( !region.IsComplete( state ) )
-						return false;
-
-			return true;
-		}
-
-		/// <summary>
-		/// Initialises a state machine to its initial state
-		/// </summary>
-		/// <param name="state">The state machine state.</param>
-		public void Initialise( TState state )
-		{
-			this.BeginEntry( state );
-			this.EndEntry( state, false );
-		}
-
-		internal override void BeginExit( TState state )
-		{
-			foreach( var region in regions )
-			{
-				if( state.GetActive( region ) )
-				{
-					region.BeginExit( state );
-					region.EndExit( state );
-				}
-			}
-		}
-
-		internal override void EndEntry( TState state, bool deepHistory )
-		{
-			foreach( var region in regions )
-			{
-				region.BeginEntry( state );
-				region.EndEntry( state, deepHistory );
+				this.regions = regions;
 			}
 
-			base.EndEntry( state, deepHistory );
+			this.Clean = false;
 		}
 
 		/// <summary>
-		/// Attempts to process a message against an orthogonal state.
+		/// Initialises a state machine model.
 		/// </summary>
-		/// <param name="state">The state machine state.</param>
+		/// <remarks>
+		/// Initialising a state machine model pre-compiles all the transitions.
+		/// This process will be triggered automatically on any call to StateMachine.Initialise( TContext context ) or StateMachine.Process if the model structure has changed.
+		/// If you want to take greater control of when this happens, pass autoInitialise = false to StateMachine.Initialise( TContext context ) or StateMachine.Process and call Initialise as required instead.
+		/// </remarks>
+		public void Initialise() {
+			this.Reset();
+			this.Clean = true;
+
+			this.BootstrapElement( false );
+			this.BootstrapTransitions();
+		}
+
+		/// <summary>
+		/// Initialises a state machine context to its initial state; this causes the state machine context to enter its initial state.
+		/// </summary>
+		/// <param name="context">The state machine context.</param>
+		/// <param name="autoInitialise">True if you wish to automatically re-initialise the state machine model prior to initialising the state machine context.</param>
+		public void Initialise( TContext context, Boolean autoInitialise = true ) {
+			if( !this.Clean && autoInitialise )
+				this.Initialise();
+
+			this.Enter( context, null, false );
+		}
+
+		/// <summary>
+		/// Determines if the state machine context has completed its processsing.
+		/// </summary>
+		/// <param name="context">The state machine context to test completeness for.</param>
+		/// <returns>True if the state machine context has completed.</returns>
+		/// <remarks>
+		/// A state machine context is deemed complete when all its child Regions are complete.
+		/// A Region is deemed complete if its current state is a FinalState (States are also considered to be FinalStates if there are no outbound transitions).
+		/// In addition, if a state machine context is terminated (by virtue of a transition to a Terminate PseudoState) it is also deemed to be completed.
+		/// </remarks>
+		public Boolean IsComplete( TContext context ) {
+			return context.IsTerminated || this.regions.All( region => region.IsComplete( context ) );
+		}
+
+		/// <summary>
+		/// Pass a message to a state machine context for evaluation.
+		/// </summary>
+		/// <param name="context">The state machine context to evaluate the message against.</param>
 		/// <param name="message">The message to evaluate.</param>
-		/// <returns>A boolean indicating if the message caused a state change.</returns>
-		public bool Process( TState state, object message )
-		{
-			if( state.IsTerminated )
-				return false;
+		/// <param name="autoInitialise">True if you wish to automatically re-initialise the state machine model prior to evaluating the message.</param>
+		/// <returns>True if the message triggered a state transition.</returns>
+		/// <remarks>
+		/// Note that due to the potential for orthogonal Regions in composite States, it is possible for multiple transitions to be triggered.
+		/// </remarks>
+		public Boolean Evaluate( TContext context, Object message, Boolean autoInitialise = true ) {
+			if( !this.Clean && autoInitialise )
+				this.Initialise();
 
-			return regions.Aggregate( false, ( result, region ) => region.Process( state, message ) || result );
+			Boolean processed = false;
+
+//			stopwatch.Restart();
+
+			if( !context.IsTerminated )
+				for( int i = 0, l = this.regions.Length; i < l; ++i )
+					if( this.regions[ i ].Evaluate( context, message ) )
+						processed = true;
+
+//			stopwatch.Stop();
+
+//			Console.WriteLine( "Message processing took {0}μs", stopwatch.ElapsedTicks * 1000 * 1000 / System.Diagnostics.Stopwatch.Frequency );
+
+			return processed;
 		}
+
+		internal override void BootstrapElement( Boolean deepHistoryAbove ){
+			foreach( var region in this.regions ) {
+				region.Reset();
+				region.BootstrapElement( deepHistoryAbove );
+
+				this.EndEnter += region.Enter;
+			}
+
+			base.BootstrapElement( deepHistoryAbove);
+		}
+
+		internal override void BootstrapTransitions() {
+			foreach( var region in this.regions )
+				region.BootstrapTransitions();
+		}
+
+//		private static System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 	}
 }

@@ -1,37 +1,19 @@
-﻿// The MIT License (MIT)
-//
-// Copyright (c) 2014 Steelbreeze Limited
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+﻿/* state v5 finite state machine library
+ * Copyright (c) 2014 Steelbreeze Limited
+ * Licensed under MIT and GPL v3 licences
+ */
 using System;
-using Steelbreeze.Behavior;
 
-namespace Steelbreeze.Behavior.Examples
+namespace Steelbreeze.Behavior.StateMachines.Examples
 {
 	/// <summary>
 	/// Basic example of state machine state implementation
 	/// </summary>
-	public sealed class State : StateBase<State>
+	public sealed class PlayerState : DictionaryContext<PlayerState>
 	{
 		public readonly String Name;
 
-		public State( String name )
+		public PlayerState( String name )
 		{
 			this.Name = name;
 		}
@@ -53,60 +35,53 @@ namespace Steelbreeze.Behavior.Examples
 	{
 		static void Main()
 		{
-			// create the state machine
-			var player = new StateMachine<State>( "player" );
+			// create the state machine model
+			var model = new StateMachine<PlayerState>( "player" );
+			var initial = new PseudoState<PlayerState>( "initial", model, PseudoStateKind.Initial );
+			var operational = new State<PlayerState>( "operational", model );
+			var flipped = new State<PlayerState>( "flipped", model );
+			var final = new FinalState<PlayerState>( "final", model );
+			var terminated = new PseudoState<PlayerState>( "terminated", model, PseudoStateKind.Terminate );
 
-			// create some states
-			var initial = player.CreatePseudoState( "initial", PseudoStateKind.Initial );
-			var operational = player.CreateCompositeState( "operational" );
-			var flipped = player.CreateSimpleState( "flipped" );
-			var final = player.CreateFinalState( "final" );
-			var terminated = player.CreatePseudoState( "terminated", PseudoStateKind.Terminate );
+			var history = new PseudoState<PlayerState>( "history", operational, PseudoStateKind.DeepHistory );
+			var stopped = new State<PlayerState>( "stopped", operational );
+			var active = new State<PlayerState>( "active", operational );
 
-			var history = operational.CreatePseudoState( "history", PseudoStateKind.DeepHistory );
-			var stopped = operational.CreateSimpleState( "stopped" );
-			var active = operational.CreateCompositeState( "active" );
-
-			var running = active.CreateSimpleState( "running" );
-			var paused = active.CreateSimpleState( "paused" );
+			var running = new State<PlayerState>( "running", active );
+			var paused = new State<PlayerState>( "paused", active );
 
 			// some state behaviour
 			active.Entry += EngageHead;
 			active.Exit += DisengageHead;
-
 			running.Entry += StartMotor;
 			running.Exit += StopMotor;
 
-			// create transitions between states (one with transition behaviour)
-			var t0 = player.CreateTransition( initial, operational );
-			player.CreateTransition( history, stopped );
-			player.CreateTransition<String>( stopped, running, ( state, command ) => command.Equals( "play" ) );
-			player.CreateTransition<String>( active, stopped, ( state, command ) => command.Equals( "stop" ) );
-			player.CreateTransition<String>( running, paused, ( state, command ) => command.Equals( "pause" ) );
-			player.CreateTransition<String>( paused, running, ( state, command ) => command.Equals( "play" ) );
-			player.CreateTransition<String>( operational, flipped, ( state, command ) => command.Equals( "flip" ) );
-			player.CreateTransition<String>( flipped, operational, ( state, command ) => command.Equals( "flip" ) );
-			player.CreateTransition<String>( operational, final, ( state, command ) => command.Equals( "off" ) );
-			player.CreateTransition<String>( operational, terminated, ( state, command ) => command.Equals( "term" ) );
-			var help = player.CreateTransition<String>( operational, operational, ( state, command ) => command.StartsWith( "help" ) );
+			// create transitions between states (one with transition behaviour)	
+			initial.To( operational ).Do( DisengageHead, StartMotor );
+			history.To( stopped );
+			stopped.To( running ).When<String>( ( state, command ) => command.Equals( "play" ) );
+			active.To( stopped ).When<String>( ( state, command ) => command.Equals( "stop" ) );
+			running.To( paused ).When<String>( ( state, command ) => command.Equals( "pause" ) );
+			paused.To( running ).When<String>( ( state, command ) => command.Equals( "play" ) );
+			operational.To( flipped ).When<String>( ( state, command ) => command.Equals( "flip" ) );
+			flipped.To( operational ).When<String>( ( state, command ) => command.Equals( "flip" ) );
+			operational.To( final ).When<String>( ( state, command ) => command.Equals( "off" ) );
+			operational.To( terminated ).When<String>( ( state, command ) => command.Equals( "term" ) );
+			operational.When<String>( ( state, command ) => command.StartsWith( "help" ) ).Do( () => Console.WriteLine( "help yourself" ) );
 
-			t0.Effect += DisengageHead;
-			t0.Effect += StopMotor;
-			help.Effect += ( c, s ) => Console.WriteLine( "help yourself" );
+			// create an instance of the state machine state
+			var instance = new PlayerState( "example" );
 
-			var instance = new State( "example" );
-
-			// initialises the state machine (enters the region for the first time, causing transition from the initial PseudoState)
-			player.Initialise( instance );
+			// initialises the state machine state (enters the region for the first time, causing transition from the initial PseudoState)
+			model.Initialise( instance );
 
 			// main event loop
-			while( !player.IsComplete( instance ) )
-			{
+			while( !model.IsComplete( instance ) ) {
 				// write a prompt
 				Console.Write( "alamo> " );
 
 				// process lines read from the console
-				if( !player.Process( instance, Console.ReadLine() ) )
+				if( !model.Evaluate( instance, Console.ReadLine() ) )
 					Console.WriteLine( "unknown command" );
 			}
 
@@ -114,22 +89,22 @@ namespace Steelbreeze.Behavior.Examples
 			Console.ReadKey();
 		}
 
-		private static void EngageHead( State context )
+		private static void EngageHead( PlayerState context )
 		{
 			Console.WriteLine( "- engaging head" );
 		}
 
-		private static void DisengageHead( State context )
+		private static void DisengageHead( PlayerState context )
 		{
 			Console.WriteLine( "- disengaging head" );
 		}
 
-		private static void StartMotor( State context )
+		private static void StartMotor( PlayerState context )
 		{
 			Console.WriteLine( "- starting motor" );
 		}
 
-		private static void StopMotor( State context )
+		private static void StopMotor( PlayerState context )
 		{
 			Console.WriteLine( "- stopping motor" );
 		}

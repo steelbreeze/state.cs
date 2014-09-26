@@ -1,95 +1,66 @@
-﻿// The MIT License (MIT)
-//
-// Copyright (c) 2014 Steelbreeze Limited
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+﻿/* State v5 finite state machine library
+ * Copyright (c) 2014 Steelbreeze Limited
+ * Licensed under MIT and GPL v3 licences
+ */
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
-namespace Steelbreeze.Behavior
-{
+namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
-	/// A transient state within a pseudo state model.
+	/// A PseudoState is an abstraction that encompasses different types of transient vertices in the state machine.
 	/// </summary>
-	public sealed class PseudoState<TState> : Element<TState> where TState : IState<TState>
-	{
-		private readonly ICollection<Transition<TState>> completions = new HashSet<Transition<TState>>();
-
+	/// <typeparam name="TContext">The type of the state machine instance.</typeparam>
+	/// <remarks>
+	/// Pseudostates are typically used to connect multiple transitions into more complex state transitions path.
+	/// </remarks>
+	public sealed class PseudoState<TContext> : Vertex<TContext> where TContext : IContext<TContext> {
 		/// <summary>
-		/// The kind of the pseudo state.
+		/// Determines the precise type of the Pseudostate.
 		/// </summary>
+		/// <remarks>
+		/// The default kind of a PseudoState is Initial.
+		/// </remarks>
 		public readonly PseudoStateKind Kind;
 
-		/// <summary>
-		/// Creates a pseudo state within an owning region.
-		/// </summary>
-		/// <param name="name">The name of the pseudo state.</param>
-		/// <param name="kind">The kind of the pseudo state.</param>
-		/// <param name="owner">The owenr of the pseudo state.</param>
-		public PseudoState( String name, PseudoStateKind kind, Region<TState> owner )
-			: base( name, owner )
-		{
-			this.Kind = kind;
-
-			if( this.Kind.IsInitial() )
-			{
-				if( owner.initial != null )
-					throw new Exception( "Region can have only one initial PseudoState: " + owner );
-
-				owner.initial = this;
-			}
-		}
+		internal Boolean IsHistory { get { return this.Kind == PseudoStateKind.DeepHistory || this.Kind == PseudoStateKind.ShallowHistory; } }
+		internal Boolean IsInitial { get { return this.Kind == PseudoStateKind.Initial || this.IsHistory; } }
 
 		/// <summary>
-		/// Creates a pseudo state within an owning composite state.
+		/// Initialises a new instance of the PseudoState class.
 		/// </summary>
-		/// <param name="name">The name of the pseudo state.</param>
-		/// <param name="kind">The kind of the pseudo state.</param>
-		/// <param name="owner">The owenr of the pseudo state.</param>
-		public PseudoState( String name, PseudoStateKind kind, CompositeState<TState> owner )
-			: base( name, owner )
-		{
+		/// <param name="name">The name of the PseudoState.</param>
+		/// <param name="parent">The parent Region.</param>
+		/// <param name="kind">The kind of the PseudoState</param>
+		/// <remarks>
+		/// The kind of the PseudoState dictates is use and semantics; see the documentation of PseudoStateKind.
+		/// </remarks>
+		public PseudoState( String name, Region<TContext> parent, PseudoStateKind kind = PseudoStateKind.Initial )
+			: base( name, parent, Transition<TContext>.PseudoState( kind ) ) {
+			Trace.Assert( name != null, "PseudoStates must have a name" );
+			Trace.Assert( parent != null, "PseudoStates must have a parent Region" );
+
 			this.Kind = kind;
 
-			if( this.Kind.IsInitial() )
-			{
-				if( owner.initial != null )
-					throw new Exception( "Region can have only one initial PseudoState: " + owner );
-
-				owner.initial = this;
-			}
+			if( this.IsInitial )
+				this.Region.Initial = this;
 		}
 
-		internal void Add( Transition<TState> completion )
-		{
-			Trace.Assert( !( this.Kind.IsInitial() && completions.Count != 0 ), "initial pseudo states can have at most one outbound completion transition" );
-
-			this.completions.Add( completion );
+		/// <summary>
+		/// Creates a new transition from this PseudoState.
+		/// </summary>
+		/// <param name="target">The Vertex to transition to.</param>
+		/// <returns>An intance of the Transition class.</returns>
+		public override Transition<TContext> To( Vertex<TContext> target ) {
+			Trace.Assert( target != null, "Transitions from PseudoStates must have a target" );
+			return base.To( target );
 		}
 
-		internal override void EndEntry( TState state, Boolean deepHistory )
-		{
+		internal override void BootstrapElement( bool deepHistoryAbove ) {
+			base.BootstrapElement( deepHistoryAbove );
+
 			if( this.Kind == PseudoStateKind.Terminate )
-				state.IsTerminated = true;
-			else
-				this.Kind.Completion<TState>( state, completions ).Traverse( state, deepHistory );
+				this.Enter += ( context, message, history ) => context.IsTerminated = true;
 		}
 	}
 }
