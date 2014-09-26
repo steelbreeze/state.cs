@@ -1,20 +1,13 @@
 # Welcome to state.cs
 
+The latest code is 5.0.0.
 The current stable release is 4.1.1.
 
 If you're using state.cs I'd love to hear about it; please e-mail me at mesmo@steelbreeze.net 
 
-## Version 4.1 notes
-Version 4.1 also passes the state machine state through to the transition guard conditions.
+## Version 5.0 notes
+Version 5.0 is a complete re-write of the state machine. It makes large use of multicast delegates to pre-evaulate the steps required to perform state transitions. This leads to considerable performance benefits no evaluations are made relating to the structure of the model at runtime as it does not change at runtime.
 
-## Version 4 notes
-Version 4 passes the state machine state through to the Entry, Exit and Effect callbacks; it also preserves the full type of the state machine state (the subclass of IState).
-
-In order to do this, all element classes have had to be parameterised; in order to keep code cruft to a minimum, helper classes have been added to each parent element class (StateMachine, Region, CompositeState and OrthogonalState) to create child elements and transitions.
-
-For conveniance, there is a reference StateBase abstract implementation of IState; you only need to inherit from it and pass the inherited class at the template parameter TState.
-
-Also taken the opportunity of a major version upgrade to fix some naming inconsistancies.
 
 ## Introduction
 State.js provides a hierarchical state machine capable of managing orthogonal regions; a variety of pseudo state kinds are implemented including initial, shallow & deep history, choice, junction and entry & exit points.
