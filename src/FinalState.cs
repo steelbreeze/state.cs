@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
-	/// A sepcial kind of State signifying that its parent Region is completed.
+	/// A special kind of State signifying that its parent Region is completed.
 	/// </summary>
 	/// <typeparam name="TContext">The type of the state machine context.</typeparam>
 	/// <remarks>To be complete, final states cannot have any child model structure beneath them (Region's) or outgoing transitions.</remarks>

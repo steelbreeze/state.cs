@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
-	/// The interface required of state machine context objects
+	/// The interface required of state machine context objects.
 	/// </summary>
 	/// <typeparam name="TContext">The type of the derived class.</typeparam>
 	/// <remarks>

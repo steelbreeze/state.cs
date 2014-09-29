@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
-	/// StateMachine is the root node of a hierarchical state machine.
+	/// A StateMachine is the root node of a hierarchical state machine model.
 	/// </summary>
 	/// <typeparam name="TContext">The type of the state machine context.</typeparam>
 	public sealed class StateMachine<TContext> : StateMachineElement<TContext> where TContext : IContext<TContext> {
