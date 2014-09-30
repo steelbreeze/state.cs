@@ -16,6 +16,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// The invariant may represent a static situation such as an object waiting for some external event to occur.
 	/// </remarks>
 	public class State<TContext> : Vertex<TContext> where TContext : IContext<TContext> {
+		public override string Type { get { return "state"; } }
+
 		/// <summary>
 		/// The child Regions where the State is composite.
 		/// </summary>

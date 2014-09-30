@@ -11,6 +11,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// </summary>
 	/// <typeparam name="TContext">The type of the state machine instance.</typeparam>
 	public abstract class StateMachineElement<TContext> : NamedElement where TContext : IContext<TContext> {
+		public abstract String Type { get; }
+	
 		/// <summary>
 		/// Returns the elements parent.
 		/// </summary>

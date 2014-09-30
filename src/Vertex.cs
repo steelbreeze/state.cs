@@ -7,7 +7,7 @@ using System;
 
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
-	/// A vertex is an abstraction of a node in a state machine graph; it can be the source or destination of any number of transitions.
+	/// A Vertex is an abstraction of a node in a state machine graph; it can be the source or destination of any number of transitions.
 	/// </summary>
 	/// <typeparam name="TContext">The type of the state machine instance.</typeparam>
 	public abstract class Vertex<TContext> : StateMachineElement<TContext> where TContext : IContext<TContext> {

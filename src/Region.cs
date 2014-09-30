@@ -61,6 +61,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 			return new Region<TContext>( Region<TContext>.DefaultName, state );
 		}
 		#endregion
+		public override string Type { get { return "region"; } }
+	
 		/// <summary>
 		/// Returns the Region's parent element.
 		/// </summary>

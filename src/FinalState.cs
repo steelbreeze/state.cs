@@ -12,6 +12,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// <typeparam name="TContext">The type of the state machine context.</typeparam>
 	/// <remarks>To be complete, final states cannot have any child model structure beneath them (Region's) or outgoing transitions.</remarks>
 	public sealed class FinalState<TContext> : State<TContext> where TContext : IContext<TContext> {
+		public override string Type { get { return "finalState"; } }
+
 		/// <summary>
 		/// Initializes a new instance of a FinalState within the parent Region.
 		/// </summary>

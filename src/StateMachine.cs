@@ -13,6 +13,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// </summary>
 	/// <typeparam name="TContext">The type of the state machine context.</typeparam>
 	public sealed class StateMachine<TContext> : StateMachineElement<TContext> where TContext : IContext<TContext> {
+		public override string Type { get { return "stateMachineModel"; } }
+	
 		/// <summary>
 		/// The child Regions.
 		/// </summary>

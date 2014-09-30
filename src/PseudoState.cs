@@ -15,6 +15,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// Pseudostates are typically used to connect multiple transitions into more complex state transitions path.
 	/// </remarks>
 	public sealed class PseudoState<TContext> : Vertex<TContext> where TContext : IContext<TContext> {
+		public override string Type { get { return "pseudoState"; } }
+
 		/// <summary>
 		/// Determines the precise type of the Pseudostate.
 		/// </summary>

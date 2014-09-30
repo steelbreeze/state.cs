@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
-	/// A Transition describes a vaild path from one Vertex in a state machine to another, and the trigger that will cause it to be followed.
+	/// A Transition describes a valid path from one Vertex in a state machine to another, and the trigger that will cause it to be followed.
 	/// </summary>
 	/// <typeparam name="TContext">The type of the state machine instance.</typeparam>
 	/// <remarks>

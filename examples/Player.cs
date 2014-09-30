@@ -3,24 +3,18 @@
  * Licensed under MIT and GPL v3 licences
  */
 using System;
+using System.Xml.Linq;
 
 namespace Steelbreeze.Behavior.StateMachines.Examples
 {
 	/// <summary>
 	/// Basic example of state machine state implementation
 	/// </summary>
-	public sealed class PlayerState : DictionaryContext<PlayerState>
-	{
-		public readonly String Name;
+	public sealed class PlayerState : XmlContext<PlayerState> {
+		public PlayerState( String name ) : base( new XAttribute( "name", name ) ) { }
 
-		public PlayerState( String name )
-		{
-			this.Name = name;
-		}
-
-		public override string ToString()
-		{
-			return this.Name;
+		public override string ToString() {
+			return this.Element.Attribute( "name" ).Value;
 		}
 	}
 
@@ -67,7 +61,7 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 			flipped.To( operational ).When<String>( ( state, command ) => command.Equals( "flip" ) );
 			operational.To( final ).When<String>( ( state, command ) => command.Equals( "off" ) );
 			operational.To( terminated ).When<String>( ( state, command ) => command.Equals( "term" ) );
-			operational.When<String>( ( state, command ) => command.StartsWith( "help" ) ).Do( () => Console.WriteLine( "help yourself" ) );
+			operational.When<String>( ( state, command ) => command.StartsWith( "current" ) ).Do( state => Console.WriteLine( state.Element ) );
 
 			// create an instance of the state machine state
 			var instance = new PlayerState( "example" );
@@ -84,6 +78,8 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 				if( !model.Evaluate( instance, Console.ReadLine() ) )
 					Console.WriteLine( "unknown command" );
 			}
+
+			Console.WriteLine( instance.Element );
 
 			Console.WriteLine( "Press any key to quit" );
 			Console.ReadKey();

@@ -17,7 +17,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// </remarks>
 	public abstract class DictionaryContext<TContext> : IContext<TContext> where TContext : IContext<TContext> {
 		// use a dictionary to store the last known state of a Region
-		private readonly Dictionary<Region<TContext>, Vertex<TContext>> current = new Dictionary<Region<TContext>, Vertex<TContext>>();
+		private readonly Dictionary<Region<TContext>, Vertex<TContext>> last = new Dictionary<Region<TContext>, Vertex<TContext>>();
 
 		// true if a state machine has reached a Terminate PseudoState
 		Boolean IContext<TContext>.IsTerminated { get; set; }
@@ -25,13 +25,13 @@ namespace Steelbreeze.Behavior.StateMachines {
 		// sets and gets the current state of a specified Region
 		Vertex<TContext> IContext<TContext>.this[ Region<TContext> region ] {
 			set {
-				current[ region ] = value;
+				last[ region ] = value;
 			}
 
 			get {
 				var value = default( Vertex<TContext> );
 
-				current.TryGetValue( region, out value );
+				last.TryGetValue( region, out value );
 
 				return value;
 			}
