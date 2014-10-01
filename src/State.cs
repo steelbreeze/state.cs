@@ -92,6 +92,10 @@ namespace Steelbreeze.Behavior.StateMachines {
 			return this.To( null ).When( guard );
 		}
 
+		public Transition<TContext> When<TMessage>( Func<TMessage, Boolean> guard ) where TMessage : class {
+			return this.To( null ).When( guard );
+		}
+
 		/// <summary>
 		/// Invokes the Exit behavior upon exiting a State.
 		/// </summary>

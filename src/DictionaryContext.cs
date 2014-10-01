@@ -20,7 +20,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		private readonly Dictionary<Region<TContext>, Vertex<TContext>> last = new Dictionary<Region<TContext>, Vertex<TContext>>();
 
 		// true if a state machine has reached a Terminate PseudoState
-		Boolean IContext<TContext>.IsTerminated { get; set; }
+		public Boolean IsTerminated { get; set; }
 
 		// sets and gets the current state of a specified Region
 		Vertex<TContext> IContext<TContext>.this[ Region<TContext> region ] {

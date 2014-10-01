@@ -33,9 +33,8 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 			var model = new StateMachine<PlayerState>( "player" );
 			var initial = new PseudoState<PlayerState>( "initial", model, PseudoStateKind.Initial );
 			var operational = new State<PlayerState>( "operational", model );
-			var flipped = new State<PlayerState>( "flipped", model );
+			var choice = new PseudoState<PlayerState>( "choice", model, PseudoStateKind.Choice );
 			var final = new FinalState<PlayerState>( "final", model );
-			var terminated = new PseudoState<PlayerState>( "terminated", model, PseudoStateKind.Terminate );
 
 			var history = new PseudoState<PlayerState>( "history", operational, PseudoStateKind.DeepHistory );
 			var stopped = new State<PlayerState>( "stopped", operational );
@@ -50,18 +49,22 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 			running.Entry += StartMotor;
 			running.Exit += StopMotor;
 
-			// create transitions between states (one with transition behaviour)	
+			// create the transitions representing a cassette player	
 			initial.To( operational ).Do( DisengageHead, StartMotor );
 			history.To( stopped );
-			stopped.To( running ).When<String>( ( state, command ) => command.Equals( "play" ) );
-			active.To( stopped ).When<String>( ( state, command ) => command.Equals( "stop" ) );
-			running.To( paused ).When<String>( ( state, command ) => command.Equals( "pause" ) );
-			paused.To( running ).When<String>( ( state, command ) => command.Equals( "play" ) );
-			operational.To( flipped ).When<String>( ( state, command ) => command.Equals( "flip" ) );
-			flipped.To( operational ).When<String>( ( state, command ) => command.Equals( "flip" ) );
-			operational.To( final ).When<String>( ( state, command ) => command.Equals( "off" ) );
-			operational.To( terminated ).When<String>( ( state, command ) => command.Equals( "term" ) );
-			operational.When<String>( ( state, command ) => command.StartsWith( "current" ) ).Do( state => Console.WriteLine( state.Element ) );
+			stopped.To( running ).When<String>( command => command.Equals( "play" ) );
+			active.To( stopped ).When<String>( command => command.Equals( "stop" ) );
+			running.To( paused ).When<String>( command => command.Equals( "pause" ) );
+			paused.To( running ).When<String>( command => command.Equals( "play" ) );
+			operational.To( final ).When<String>( command => command.Equals( "off" ) );
+			
+			// a couple of transitions to show the random nature of a Choice PseudoState and DeepHistory in action
+			operational.To( choice ).When<String>( command => command == "random" );
+			choice.To( operational ).Do( () => Console.WriteLine( "- transition A" ) );
+			choice.To( operational ).Do( () => Console.WriteLine( "- transition B" ) );
+
+			// add an internal transition to show the current state at any time			
+			operational.When<String>( command => command.StartsWith( "current" ) ).Do( state => Console.WriteLine( state.Element ) );
 
 			// create an instance of the state machine state
 			var instance = new PlayerState( "example" );
@@ -78,8 +81,6 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 				if( !model.Evaluate( instance, Console.ReadLine() ) )
 					Console.WriteLine( "unknown command" );
 			}
-
-			Console.WriteLine( instance.Element );
 
 			Console.WriteLine( "Press any key to quit" );
 			Console.ReadKey();

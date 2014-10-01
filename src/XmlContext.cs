@@ -35,7 +35,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 			this.Element.Add( new XAttribute( "terminated", false ) );
 		}
 
-		Boolean IContext<TContext>.IsTerminated {
+		public Boolean IsTerminated {
 			set {
 				Element.Attribute( "terminated" ).Value = Convert.ToString( value );
 			}

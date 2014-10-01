@@ -101,13 +101,25 @@ namespace Steelbreeze.Behavior.StateMachines {
 		}
 
 		/// <summary>
-		/// Adds a typed guard condition to a transition.
+		/// Adds a typed guard condition to a transition that can evaluate both the state machine context and the triggering message.
 		/// </summary>
 		/// <typeparam name="TMessage">The type of the message that can trigger the transition.</typeparam>
 		/// <param name="guard">The guard condition that must evaluate true for the transition to be traversed.</param>
 		/// <returns>Returns the transition.</returns>
 		public Transition<TContext> When<TMessage>( Func<TContext, TMessage, Boolean> guard ) where TMessage : class {
 			this.Predicate = ( context, message ) => message is TMessage && guard( context, message as TMessage );
+
+			return this;
+		}
+
+		/// <summary>
+		/// Adds a typed guard condition to a transition that can evaluate the triggering message.
+		/// </summary>
+		/// <typeparam name="TMessage">The type of the message that can trigger the transition.</typeparam>
+		/// <param name="guard">The guard condition that must evaluate true for the transition to be traversed.</param>
+		/// <returns>Returns the transition.</returns>
+		public Transition<TContext> When<TMessage>( Func<TMessage, Boolean> guard ) where TMessage : class {
+			this.Predicate = ( context, message ) => message is TMessage && guard( message as TMessage );
 
 			return this;
 		}
@@ -136,6 +148,22 @@ namespace Steelbreeze.Behavior.StateMachines {
 		public Transition<TContext> Do<TMessage>( params Action<TContext, TMessage>[] behavior ) where TMessage : class {
 			foreach( var effect in behavior )
 				this.effect += ( context, message ) => { if( message is TMessage ) effect( context, message as TMessage ); };
+
+			return this;
+		}
+
+		/// <summary>
+		/// Adds behavior to a transition.
+		/// </summary>
+		/// <typeparam name="TMessage">The type of the message that triggered the transition.</typeparam>
+		/// <param name="behavior">An Action that takes the triggering message as a parameter.</param>
+		/// <returns>Returns the transition.</returns>
+		/// <remarks>
+		/// If the type of the message that triggers the transition does not match TMessage, the behavior will not be called.
+		/// </remarks>
+		public Transition<TContext> Do<TMessage>( params Action<TMessage>[] behavior ) where TMessage : class {
+			foreach( var effect in behavior )
+				this.effect += ( context, message ) => { if( message is TMessage ) effect( message as TMessage ); };
 
 			return this;
 		}
