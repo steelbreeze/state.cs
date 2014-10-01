@@ -1,6 +1,6 @@
 # Welcome to state.cs
 
-The latest code is 5.0.0.
+The latest code is the 5.0.0 codebase; nearly ready for release.
 
 The current stable release is 4.1.1.
 
