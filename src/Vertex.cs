@@ -3,7 +3,6 @@
  * Licensed under MIT and GPL v3 licences
  */
 using System;
-//using System.Diagnostics;
 
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
@@ -88,18 +87,10 @@ namespace Steelbreeze.Behavior.StateMachines {
 			if( transition == null )
 				return false;
 
-//			stopwatch.Restart();
-
 			transition.Traverse( context, message, false );
-
-//			stopwatch.Stop();
-
-//			Console.WriteLine( "{0} to {1} ({2} operations) took {3}μs", transition.Source, transition.Target, transition.Traverse.GetInvocationList().Length, stopwatch.ElapsedTicks * 1000 * 1000 / System.Diagnostics.Stopwatch.Frequency );
 
 			return true;
 
 		}
-
-//		private System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 	}
 }

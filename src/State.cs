@@ -16,44 +16,10 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// The invariant may represent a static situation such as an object waiting for some external event to occur.
 	/// </remarks>
 	public class State<TContext> : Vertex<TContext> where TContext : IContext<TContext> {
+		/// <summary>
+		/// Returns a simple (non-templated) type name
+		/// </summary>
 		public override string Type { get { return "state"; } }
-
-		/// <summary>
-		/// The child Regions where the State is composite.
-		/// </summary>
-		IEnumerable<Region<TContext>> Regions { get { return this.regions; } }
-
-		/// <summary>
-		/// An optional behavior that is executed whenever this state is exited, regardless of which transition was taken out of the state.
-		/// </summary>
-		/// <remarks>
-		/// If defined, exit actions are always executed to completion only after all internal activities and transition actions have completed execution.
-		/// </remarks>
-		public event Action<TContext> Exit;
-
-		/// <summary>
-		/// An optional behavior that is executed whenever this state is entered regardless of the transition taken to reach the state.
-		/// </summary>
-		/// <remarks>
-		/// If defined, entry actions are always executed to completion prior to any internal behavior or transitions performed within the state.
-		/// </remarks>
-		public event Action<TContext> Entry;
-
-		internal Region<TContext>[] regions;
-
-		/// <summary>
-		/// Creates a new instance of the State class.
-		/// </summary>
-		/// <param name="name">The name of the state.</param>
-		/// <param name="parent">The parent Region.</param>
-		public State( String name, Region<TContext> parent )
-			: base( name, parent, Transition<TContext>.State ) {
-			Trace.Assert( name != null, "States must have a name" );
-			Trace.Assert( parent != null, "States must have a parent Region" );
-		}
-
-		// Constructor used by FinalState
-		internal State( String name, Region<TContext> parent, Func<Transition<TContext>[], TContext, Object, Transition<TContext>> selector ) : base( name, parent, selector ) { }
 
 		/// <summary>
 		/// True if the State is a simple State.
@@ -80,6 +46,72 @@ namespace Steelbreeze.Behavior.StateMachines {
 		public Boolean IsOrthogonal { get { return this.regions != null && this.regions.Length > 1; } }
 
 		/// <summary>
+		/// The child Regions where the State is composite.
+		/// </summary>
+		public IEnumerable<Region<TContext>> Regions { get { return this.regions; } }
+
+		internal Region<TContext>[] regions;
+
+		private event Action<TContext, Object> exit;
+		private event Action<TContext, Object> entry;
+
+		/// <summary>
+		/// Creates a new instance of the State class.
+		/// </summary>
+		/// <param name="name">The name of the state.</param>
+		/// <param name="parent">The parent Region.</param>
+		public State( String name, Region<TContext> parent )
+			: base( name, parent, Transition<TContext>.State ) {
+			Trace.Assert( name != null, "States must have a name" );
+			Trace.Assert( parent != null, "States must have a parent Region" );
+		}
+
+		// Constructor used by FinalState
+		internal State( String name, Region<TContext> parent, Func<Transition<TContext>[], TContext, Object, Transition<TContext>> selector ) : base( name, parent, selector ) { }
+
+		public State<TContext> Exit<TMessage>( params Action<TContext, TMessage>[] behavior ) where TMessage : class {
+			foreach( var exit in behavior )
+				this.exit += ( state, message ) => { if( message is TMessage ) exit( state, message as TMessage ); };
+
+			return this;
+		}
+
+		public State<TContext> Exit( params Action<TContext>[] behavior ) {
+			foreach( var exit in behavior )
+				this.exit += ( state, message ) => exit( state );
+
+			return this;
+		}
+
+		public State<TContext> Exit( params Action[] behavior ) {
+			foreach( var exit in behavior )
+				this.exit += ( state, message ) => exit();
+
+			return this;
+		}
+
+		public State<TContext> Entry<TMessage>( params Action<TContext, TMessage>[] behavior ) where TMessage : class {
+			foreach( var entry in behavior )
+				this.entry += ( state, message ) => { if( message is TMessage ) entry( state, message as TMessage ); };
+
+			return this;
+		}
+
+		public State<TContext> Entry( params Action<TContext>[] behavior ) {
+			foreach( var entry in behavior )
+				this.entry += ( state, message ) => entry( state );
+
+			return this;
+		}
+
+		public State<TContext> Entry( params Action[] behavior ) {
+			foreach( var entry in behavior )
+				this.entry += ( state, message ) => entry();
+
+			return this;
+		}
+
+		/// <summary>
 		/// Creates an internal transition.
 		/// </summary>
 		/// <typeparam name="TMessage">The type of the messaage that the internal transition will react to.</typeparam>
@@ -103,7 +135,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="message">The message that triggered the state transition.</param>
 		/// <param name="history">A flag denoting if history semantics were in play during the transition.</param>
 		protected virtual void OnExit( TContext context, Object message, Boolean history ) {
-			this.Exit( context );
+			this.exit( context, message );
 		}
 
 		/// <summary>
@@ -113,7 +145,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="message">The message that triggered the state transition.</param>
 		/// <param name="history">A flag denoting if history semantics were in play during the transition.</param>
 		protected virtual void OnEntry( TContext context, Object message, Boolean history ) {
-			this.Entry( context );
+			this.entry( context, message );
 		}
 
 		internal override Boolean IsComplete( TContext context ) {
@@ -151,10 +183,10 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 			base.BootstrapElement( deepHistoryAbove );
 
-			if( this.Exit != null )
+			if( this.exit != null )
 				this.Leave += this.OnExit;
 
-			if( this.Entry != null )
+			if( this.entry != null )
 				this.BeginEnter += this.OnEntry;
 
 			this.BeginEnter += ( context, message, history ) => context[ this.Region ] = this;

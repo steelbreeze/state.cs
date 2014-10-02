@@ -116,16 +116,10 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 			Boolean processed = false;
 
-//			stopwatch.Restart();
-
 			if( !context.IsTerminated )
 				for( int i = 0, l = this.regions.Length; i < l; ++i )
 					if( this.regions[ i ].Evaluate( context, message ) )
 						processed = true;
-
-//			stopwatch.Stop();
-
-//			Console.WriteLine( "Message processing took {0}μs", stopwatch.ElapsedTicks * 1000 * 1000 / System.Diagnostics.Stopwatch.Frequency );
 
 			return processed;
 		}
@@ -145,7 +139,5 @@ namespace Steelbreeze.Behavior.StateMachines {
 			foreach( var region in this.regions )
 				region.BootstrapTransitions();
 		}
-
-//		private static System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 	}
 }

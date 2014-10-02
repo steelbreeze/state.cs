@@ -145,7 +145,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>
 		/// If the type of the message that triggers the transition does not match TMessage, the behavior will not be called.
 		/// </remarks>
-		public Transition<TContext> Do<TMessage>( params Action<TContext, TMessage>[] behavior ) where TMessage : class {
+		public Transition<TContext> Effect<TMessage>( params Action<TContext, TMessage>[] behavior ) where TMessage : class {
 			foreach( var effect in behavior )
 				this.effect += ( context, message ) => { if( message is TMessage ) effect( context, message as TMessage ); };
 
@@ -161,7 +161,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>
 		/// If the type of the message that triggers the transition does not match TMessage, the behavior will not be called.
 		/// </remarks>
-		public Transition<TContext> Do<TMessage>( params Action<TMessage>[] behavior ) where TMessage : class {
+		public Transition<TContext> Effect<TMessage>( params Action<TMessage>[] behavior ) where TMessage : class {
 			foreach( var effect in behavior )
 				this.effect += ( context, message ) => { if( message is TMessage ) effect( message as TMessage ); };
 
@@ -173,7 +173,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		/// <param name="behavior">An Action that takes the state machine context as a parameter.</param>
 		/// <returns>Returns the transition.</returns>
-		public Transition<TContext> Do( params Action<TContext>[] behavior ) {
+		public Transition<TContext> Effect( params Action<TContext>[] behavior ) {
 			foreach( var effect in behavior )
 				this.effect += ( context, message ) => effect( context );
 
@@ -185,7 +185,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		/// <param name="behavior">An Action that takes no parameters.</param>
 		/// <returns>Returns the transition.</returns>
-		public Transition<TContext> Do( params Action[] behavior ) {
+		public Transition<TContext> Effect( params Action[] behavior ) {
 			foreach( var effect in behavior )
 				this.effect += ( context, message ) => effect();
 

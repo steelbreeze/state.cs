@@ -27,44 +27,31 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 	/// </remarks>
 	public class Player
 	{
-		static void Main()
-		{
+		static void Main() {
 			// create the state machine model
 			var model = new StateMachine<PlayerState>( "player" );
 			var initial = new PseudoState<PlayerState>( "initial", model, PseudoStateKind.Initial );
 			var operational = new State<PlayerState>( "operational", model );
-			var choice = new PseudoState<PlayerState>( "choice", model, PseudoStateKind.Choice );
 			var final = new FinalState<PlayerState>( "final", model );
 
 			var history = new PseudoState<PlayerState>( "history", operational, PseudoStateKind.DeepHistory );
 			var stopped = new State<PlayerState>( "stopped", operational );
-			var active = new State<PlayerState>( "active", operational );
+			var active = new State<PlayerState>( "active", operational ).Entry( EngageHead ).Exit( DisengageHead );
 
-			var running = new State<PlayerState>( "running", active );
+			var running = new State<PlayerState>( "running", active ).Entry( StartMotor ).Exit( StartMotor );
 			var paused = new State<PlayerState>( "paused", active );
 
-			// some state behaviour
-			active.Entry += EngageHead;
-			active.Exit += DisengageHead;
-			running.Entry += StartMotor;
-			running.Exit += StopMotor;
-
-			// create the transitions representing a cassette player	
-			initial.To( operational ).Do( DisengageHead, StartMotor );
+			// create the transitions between vertices of the model
+			initial.To( operational ).Effect( DisengageHead, StartMotor );
 			history.To( stopped );
-			stopped.To( running ).When<String>( command => command.Equals( "play" ) );
-			active.To( stopped ).When<String>( command => command.Equals( "stop" ) );
-			running.To( paused ).When<String>( command => command.Equals( "pause" ) );
-			paused.To( running ).When<String>( command => command.Equals( "play" ) );
-			operational.To( final ).When<String>( command => command.Equals( "off" ) );
-			
-			// a couple of transitions to show the random nature of a Choice PseudoState and DeepHistory in action
-			operational.To( choice ).When<String>( command => command == "random" );
-			choice.To( operational ).Do( () => Console.WriteLine( "- transition A" ) );
-			choice.To( operational ).Do( () => Console.WriteLine( "- transition B" ) );
+			stopped.To( running ).When<String>( command => command == "play" );
+			active.To( stopped ).When<String>( command => command == "stop" );
+			running.To( paused ).When<String>( command => command == "pause" );
+			paused.To( running ).When<String>( command => command == "play" );
+			operational.To( final ).When<String>( command => command == "off" );
 
 			// add an internal transition to show the current state at any time			
-			operational.When<String>( command => command.StartsWith( "current" ) ).Do( state => Console.WriteLine( state.Element ) );
+			operational.When<String>( command => command.StartsWith( "current" ) ).Effect( state => Console.WriteLine( state.Element ) );
 
 			// create an instance of the state machine state
 			var instance = new PlayerState( "example" );
@@ -86,22 +73,22 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 			Console.ReadKey();
 		}
 
-		private static void EngageHead( PlayerState context )
+		private static void EngageHead()
 		{
 			Console.WriteLine( "- engaging head" );
 		}
 
-		private static void DisengageHead( PlayerState context )
+		private static void DisengageHead()
 		{
 			Console.WriteLine( "- disengaging head" );
 		}
 
-		private static void StartMotor( PlayerState context )
+		private static void StartMotor()
 		{
 			Console.WriteLine( "- starting motor" );
 		}
 
-		private static void StopMotor( PlayerState context )
+		private static void StopMotor()
 		{
 			Console.WriteLine( "- stopping motor" );
 		}
