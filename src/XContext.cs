@@ -16,32 +16,32 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// Note that properties and methods have been explicitly implemented to hide the members from use other than via the IContext interface.
 	/// Should you need persistence, or other such behaviour relating to the context class, implement another class implementing IContext.
 	/// </remarks>
-	public abstract class XmlContext<TContext> : IContext<TContext> where TContext : IContext<TContext> {
+	public abstract class XContext<TContext> : IContext<TContext> where TContext : IContext<TContext> {
 		/// <summary>
 		/// The XElement that stores the context information.
 		/// </summary>
 		/// <remarks>
 		/// The context information stored is not a full representation of the state machine model, but just enough to store the current state.
 		/// </remarks>
-		public XElement Element { get; private set; }
+		public XElement XElement { get; private set; }
 
 		/// <summary>
 		/// Creates a new instance of the XmlContext class.
 		/// </summary>
 		/// <param name="content">Any additional XML structure that you may need under the root element.</param>
-		public XmlContext( params object[] content ){
-			this.Element = new XElement( "stateMachineContext", content );
+		public XContext( params object[] content ){
+			this.XElement = new XElement( "stateMachineContext", content );
 
-			this.Element.Add( new XAttribute( "terminated", false ) );
+			this.XElement.Add( new XAttribute( "terminated", false ) );
 		}
 
 		public Boolean IsTerminated {
 			set {
-				Element.Attribute( "terminated" ).Value = Convert.ToString( value );
+				XElement.Attribute( "terminated" ).Value = Convert.ToString( value );
 			}
 
 			get {
-				return Convert.ToBoolean( Element.Attribute( "terminated" ).Value );
+				return Convert.ToBoolean( XElement.Attribute( "terminated" ).Value );
 			}
 		}
 
@@ -71,7 +71,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 		private XElement this[ Region<TContext> region ] {
 			get {
-				var value = this.Element;
+				var value = this.XElement;
 
 				foreach( var stateMachineElement in region.Ancestors ) {
 					var element = value.Elements().SingleOrDefault( e => e.Attribute( "name" ).Value == stateMachineElement.Name );

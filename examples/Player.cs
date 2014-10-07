@@ -10,11 +10,11 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 	/// <summary>
 	/// Basic example of state machine state implementation
 	/// </summary>
-	public sealed class PlayerState : XmlContext<PlayerState> {
-		public PlayerState( String name ) : base( new XAttribute( "name", name ) ) { }
+	public sealed class Context : XContext<Context> {
+		public Context( String name ) : base( new XAttribute( "name", name ) ) { }
 
 		public override string ToString() {
-			return this.Element.Attribute( "name" ).Value;
+			return this.XElement.Attribute( "name" ).Value;
 		}
 	}
 
@@ -29,17 +29,18 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 	{
 		static void Main() {
 			// create the state machine model
-			var model = new StateMachine<PlayerState>( "player" );
-			var initial = new PseudoState<PlayerState>( "initial", model, PseudoStateKind.Initial );
-			var operational = new State<PlayerState>( "operational", model );
-			var final = new FinalState<PlayerState>( "final", model );
+			var model = new StateMachine<Context>( "player" );
+			var initial = new PseudoState<Context>( "initial", model, PseudoStateKind.Initial );
+			var operational = new State<Context>( "operational", model );
+			var choice = new PseudoState<Context>( "choice", model, PseudoStateKind.Choice );
+			var final = new FinalState<Context>( "final", model );
 
-			var history = new PseudoState<PlayerState>( "history", operational, PseudoStateKind.DeepHistory );
-			var stopped = new State<PlayerState>( "stopped", operational );
-			var active = new State<PlayerState>( "active", operational ).Entry( EngageHead ).Exit( DisengageHead );
+			var history = new PseudoState<Context>( "history", operational, PseudoStateKind.DeepHistory );
+			var stopped = new State<Context>( "stopped", operational );
+			var active = new State<Context>( "active", operational ).Entry( EngageHead ).Exit( DisengageHead );
 
-			var running = new State<PlayerState>( "running", active ).Entry( StartMotor ).Exit( StartMotor );
-			var paused = new State<PlayerState>( "paused", active );
+			var running = new State<Context>( "running", active ).Entry( StartMotor ).Exit( StopMotor );
+			var paused = new State<Context>( "paused", active );
 
 			// create the transitions between vertices of the model
 			initial.To( operational ).Effect( DisengageHead, StartMotor );
@@ -49,23 +50,26 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 			running.To( paused ).When<String>( command => command == "pause" );
 			paused.To( running ).When<String>( command => command == "play" );
 			operational.To( final ).When<String>( command => command == "off" );
+			operational.To( choice ).When<String>( command => command == "rand" );
+			choice.To( operational ).Effect( () => Console.WriteLine( "- transition A back to operational" ) );
+			choice.To( operational ).Effect( () => Console.WriteLine( "- transition B back to operational" ) );
 
 			// add an internal transition to show the current state at any time			
-			operational.When<String>( command => command.StartsWith( "current" ) ).Effect( state => Console.WriteLine( state.Element ) );
+			operational.When<String>( command => command == "current" ).Effect( state => Console.WriteLine( state.XElement ) );
 
 			// create an instance of the state machine state
-			var instance = new PlayerState( "example" );
+			var context = new Context( "example" );
 
 			// initialises the state machine state (enters the region for the first time, causing transition from the initial PseudoState)
-			model.Initialise( instance );
+			model.Initialise( context );
 
 			// main event loop
-			while( !model.IsComplete( instance ) ) {
+			while( !model.IsComplete( context ) ) {
 				// write a prompt
 				Console.Write( "alamo> " );
 
 				// process lines read from the console
-				if( !model.Evaluate( instance, Console.ReadLine() ) )
+				if( !model.Evaluate( context, Console.ReadLine() ) )
 					Console.WriteLine( "unknown command" );
 			}
 
