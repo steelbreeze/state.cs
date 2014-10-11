@@ -109,6 +109,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 		public Transition<TContext> When<TMessage>( Func<TContext, TMessage, Boolean> guard ) where TMessage : class {
 			this.Predicate = ( context, message ) => message is TMessage && guard( context, message as TMessage );
 
+			this.Source.Root.Clean = false;
+
 			return this;
 		}
 
@@ -121,6 +123,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 		public Transition<TContext> When<TMessage>( Func<TMessage, Boolean> guard ) where TMessage : class {
 			this.Predicate = ( context, message ) => message is TMessage && guard( message as TMessage );
 
+			this.Source.Root.Clean = false;
+
 			return this;
 		}
 
@@ -132,6 +136,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 			Trace.Assert( this.Source is PseudoState<TContext> && ( ( this.Source as PseudoState<TContext> ).Kind == PseudoStateKind.Choice || ( this.Source as PseudoState<TContext> ).Kind == PseudoStateKind.Junction ), "Else is only allowed for transitions from Choice or Junction PseudoStates" );
 
 			this.Predicate = Transition<TContext>.IsElse;
+
+			this.Source.Root.Clean = false;
 
 			return this;
 		}
@@ -149,6 +155,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 			foreach( var effect in behavior )
 				this.effect += ( context, message ) => { if( message is TMessage ) effect( context, message as TMessage ); };
 
+			this.Source.Root.Clean = false;
+			
 			return this;
 		}
 
@@ -165,6 +173,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 			foreach( var effect in behavior )
 				this.effect += ( context, message ) => { if( message is TMessage ) effect( message as TMessage ); };
 
+			this.Source.Root.Clean = false;
+			
 			return this;
 		}
 
@@ -177,6 +187,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 			foreach( var effect in behavior )
 				this.effect += ( context, message ) => effect( context );
 
+			this.Source.Root.Clean = false;
+			
 			return this;
 		}
 
@@ -189,6 +201,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 			foreach( var effect in behavior )
 				this.effect += ( context, message ) => effect();
 
+			this.Source.Root.Clean = false;
+		
 			return this;
 		}
 

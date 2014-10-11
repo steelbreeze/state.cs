@@ -35,6 +35,10 @@ namespace Steelbreeze.Behavior.StateMachines {
 			this.XElement.Add( new XAttribute( "terminated", false ) );
 		}
 
+		/// <summary>
+		/// Indicates that the state machine context has been terminated.
+		/// </summary>
+		/// <remarks>A state machine is only deemed terminated if a transitions target is a Terminate PseudoState.</remarks>
 		public Boolean IsTerminated {
 			set {
 				XElement.Attribute( "terminated" ).Value = Convert.ToString( value );

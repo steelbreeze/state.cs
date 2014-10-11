@@ -17,7 +17,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// </remarks>
 	public class State<TContext> : Vertex<TContext> where TContext : IContext<TContext> {
 		/// <summary>
-		/// Returns a simple (non-templated) type name
+		/// The name of the type without generic considerations
 		/// </summary>
 		public override string Type { get { return "state"; } }
 
@@ -69,44 +69,122 @@ namespace Steelbreeze.Behavior.StateMachines {
 		// Constructor used by FinalState
 		internal State( String name, Region<TContext> parent, Func<Transition<TContext>[], TContext, Object, Transition<TContext>> selector ) : base( name, parent, selector ) { }
 
+		/// <summary>
+		/// Sets optional exit behavior that is called when leaving the State.
+		/// </summary>
+		/// <typeparam name="TMessage">The type of the message that triggered the state transition.</typeparam>
+		/// <param name="behavior">One or more actions that take both the state machine context and the triggering message as parameters.</param>
+		/// <returns>Returns the State itself.</returns>
+		/// <remarks>If the type of the triggering message does not match TMessage the behavior will not be called.</remarks>
 		public State<TContext> Exit<TMessage>( params Action<TContext, TMessage>[] behavior ) where TMessage : class {
 			foreach( var exit in behavior )
 				this.exit += ( state, message ) => { if( message is TMessage ) exit( state, message as TMessage ); };
 
+			this.Root.Clean = false;
+
 			return this;
 		}
 
+		/// <summary>
+		/// Sets optional exit behavior that is called when leaving the State.
+		/// </summary>
+		/// <typeparam name="TMessage">The type of the message that triggered the state transition.</typeparam>
+		/// <param name="behavior">One or more actions that takes the triggering message as a parameter.</param>
+		/// <returns></returns>
+		/// <remarks>If the type of the triggering message does not match TMessage the behavior will not be called.</remarks>
+		public State<TContext> Exit<TMessage>( params Action<TMessage>[] behavior ) where TMessage : class {
+			foreach( var exit in behavior )
+				this.exit += ( state, message ) => { if( message is TMessage ) exit( message as TMessage ); };
+
+			this.Root.Clean = false;
+
+			return this;
+		}
+
+		/// <summary>
+		/// Sets optional exit behabiour that is called when leaving the State.
+		/// </summary>
+		/// <param name="behavior">One or more actions that takes the state machine context as a parameter.</param>
+		/// <returns>Returns the State itself.</returns>
 		public State<TContext> Exit( params Action<TContext>[] behavior ) {
 			foreach( var exit in behavior )
 				this.exit += ( state, message ) => exit( state );
 
+			this.Root.Clean = false;
+
 			return this;
 		}
 
+		/// <summary>
+		/// Sets optional exit behabiour that is called when leaving the State.
+		/// </summary>
+		/// <param name="behavior">One or more actions that take no parameters.</param>
+		/// <returns>Returns the State itself.</returns>
 		public State<TContext> Exit( params Action[] behavior ) {
 			foreach( var exit in behavior )
 				this.exit += ( state, message ) => exit();
 
+			this.Root.Clean = false;
+
 			return this;
 		}
 
+		/// <summary>
+		/// Sets optional entry behavior that is called when entering the State.
+		/// </summary>
+		/// <typeparam name="TMessage">The type of the message that triggered the state transition.</typeparam>
+		/// <param name="behavior">One or more actions that take both the state machine context and the triggering message as parameters.</param>
+		/// <returns>Returns the State itself.</returns>
+		/// <remarks>If the type of the triggering message does not match TMessage the behavior will not be called.</remarks>
 		public State<TContext> Entry<TMessage>( params Action<TContext, TMessage>[] behavior ) where TMessage : class {
 			foreach( var entry in behavior )
 				this.entry += ( state, message ) => { if( message is TMessage ) entry( state, message as TMessage ); };
 
+			this.Root.Clean = false;
+
 			return this;
 		}
 
+		/// <summary>
+		/// Sets optional entry behavior that is called when entering the State.
+		/// </summary>
+		/// <typeparam name="TMessage">The type of the message that triggered the state transition.</typeparam>
+		/// <param name="behavior">One or more actions that takes the triggering message as a parameter.</param>
+		/// <returns>Returns the State itself.</returns>
+		/// <remarks>If the type of the triggering message does not match TMessage the behavior will not be called.</remarks>
+		public State<TContext> Entry<TMessage>( params Action<TMessage>[] behavior ) where TMessage : class {
+			foreach( var entry in behavior )
+				this.entry += ( state, message ) => { if( message is TMessage ) entry( message as TMessage ); };
+
+			this.Root.Clean = false;
+
+			return this;
+		}
+
+		/// <summary>
+		/// Sets optional entry behavior that is called when entering the State.
+		/// </summary>
+		/// <param name="behavior">One or more actions that takes the state machine context as a parameter.</param>
+		/// <returns>Returns the State itself.</returns>
 		public State<TContext> Entry( params Action<TContext>[] behavior ) {
 			foreach( var entry in behavior )
 				this.entry += ( state, message ) => entry( state );
 
+			this.Root.Clean = false;
+
 			return this;
 		}
 
+		/// <summary>
+		/// Sets optional entry behavior that is called when entering the State.
+		/// </summary>
+		/// <param name="behavior">One or more actions that takes no parameters.</param>
+		/// <returns>Returns the State itself.</returns>
 		public State<TContext> Entry( params Action[] behavior ) {
 			foreach( var entry in behavior )
 				this.entry += ( state, message ) => entry();
+
+			this.Root.Clean = false;
 
 			return this;
 		}
@@ -124,6 +202,12 @@ namespace Steelbreeze.Behavior.StateMachines {
 			return this.To( null ).When( guard );
 		}
 
+		/// <summary>
+		/// Creates an internal trantiion.
+		/// </summary>
+		/// <typeparam name="TMessage">The type of the messaage that the internal transition will react to.</typeparam>
+		/// <param name="guard">The guard condition that must be met for hte transition to be traversed.</param>
+		/// <returns>The internal transition.</returns>
 		public Transition<TContext> When<TMessage>( Func<TMessage, Boolean> guard ) where TMessage : class {
 			return this.To( null ).When( guard );
 		}

@@ -61,6 +61,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 			return new Region<TContext>( Region<TContext>.DefaultName, state );
 		}
 		#endregion
+		/// <summary>
+		/// The name of the type without generic considerations
+		/// </summary>
 		public override string Type { get { return "region"; } }
 	
 		/// <summary>
