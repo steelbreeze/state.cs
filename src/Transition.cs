@@ -97,19 +97,19 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 			this.Source = source;
 			this.Target = target;
-			this.Predicate = ( context, message ) => message == this.Source;
+//			this.Predicate = ( context, message ) => message == this.Source;
+
+			this.Completion();
 		}
 
 		/// <summary>
 		/// Adds a typed guard condition to a transition that can evaluate both the state machine context and the triggering message.
 		/// </summary>
 		/// <typeparam name="TMessage">The type of the message that can trigger the transition.</typeparam>
-		/// <param name="guard">The guard condition that must evaluate true for the transition to be traversed.</param>
+		/// <param name="guard">The guard condition taking both the state machine context and the message that must evaluate true for the transition to be traversed.</param>
 		/// <returns>Returns the transition.</returns>
 		public Transition<TContext> When<TMessage>( Func<TContext, TMessage, Boolean> guard ) where TMessage : class {
 			this.Predicate = ( context, message ) => message is TMessage && guard( context, message as TMessage );
-
-			this.Source.Root.Clean = false;
 
 			return this;
 		}
@@ -118,12 +118,34 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// Adds a typed guard condition to a transition that can evaluate the triggering message.
 		/// </summary>
 		/// <typeparam name="TMessage">The type of the message that can trigger the transition.</typeparam>
-		/// <param name="guard">The guard condition that must evaluate true for the transition to be traversed.</param>
+		/// <param name="guard">A guard condition taking the message that must evaluate true for the transition to be traversed.</param>
 		/// <returns>Returns the transition.</returns>
 		public Transition<TContext> When<TMessage>( Func<TMessage, Boolean> guard ) where TMessage : class {
 			this.Predicate = ( context, message ) => message is TMessage && guard( message as TMessage );
 
-			this.Source.Root.Clean = false;
+			return this;
+		}
+
+		/// <summary>
+		/// Adds a guard condition to a transition that can evaluate the triggering message.
+		/// </summary>
+		/// <param name="guard">A guard condition, taking just the state machine context, that must evaluate true for the transition to be traversed.</param>
+		/// <returns>Returns the transition.</returns>
+		public Transition<TContext> When( Func<TContext, Boolean> guard ) {
+			this.Predicate = ( context, message ) => guard( context );
+
+			return this;
+		}
+
+		/// <summary>
+		/// Turns a transition into a completion transition
+		/// </summary>
+		/// <returns>Returns the transition.</returns>
+		/// <remarks>
+		/// All transitions are completion tansitions when initially created; this method can be used to return a transition to be a completion transition if prior calls to When or Else have been made.
+		/// </remarks>
+		public Transition<TContext> Completion() {
+			this.Predicate = ( context, message ) => message == this.Source;
 
 			return this;
 		}
@@ -136,8 +158,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 			Trace.Assert( this.Source is PseudoState<TContext> && ( ( this.Source as PseudoState<TContext> ).Kind == PseudoStateKind.Choice || ( this.Source as PseudoState<TContext> ).Kind == PseudoStateKind.Junction ), "Else is only allowed for transitions from Choice or Junction PseudoStates" );
 
 			this.Predicate = Transition<TContext>.IsElse;
-
-			this.Source.Root.Clean = false;
 
 			return this;
 		}
