@@ -69,7 +69,7 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 				Console.Write( "alamo> " );
 
 				// process lines read from the console
-				if( !model.Evaluate( context, Console.ReadLine() ) )
+				if( !model.Evaluate( Console.ReadLine(), context ) )
 					Console.WriteLine( "unknown command" );
 			}
 

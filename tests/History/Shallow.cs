@@ -5,12 +5,9 @@
 using System;
 using System.Diagnostics;
 
-namespace Steelbreeze.Behavior.StateMachines.Tests.History
-{
-	public class Shallow
-	{
-		public static void Test()
-		{
+namespace Steelbreeze.Behavior.StateMachines.Tests.History {
+	public class Shallow {
+		public static void Test() {
 			var model = new StateMachine<TestState>( "history" );
 
 			var initial = new PseudoState<TestState>( "initial", model );
@@ -23,22 +20,20 @@ namespace Steelbreeze.Behavior.StateMachines.Tests.History
 
 			initial.To( shallow );
 			new PseudoState<TestState>( "shallow", shallow, PseudoStateKind.ShallowHistory ).To( s1 );
-			s1.To(s2).When<String>( ( state, c ) => c.Equals( "move" ) );
-			shallow.To( deep ).When<String>( ( state, c ) => c.Equals( "go deep" ) );
-			deep.To( shallow ).When<String>( ( state, c ) => c.Equals( "go shallow" ) );
-			s2.To( final ).When<String>( ( state, c ) => c.Equals( "end" ) );
-
-//			model.Initialise();
+			s1.To( s2 ).When<String>( c => c == "move" );
+			shallow.To( deep ).When<String>( c => c == "go deep" );
+			deep.To( shallow ).When<String>( c => c == "go shallow" );
+			s2.To( final ).When<String>( c => c == "end" );
 
 			var instance = new TestState();
 
 			model.Initialise( instance );
 
-			Trace.Assert( model.Evaluate( instance, "move" ) );
-			Trace.Assert( model.Evaluate( instance, "go deep" ) );
-			Trace.Assert( model.Evaluate( instance, "go shallow" ) );
-			Trace.Assert( !model.Evaluate( instance, "go shallow" ) );
-			Trace.Assert( model.Evaluate( instance, "end" ) );
+			Trace.Assert( model.Evaluate( "move", instance ) );
+			Trace.Assert( model.Evaluate( "go deep", instance ) );
+			Trace.Assert( model.Evaluate( "go shallow", instance ) );
+			Trace.Assert( !model.Evaluate( "go shallow", instance ) );
+			Trace.Assert( model.Evaluate( "end", instance ) );
 			Trace.Assert( model.IsComplete( instance ) );
 		}
 	}

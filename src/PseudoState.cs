@@ -65,7 +65,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 			base.BootstrapElement( deepHistoryAbove );
 
 			if( this.Kind == PseudoStateKind.Terminate )
-				this.Enter += ( context, message, history ) => context.IsTerminated = true;
+				this.Enter += ( message, context, history ) => context.IsTerminated = true;
 		}
 	}
 }

@@ -39,20 +39,18 @@ namespace Steelbreeze.Behavior.StateMachines.Tests.Users
 
 				ortho.To( final ); // This should happen once all regions in ortho are complete?
 
-				s1.To( f1 ).When<String>( ( s, c ) => c == "complete1" );
-				s2.To( f2 ).When<String>( ( s, c ) => c == "complete2" );
+				s1.To( f1 ).When<String>( c => c == "complete1" );
+				s2.To( f2 ).When<String>( c => c == "complete2" );
 
-				ortho.To( simple ).When<String>( ( s, c ) => c == "jump" );
-				simple.To( ortho ).When<String>( ( s, c ) => c == "back" );
-
-//				main.Initialise();
+				ortho.To( simple ).When<String>( c => c == "jump" );
+				simple.To( ortho ).When<String>( c => c == "back" );
 
 				var instance = new TestState();
 
 				model.Initialise( instance );
 
-				model.Evaluate( instance, "complete1" );
-				model.Evaluate( instance, "complete2" );
+				model.Evaluate( "complete1", instance );
+				model.Evaluate( "complete2", instance );
 
 				Trace.Assert( model.IsComplete( instance ) );
 

@@ -19,9 +19,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// </remarks>
 	public class Transition<TContext> where TContext : IContext<TContext> {
 		#region Static members
-		private static Func<TContext, Object, Boolean> IsElse = ( context, message ) => false;
+		private static Func<Object, TContext, Boolean> IsElse = ( message, context ) => false;
 
-		internal static Func<Transition<TContext>[], TContext, Object, Transition<TContext>> PseudoState( PseudoStateKind kind ) {
+		internal static Func<Transition<TContext>[], Object, TContext, Transition<TContext>> PseudoState( PseudoStateKind kind ) {
 			switch( kind ) {
 				case PseudoStateKind.Initial:
 				case PseudoStateKind.DeepHistory:
@@ -37,12 +37,12 @@ namespace Steelbreeze.Behavior.StateMachines {
 			}
 		}
 
-		internal static Transition<TContext> State( Transition<TContext>[] transitions, TContext context, object message ) {
+		internal static Transition<TContext> State( Transition<TContext>[] transitions, Object message, TContext context ) {
 			Transition<TContext> result = null;
 
 			if( transitions != null ) {
 				for( int i = 0, l = transitions.Length; i < l; ++i ) {
-					if( transitions[ i ].Predicate( context, message ) ) {
+					if( transitions[ i ].Predicate( message, context ) ) {
 						if( result != null )
 							throw new InvalidOperationException( "Multiple outbound transitions evaluated true" );
 
@@ -54,22 +54,22 @@ namespace Steelbreeze.Behavior.StateMachines {
 			return result;
 		}
 
-		private static Transition<TContext> Initial( Transition<TContext>[] transitions, TContext context, Object message ) {
+		private static Transition<TContext> Initial( Transition<TContext>[] transitions, Object message, TContext context ) {
 			if( transitions.Length == 1 )
 				return transitions[ 0 ];
 			else
 				throw new InvalidOperationException( "Initial transition must have a single outbound transition" );
 		}
 
-		private static Transition<TContext> Junction( Transition<TContext>[] transitions, TContext context, Object message ) {
-			return transitions.SingleOrDefault( t => t.Predicate( context, message ) ) ?? transitions.Single( transition => transition.Predicate.Equals( Transition<TContext>.IsElse ) );
+		private static Transition<TContext> Junction( Transition<TContext>[] transitions, Object message, TContext context ) {
+			return transitions.SingleOrDefault( t => t.Predicate( message, context ) ) ?? transitions.Single( transition => transition.Predicate.Equals( Transition<TContext>.IsElse ) );
 		}
 
 		private static readonly Random random = new Random();
 
-		private static Transition<TContext> Choice( Transition<TContext>[] transitions, TContext context, Object message ) {
+		private static Transition<TContext> Choice( Transition<TContext>[] transitions, Object message, TContext context ) {
 			var transition = default( Transition<TContext> );
-			var items = transitions.Where( t => t.Predicate( context, message ) );
+			var items = transitions.Where( t => t.Predicate( message, context ) );
 			var count = items.Count();
 
 			if( count == 1 )
@@ -81,23 +81,22 @@ namespace Steelbreeze.Behavior.StateMachines {
 			return transition ?? transitions.Single( t => t.Predicate.Equals( Transition<TContext>.IsElse ) );
 		}
 
-		internal static Transition<TContext> Null( Transition<TContext>[] transitions, TContext context, Object message ) {
+		internal static Transition<TContext> Null( Transition<TContext>[] transitions, Object message, TContext context ) {
 			return null;
 		}
 		#endregion
 		internal readonly Vertex<TContext> Source;
 		internal readonly Vertex<TContext> Target;
-		internal Func<TContext, Object, Boolean> Predicate;
-		internal Action<TContext, Object, Boolean> Traverse;
+		internal Func<Object, TContext, Boolean> Predicate;
+		internal Action<Object, TContext, Boolean> Traverse;
 
-		private event Action<TContext, Object> effect;
+		private event Action<Object, TContext> effect;
 
 		internal Transition( Vertex<TContext> source, Vertex<TContext> target ) {
 			Trace.Assert( source != null, "Transitions must have a source Vertex" );
 
 			this.Source = source;
 			this.Target = target;
-//			this.Predicate = ( context, message ) => message == this.Source;
 
 			this.Completion();
 		}
@@ -108,8 +107,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <typeparam name="TMessage">The type of the message that can trigger the transition.</typeparam>
 		/// <param name="guard">The guard condition taking both the state machine context and the message that must evaluate true for the transition to be traversed.</param>
 		/// <returns>Returns the transition.</returns>
-		public Transition<TContext> When<TMessage>( Func<TContext, TMessage, Boolean> guard ) where TMessage : class {
-			this.Predicate = ( context, message ) => message is TMessage && guard( context, message as TMessage );
+		public Transition<TContext> When<TMessage>( Func<TMessage, TContext, Boolean> guard ) where TMessage : class {
+			this.Predicate = ( message, context ) => message is TMessage && guard( message as TMessage, context );
 
 			return this;
 		}
@@ -121,7 +120,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="guard">A guard condition taking the message that must evaluate true for the transition to be traversed.</param>
 		/// <returns>Returns the transition.</returns>
 		public Transition<TContext> When<TMessage>( Func<TMessage, Boolean> guard ) where TMessage : class {
-			this.Predicate = ( context, message ) => message is TMessage && guard( message as TMessage );
+			this.Predicate = ( message, context ) => message is TMessage && guard( message as TMessage );
 
 			return this;
 		}
@@ -132,7 +131,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="guard">A guard condition, taking just the state machine context, that must evaluate true for the transition to be traversed.</param>
 		/// <returns>Returns the transition.</returns>
 		public Transition<TContext> When( Func<TContext, Boolean> guard ) {
-			this.Predicate = ( context, message ) => guard( context );
+			this.Predicate = ( message, context ) => guard( context );
 
 			return this;
 		}
@@ -145,7 +144,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// All transitions are completion tansitions when initially created; this method can be used to return a transition to be a completion transition if prior calls to When or Else have been made.
 		/// </remarks>
 		public Transition<TContext> Completion() {
-			this.Predicate = ( context, message ) => message == this.Source;
+			this.Predicate = ( message, context ) => message == this.Source;
 
 			return this;
 		}
@@ -171,9 +170,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>
 		/// If the type of the message that triggers the transition does not match TMessage, the behavior will not be called.
 		/// </remarks>
-		public Transition<TContext> Effect<TMessage>( params Action<TContext, TMessage>[] behavior ) where TMessage : class {
+		public Transition<TContext> Effect<TMessage>( params Action<TMessage, TContext>[] behavior ) where TMessage : class {
 			foreach( var effect in behavior )
-				this.effect += ( context, message ) => { if( message is TMessage ) effect( context, message as TMessage ); };
+				this.effect += ( message, context ) => { if( message is TMessage ) effect( message as TMessage, context ); };
 
 			this.Source.Root.Clean = false;
 			
@@ -191,7 +190,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </remarks>
 		public Transition<TContext> Effect<TMessage>( params Action<TMessage>[] behavior ) where TMessage : class {
 			foreach( var effect in behavior )
-				this.effect += ( context, message ) => { if( message is TMessage ) effect( message as TMessage ); };
+				this.effect += ( message, context ) => { if( message is TMessage ) effect( message as TMessage ); };
 
 			this.Source.Root.Clean = false;
 			
@@ -205,7 +204,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <returns>Returns the transition.</returns>
 		public Transition<TContext> Effect( params Action<TContext>[] behavior ) {
 			foreach( var effect in behavior )
-				this.effect += ( context, message ) => effect( context );
+				this.effect += ( message, context ) => effect( context );
 
 			this.Source.Root.Clean = false;
 			
@@ -219,7 +218,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <returns>Returns the transition.</returns>
 		public Transition<TContext> Effect( params Action[] behavior ) {
 			foreach( var effect in behavior )
-				this.effect += ( context, message ) => effect();
+				this.effect += ( message, context ) => effect();
 
 			this.Source.Root.Clean = false;
 		
@@ -235,8 +234,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>
 		/// For completion transitions, the message is the source vertex that was completed.
 		/// </remarks>
-		protected void OnEffect( TContext context, Object message, Boolean history ) {
-			this.effect( context, message );
+		protected void OnEffect( Object message, TContext context, Boolean history ) {
+			this.effect( message, context );
 		}
 
 		internal void BootstrapTransitions() {

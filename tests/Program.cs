@@ -16,7 +16,10 @@ namespace Steelbreeze.Behavior.StateMachines.Tests
 			// TODO: add more transition tests (incl. else)
 			Transitions.Completions.Test();
 			History.Shallow.Test();
+
+			// user test cases
 			Users.Muximise1.Test();
+			Users.Brice1.Test();
 		}
 	}
 }

@@ -86,7 +86,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 			if( !this.Clean && autoInitialise )
 				this.Initialise();
 
-			this.Enter( context, null, false );
+			this.Enter( null, context, false );
 		}
 
 		/// <summary>
@@ -113,7 +113,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>
 		/// Note that due to the potential for orthogonal Regions in composite States, it is possible for multiple transitions to be triggered.
 		/// </remarks>
-		public Boolean Evaluate( TContext context, Object message, Boolean autoInitialise = true ) {
+		public Boolean Evaluate( Object message, TContext context, Boolean autoInitialise = true ) {
 			if( !this.Clean && autoInitialise )
 				this.Initialise();
 
@@ -121,7 +121,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 			if( !context.IsTerminated )
 				for( int i = 0, l = this.regions.Length; i < l; ++i )
-					if( this.regions[ i ].Evaluate( context, message ) )
+					if( this.regions[ i ].Evaluate( message, context ) )
 						processed = true;
 
 			return processed;

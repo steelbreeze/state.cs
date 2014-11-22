@@ -15,14 +15,14 @@ namespace Steelbreeze.Behavior.StateMachines {
 		internal Boolean IsFinal { get { return this.transitions == null; } }
 
 		private Transition<TContext>[] transitions; // trading off model building performance for runtime performance
-		private readonly Func<Transition<TContext>[], TContext, Object, Transition<TContext>> selector;
+		private readonly Func<Transition<TContext>[], Object, TContext, Transition<TContext>> selector;
 
 		/// <summary>
 		/// Returns the Vertex's parent element.
 		/// </summary>
 		public override StateMachineElement<TContext> Parent { get { return this.Region; } }
 
-		internal Vertex( String name, Region<TContext> parent, Func<Transition<TContext>[], TContext, Object, Transition<TContext>> selector )
+		internal Vertex( String name, Region<TContext> parent, Func<Transition<TContext>[], Object, TContext, Transition<TContext>> selector )
 			: base( name, parent ) {			
 			this.Root = parent.Root;
 			this.Region = parent;
@@ -72,25 +72,24 @@ namespace Steelbreeze.Behavior.StateMachines {
 					transition.BootstrapTransitions();
 		}
 
-		internal void EvaluateCompletions( TContext context, Object message, Boolean history ) {
+		internal void EvaluateCompletions( Object message, TContext context, Boolean history ) {
 			if( this.IsComplete( context ) )
-				this.Evaluate( context, this );
+				this.Evaluate( this, context );
 		}
 
 		internal virtual Boolean IsComplete( TContext context ) {
 			return true;
 		}
 
-		internal virtual Boolean Evaluate( TContext context, Object message ) {
-			var transition = this.selector( this.transitions, context, message );
+		internal virtual Boolean Evaluate( Object message, TContext context ) {
+			var transition = this.selector( this.transitions, message, context );
 
 			if( transition == null )
 				return false;
 
-			transition.Traverse( context, message, false );
+			transition.Traverse( message, context, false );
 
 			return true;
-
 		}
 	}
 }

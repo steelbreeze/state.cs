@@ -26,10 +26,10 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		public IEnumerable<StateMachineElement<TContext>> Ancestors { get { if( this.Parent != null ) foreach( var namedElement in this.Parent.Ancestors ) yield return namedElement; yield return this; } } // yield! please...
 
-		internal Action<TContext, Object, Boolean> Leave;
-		internal Action<TContext, Object, Boolean> BeginEnter;
-		internal Action<TContext, Object, Boolean> EndEnter;
-		internal Action<TContext, Object, Boolean> Enter;
+		internal Action<Object, TContext, Boolean> Leave;
+		internal Action<Object, TContext, Boolean> BeginEnter;
+		internal Action<Object, TContext, Boolean> EndEnter;
+		internal Action<Object, TContext, Boolean> Enter;
 
 		internal StateMachineElement( String name, StateMachineElement<TContext> parent ) : base( name, parent ) { }
 
@@ -42,15 +42,15 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 		internal virtual void BootstrapElement( Boolean deepHistoryAbove ) {
 #if DEBUG
-			this.Leave += ( context, message, history ) => Console.WriteLine( "{0} leave {1}", context, this.QualifiedName );
-			this.BeginEnter += ( context, message, history ) => Console.WriteLine( "{0} enter {1}", context, this.QualifiedName );
+			this.Leave += ( message, context, history ) => Console.WriteLine( "{0} leave {1}", context, this.QualifiedName );
+			this.BeginEnter += ( message, context, history ) => Console.WriteLine( "{0} enter {1}", context, this.QualifiedName );
 #endif
 			this.Enter = this.BeginEnter + this.EndEnter;
 		}
 
 		internal abstract void BootstrapTransitions();
 
-		internal virtual void BootstrapEnter( ref Action<TContext, Object, Boolean> traverse, StateMachineElement<TContext> next ) {
+		internal virtual void BootstrapEnter( ref Action<Object, TContext, Boolean> traverse, StateMachineElement<TContext> next ) {
 			traverse += this.BeginEnter;
 		}
 	}

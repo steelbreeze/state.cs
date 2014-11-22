@@ -136,10 +136,10 @@ namespace Steelbreeze.Behavior.StateMachines {
 				vertex.BootstrapElement( deepHistoryAbove || ( this.Initial != null && this.Initial.Kind == PseudoStateKind.DeepHistory ) );
 			}
 
-			this.Leave += ( context, message, history ) => { var current = context[ this ]; if( current.Leave != null ) current.Leave( context, message, history ); };
+			this.Leave += ( message, context, history ) => { var current = context[ this ]; if( current.Leave != null ) current.Leave( message, context, history ); };
 
 			if( deepHistoryAbove || this.Initial == null || this.Initial.IsHistory )
-				this.EndEnter += ( context, message, history ) => ( history || this.Initial.IsHistory ? context[ this ] ?? this.Initial : this.Initial ).Enter( context, message, history || this.Initial.Kind == PseudoStateKind.DeepHistory );
+				this.EndEnter += ( message, context, history ) => ( history || this.Initial.IsHistory ? context[ this ] ?? this.Initial : this.Initial ).Enter( message, context, history || this.Initial.Kind == PseudoStateKind.DeepHistory );
 			else this.EndEnter += this.Initial.Enter;
 
 			base.BootstrapElement( deepHistoryAbove );
@@ -150,8 +150,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 				vertex.BootstrapTransitions();
 		}
 
-		internal Boolean Evaluate( TContext context, Object message ) {
-			return context[ this ].Evaluate( context, message );
+		internal Boolean Evaluate( Object message, TContext context ) {
+			return context[ this ].Evaluate( message, context );
 		}
 	}
 }
