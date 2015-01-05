@@ -1,5 +1,6 @@
-﻿/* state v5 finite state machine library
- * Copyright (c) 2014 Steelbreeze Limited
+﻿/* State v5 finite state machine library
+ * http://www.steelbreeze.net/state.cs
+ * Copyright (c) 2014-5 Steelbreeze Limited
  * Licensed under MIT and GPL v3 licences
  */
 using System;
@@ -13,24 +14,24 @@ namespace Steelbreeze.Behavior.StateMachines.Tests.Users
 		{
 //			try
 	//		{
-				var model = new StateMachine<TestState>( "muximise1" );
+			var model = new StateMachine<DictionaryContext>( "muximise1" );
 
-				var initial = new PseudoState<TestState>( "initial", model );
-				var ortho = new State<TestState>( "ortho", model );
-				var simple = new State<TestState>( "simple", model );
-				var final = new FinalState<TestState>( "final", model );
+			var initial = new PseudoState<DictionaryContext>( "initial", model );
+			var ortho = new State<DictionaryContext>( "ortho", model );
+			var simple = new State<DictionaryContext>( "simple", model );
+			var final = new FinalState<DictionaryContext>( "final", model );
 
-				var r1 = new Region<TestState>( "r1", ortho );
-				var r2 = new Region<TestState>( "r2", ortho );
+			var r1 = new Region<DictionaryContext>( "r1", ortho );
+			var r2 = new Region<DictionaryContext>( "r2", ortho );
 
-				var i1 = new PseudoState<TestState>( "initial", r1, PseudoStateKind.ShallowHistory );
-				var i2 = new PseudoState<TestState>( "initial", r2, PseudoStateKind.ShallowHistory );
+			var i1 = new PseudoState<DictionaryContext>( "initial", r1, PseudoStateKind.ShallowHistory );
+			var i2 = new PseudoState<DictionaryContext>( "initial", r2, PseudoStateKind.ShallowHistory );
 
-				var s1 = new State<TestState>( "s1", r1 );
-				var s2 = new State<TestState>( "s2", r2 );
+			var s1 = new State<DictionaryContext>( "s1", r1 );
+			var s2 = new State<DictionaryContext>( "s2", r2 );
 
-				var f1 = new FinalState<TestState>( "f1", r1 );
-				var f2 = new FinalState<TestState>( "f2", r2 );
+			var f1 = new FinalState<DictionaryContext>( "f1", r1 );
+			var f2 = new FinalState<DictionaryContext>( "f2", r2 );
 
 				initial.To( ortho );
 
@@ -45,7 +46,7 @@ namespace Steelbreeze.Behavior.StateMachines.Tests.Users
 				ortho.To( simple ).When<String>( c => c == "jump" );
 				simple.To( ortho ).When<String>( c => c == "back" );
 
-				var instance = new TestState();
+				var instance = new DictionaryContext();
 
 				model.Initialise( instance );
 

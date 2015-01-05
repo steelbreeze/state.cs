@@ -1,5 +1,6 @@
 ﻿/* State v5 finite state machine library
- * Copyright (c) 2014 Steelbreeze Limited
+ * http://www.steelbreeze.net/state.cs
+ * Copyright (c) 2014-5 Steelbreeze Limited
  * Licensed under MIT and GPL v3 licences
  */
 using System;
@@ -22,6 +23,11 @@ namespace Steelbreeze.Behavior.StateMachines {
 		public abstract StateMachineElement<TContext> Parent { get; }
 
 		/// <summary>
+		/// The parent state machine that this element forms a part of.
+		/// </summary>
+		public StateMachine<TContext> Root { get; protected set; }
+
+		/// <summary>
 		/// Returns the elements ancestors.
 		/// </summary>
 		public IEnumerable<StateMachineElement<TContext>> Ancestors { get { if( this.Parent != null ) foreach( var namedElement in this.Parent.Ancestors ) yield return namedElement; yield return this; } } // yield! please...
@@ -31,7 +37,10 @@ namespace Steelbreeze.Behavior.StateMachines {
 		internal Action<Object, TContext, Boolean> EndEnter;
 		internal Action<Object, TContext, Boolean> Enter;
 
-		internal StateMachineElement( String name, StateMachineElement<TContext> parent ) : base( name, parent ) { }
+		internal StateMachineElement( String name, StateMachineElement<TContext> parent ) : base( name, parent ) {
+			if( parent != null )
+				this.Root = parent.Root;
+		}
 
 		internal void Reset() {
 			this.Leave = null;

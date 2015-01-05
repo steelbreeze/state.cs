@@ -1,5 +1,6 @@
 ﻿/* State v5 finite state machine library
- * Copyright (c) 2014 Steelbreeze Limited
+ * http://www.steelbreeze.net/state.cs
+ * Copyright (c) 2014-5 Steelbreeze Limited
  * Licensed under MIT and GPL v3 licences
  */
 using System;

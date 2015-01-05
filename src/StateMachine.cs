@@ -1,5 +1,6 @@
 ﻿/* State v5 finite state machine library
- * Copyright (c) 2014 Steelbreeze Limited
+ * http://www.steelbreeze.net/state.cs
+ * Copyright (c) 2014-5 Steelbreeze Limited
  * Licensed under MIT and GPL v3 licences
  */
 using System;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
+// TODO: inherit from State (thereby enabling a machine to be used in another region if required)
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
 	/// A StateMachine is the root node of a hierarchical state machine model.
@@ -40,7 +42,10 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="name">The name of the StateMachine.</param>
 		public StateMachine( String name )
 			: base( name, null ) {
+
 			Trace.Assert( name != null, "StateMachines must have a name" );
+
+			this.Root = this;
 		}
 
 		internal void Add( Region<TContext> region ) {

@@ -1,8 +1,8 @@
 ﻿/* State v5 finite state machine library
- * Copyright (c) 2014 Steelbreeze Limited
+ * http://www.steelbreeze.net/state.cs
+ * Copyright (c) 2014-5 Steelbreeze Limited
  * Licensed under MIT and GPL v3 licences
  */
-
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
 	/// Defines the specific semantics of a PseudoState in which it is used.

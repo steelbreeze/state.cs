@@ -1,8 +1,8 @@
 ﻿/* State v5 finite state machine library
- * Copyright (c) 2014 Steelbreeze Limited
+ * http://www.steelbreeze.net/state.cs
+ * Copyright (c) 2014-5 Steelbreeze Limited
  * Licensed under MIT and GPL v3 licences
- */
-using System;
+ */using System;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -29,7 +29,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// Creates a new instance of the XmlContext class.
 		/// </summary>
 		/// <param name="content">Any additional XML structure that you may need under the root element.</param>
-		public XContext( params object[] content ){
+		public XContext( params object[] content ) {
 			this.XElement = new XElement( "stateMachineContext", content );
 
 			this.XElement.Add( new XAttribute( "terminated", false ) );
@@ -90,4 +90,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 			}
 		}
 	}
+
+	/// <summary>
+	/// A sample of an object to extend as a base for a state machine context objects based on an XElement.
+	/// </summary>
+	public class XContext : XContext<XContext> { }
 }

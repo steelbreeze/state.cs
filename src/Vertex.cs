@@ -1,5 +1,6 @@
 ﻿/* State v5 finite state machine library
- * Copyright (c) 2014 Steelbreeze Limited
+ * http://www.steelbreeze.net/state.cs
+ * Copyright (c) 2014-5 Steelbreeze Limited
  * Licensed under MIT and GPL v3 licences
  */
 using System;
@@ -11,7 +12,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// <typeparam name="TContext">The type of the state machine instance.</typeparam>
 	public abstract class Vertex<TContext> : StateMachineElement<TContext> where TContext : IContext<TContext> {
 		internal readonly Region<TContext> Region;
-		internal readonly StateMachine<TContext> Root;
 		internal Boolean IsFinal { get { return this.transitions == null; } }
 
 		private Transition<TContext>[] transitions; // trading off model building performance for runtime performance
@@ -24,7 +24,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 		internal Vertex( String name, Region<TContext> parent, Func<Transition<TContext>[], Object, TContext, Transition<TContext>> selector )
 			: base( name, parent ) {			
-			this.Root = parent.Root;
 			this.Region = parent;
 			this.selector = selector;
 

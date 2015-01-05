@@ -1,5 +1,6 @@
-﻿/* state v5 finite state machine library
- * Copyright (c) 2014 Steelbreeze Limited
+﻿/* State v5 finite state machine library
+ * http://www.steelbreeze.net/state.cs
+ * Copyright (c) 2014-5 Steelbreeze Limited
  * Licensed under MIT and GPL v3 licences
  */
 using System;
@@ -262,28 +263,32 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 				// complex (external) transitions
 			} else {
-				int i = 0, l = Math.Min( this.Source.Ancestors.Count(), this.Source.Ancestors.Count() );
+				var sourceAncestors = this.Source.Ancestors;
+				var targetAncestors = this.Target.Ancestors;
+				var sourceAncestorsCount = sourceAncestors.Count();
+				var targetAncestorsCount = targetAncestors.Count();
+				int i = 0, l = Math.Min( sourceAncestorsCount, sourceAncestorsCount );
 
 				// find the index of the first uncommon ancestor
-				while( ( i < l ) && this.Source.Ancestors.ElementAt( i ) == this.Target.Ancestors.ElementAt( i ) ) ++i;
+				while( ( i < l ) && sourceAncestors.ElementAt( i ) == targetAncestors.ElementAt( i ) ) ++i;
 
 				// validation rule (not in hte UML spec currently)
-				Trace.Assert( this.Source.Ancestors.ElementAt( i ) is Region<TContext> == false, "Transitions may not cross sibling orthogonal regions" );
+				Trace.Assert( sourceAncestors.ElementAt( i ) is Region<TContext> == false, "Transitions may not cross sibling orthogonal regions" );
 
 				// leave the first uncommon ancestor
-				this.Traverse = ( i < this.Source.Ancestors.Count() ? this.Source.Ancestors.ElementAt( i ) : this.Source ).Leave;
+				this.Traverse = ( i < sourceAncestorsCount ? sourceAncestors.ElementAt( i ) : this.Source ).Leave;
 
 				// perform the transition effect
 				if( this.effect != null )
 					this.Traverse += this.OnEffect;
 
 				// edge case when transitioning to a state in the vertex ancestry
-				if( i >= this.Target.Ancestors.Count() )
+				if( i >= targetAncestorsCount )
 					this.Traverse += this.Target.BeginEnter;
 
 				// enter the target ancestry
-				while( i < this.Target.Ancestors.Count() )
-					this.Target.Ancestors.ElementAt( i++ ).BootstrapEnter( ref this.Traverse, i < this.Target.Ancestors.Count() ? this.Target.Ancestors.ElementAt( i ) : null );
+				while( i < targetAncestorsCount )
+					targetAncestors.ElementAt( i++ ).BootstrapEnter( ref this.Traverse, i < targetAncestorsCount ? targetAncestors.ElementAt( i ) : null );
 
 				// trigger cascade
 				this.Traverse += this.Target.EndEnter;

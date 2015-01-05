@@ -1,5 +1,6 @@
 ﻿/* State v5 finite state machine library
- * Copyright (c) 2014 Steelbreeze Limited
+ * http://www.steelbreeze.net/state.cs
+ * Copyright (c) 2014-5 Steelbreeze Limited
  * Licensed under MIT and GPL v3 licences
  */
 using System;
@@ -76,7 +77,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		public IEnumerable<Vertex<TContext>> Vertices { get { return this.vertices; } }
 
-		internal readonly StateMachine<TContext> Root;
 		internal PseudoState<TContext> Initial = null;
 
 		private readonly HashSet<Vertex<TContext>> vertices = new HashSet<Vertex<TContext>>();
@@ -92,7 +92,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 			Trace.Assert( name != null, "Regions must have a name" );
 			Trace.Assert( parent != null, "Regions must have a parent" );
 
-			this.Root = parent;
 			this.parent = parent;
 
 			parent.Add( this );

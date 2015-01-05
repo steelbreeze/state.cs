@@ -1,5 +1,6 @@
-﻿/* state v5 finite state machine library
- * Copyright (c) 2014 Steelbreeze Limited
+﻿/* State v5 finite state machine library
+ * http://www.steelbreeze.net/state.cs
+ * Copyright (c) 2014-5 Steelbreeze Limited
  * Licensed under MIT and GPL v3 licences
  */
 using System;
@@ -7,17 +8,6 @@ using System.Xml.Linq;
 
 namespace Steelbreeze.Behavior.StateMachines.Examples
 {
-	/// <summary>
-	/// Basic example of state machine state implementation
-	/// </summary>
-	public sealed class Context : XContext<Context> {
-		public Context( String name ) : base( new XAttribute( "name", name ) ) { }
-
-		public override string ToString() {
-			return this.XElement.Attribute( "name" ).Value;
-		}
-	}
-
 	/// <summary>
 	/// A controller for a simple cassette player
 	/// </summary>
@@ -29,18 +19,18 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 	{
 		static void Main() {
 			// create the state machine model
-			var model = new StateMachine<Context>( "player" );
-			var initial = new PseudoState<Context>( "initial", model, PseudoStateKind.Initial );
-			var operational = new State<Context>( "operational", model );
-			var choice = new PseudoState<Context>( "choice", model, PseudoStateKind.Choice );
-			var final = new FinalState<Context>( "final", model );
+			var model = new StateMachine<XContext>( "player" );
+			var initial = new PseudoState<XContext>( "initial", model, PseudoStateKind.Initial );
+			var operational = new State<XContext>( "operational", model );
+			var choice = new PseudoState<XContext>( "choice", model, PseudoStateKind.Choice );
+			var final = new FinalState<XContext>( "final", model );
 
-			var history = new PseudoState<Context>( "history", operational, PseudoStateKind.DeepHistory );
-			var stopped = new State<Context>( "stopped", operational );
-			var active = new State<Context>( "active", operational ).Entry( EngageHead ).Exit( DisengageHead );
+			var history = new PseudoState<XContext>( "history", operational, PseudoStateKind.DeepHistory );
+			var stopped = new State<XContext>( "stopped", operational );
+			var active = new State<XContext>( "active", operational ).Entry( EngageHead ).Exit( DisengageHead );
 
-			var running = new State<Context>( "running", active ).Entry( StartMotor ).Exit( StopMotor );
-			var paused = new State<Context>( "paused", active );
+			var running = new State<XContext>( "running", active ).Entry( StartMotor ).Exit( StopMotor );
+			var paused = new State<XContext>( "paused", active );
 
 			// create the transitions between vertices of the model
 			initial.To( operational ).Effect( DisengageHead, StartMotor );
@@ -58,7 +48,7 @@ namespace Steelbreeze.Behavior.StateMachines.Examples
 			operational.When<String>( command => command == "current" ).Effect( state => Console.WriteLine( state.XElement ) );
 
 			// create an instance of the state machine state
-			var context = new Context( "example" );
+			var context = new XContext();
 
 			// initialises the state machine state (enters the region for the first time, causing transition from the initial PseudoState)
 			model.Initialise( context );
