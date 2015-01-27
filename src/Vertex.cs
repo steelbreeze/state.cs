@@ -10,7 +10,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// A Vertex is an abstraction of a node in a state machine graph; it can be the source or destination of any number of transitions.
 	/// </summary>
 	/// <typeparam name="TContext">The type of the state machine instance.</typeparam>
-	public abstract class Vertex<TContext> : StateMachineElement<TContext> where TContext : IContext<TContext> {
+	public abstract class Vertex<TContext> : Element<TContext> where TContext : IContext<TContext> {
 		internal readonly Region<TContext> Region;
 		internal Boolean IsFinal { get { return this.transitions == null; } }
 
@@ -20,7 +20,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <summary>
 		/// Returns the Vertex's parent element.
 		/// </summary>
-		public override StateMachineElement<TContext> Parent { get { return this.Region; } }
+		public override Element<TContext> Parent { get { return this.Region; } }
 
 		internal Vertex( String name, Region<TContext> parent, Func<Transition<TContext>[], Object, TContext, Transition<TContext>> selector )
 			: base( name, parent ) {			

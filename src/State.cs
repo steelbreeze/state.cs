@@ -287,7 +287,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 			base.BootstrapTransitions();
 		}
 
-		internal override void BootstrapEnter( ref Action<Object, TContext, Boolean> traverse, StateMachineElement<TContext> next ) {
+		internal override void BootstrapEnter( ref Action<Object, TContext, Boolean> traverse, Element<TContext> next ) {
 			base.BootstrapEnter( ref traverse, next );
 
 			if( this.IsOrthogonal )

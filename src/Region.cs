@@ -16,7 +16,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// <remarks>
 	/// All state machines and composite states will contain at least one Region; orthogonal composite states will contain more than one.
 	/// </remarks>
-	public sealed class Region<TContext> : StateMachineElement<TContext> where TContext : IContext<TContext> {
+	public sealed class Region<TContext> : Element<TContext> where TContext : IContext<TContext> {
 		#region Static members
 		/// <summary>
 		/// The name used for default regions.
@@ -70,7 +70,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <summary>
 		/// Returns the Region's parent element.
 		/// </summary>
-		public override StateMachineElement<TContext> Parent { get { return this.parent; } }
+		public override Element<TContext> Parent { get { return this.parent; } }
 
 		/// <summary>
 		/// The child Vertices
@@ -80,7 +80,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		internal PseudoState<TContext> Initial = null;
 
 		private readonly HashSet<Vertex<TContext>> vertices = new HashSet<Vertex<TContext>>();
-		private readonly StateMachineElement<TContext> parent;
+		private readonly Element<TContext> parent;
 
 		/// <summary>
 		/// Initialises a new instance of the Region class within a StateMachine.

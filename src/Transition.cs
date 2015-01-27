@@ -31,10 +31,15 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 				case PseudoStateKind.Junction:
 					return Transition<TContext>.Junction;
+				
 				case PseudoStateKind.Choice:
 					return Transition<TContext>.Choice;
-				default:
-					return Transition<TContext>.Null;
+	
+				case PseudoStateKind.Terminate:
+					return Transition<TContext>.Terminate;
+
+				default: // NOTE: all PseudoStateKinds dealt with above so should not be an issue
+					return null;
 			}
 		}
 
@@ -82,7 +87,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 			return transition ?? transitions.Single( t => t.Predicate.Equals( Transition<TContext>.IsElse ) );
 		}
 
-		internal static Transition<TContext> Null( Transition<TContext>[] transitions, Object message, TContext context ) {
+		internal static Transition<TContext> Terminate( Transition<TContext>[] transitions, Object message, TContext context ) {
 			return null;
 		}
 		#endregion
@@ -272,7 +277,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 				// find the index of the first uncommon ancestor
 				while( ( i < l ) && sourceAncestors.ElementAt( i ) == targetAncestors.ElementAt( i ) ) ++i;
 
-				// validation rule (not in hte UML spec currently)
+				// validation rule (not in the UML spec currently)
 				Trace.Assert( sourceAncestors.ElementAt( i ) is Region<TContext> == false, "Transitions may not cross sibling orthogonal regions" );
 
 				// leave the first uncommon ancestor

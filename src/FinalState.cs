@@ -23,7 +23,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		/// <param name="name">The name of the FinalState.</param>
 		/// <param name="parent">The parent Region of the FinalState.</param>
-		public FinalState( String name, Region<TContext> parent ) : base( name, parent, Transition<TContext>.Null ){
+		public FinalState( String name, Region<TContext> parent ) : base( name, parent, Transition<TContext>.Terminate ){
 			Trace.Assert( name != null, "FinalStates must have a name" );
 			Trace.Assert( parent != null, "FinalStates must have a parent Region" );
 		}

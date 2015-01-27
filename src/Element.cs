@@ -11,7 +11,32 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// A structural element of a state machine model.
 	/// </summary>
 	/// <typeparam name="TContext">The type of the state machine instance.</typeparam>
-	public abstract class StateMachineElement<TContext> : NamedElement where TContext : IContext<TContext> {
+	public abstract class Element<TContext> where TContext : IContext<TContext> {
+		/// <summary>
+		/// The string used to seperate names within a fully qualified namespace.
+		/// </summary>
+		public static String NamespaceSeperator { get; set; }
+
+		/// <summary>
+		/// Initialises the static members of NamedElement.
+		/// </summary>
+		static Element() {
+			NamespaceSeperator = ".";
+		}
+
+		/// <summary>
+		/// The name of the NamedElement
+		/// </summary>
+		public readonly String Name;
+
+		/// <summary>
+		/// The fully qualified name of the element.
+		/// </summary>
+		/// <remarks>A name that allows the NamedElement to be identified within a hierarchy of nested Namespaces.
+		/// It is constructed from the names of the containing NamedElements starting at the root of the hierarchy and ending with the name of the NamedElement itself.
+		/// This is a derived attribute which is cached on initialisation.</remarks>
+		public readonly String QualifiedName;
+
 		/// <summary>
 		/// The name of the type without generic considerations
 		/// </summary>
@@ -20,7 +45,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <summary>
 		/// Returns the elements parent.
 		/// </summary>
-		public abstract StateMachineElement<TContext> Parent { get; }
+		public abstract Element<TContext> Parent { get; }
 
 		/// <summary>
 		/// The parent state machine that this element forms a part of.
@@ -30,14 +55,17 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <summary>
 		/// Returns the elements ancestors.
 		/// </summary>
-		public IEnumerable<StateMachineElement<TContext>> Ancestors { get { if( this.Parent != null ) foreach( var namedElement in this.Parent.Ancestors ) yield return namedElement; yield return this; } } // yield! please...
+		public IEnumerable<Element<TContext>> Ancestors { get { if( this.Parent != null ) foreach( var namedElement in this.Parent.Ancestors ) yield return namedElement; yield return this; } } // yield! please...
 
 		internal Action<Object, TContext, Boolean> Leave;
 		internal Action<Object, TContext, Boolean> BeginEnter;
 		internal Action<Object, TContext, Boolean> EndEnter;
 		internal Action<Object, TContext, Boolean> Enter;
 
-		internal StateMachineElement( String name, StateMachineElement<TContext> parent ) : base( name, parent ) {
+		internal Element( String name, Element<TContext> parent ) {
+			this.Name = name;
+			this.QualifiedName = parent != null ? parent.QualifiedName + NamespaceSeperator + name : name;
+
 			if( parent != null )
 				this.Root = parent.Root;
 		}
@@ -59,8 +87,16 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 		internal abstract void BootstrapTransitions();
 
-		internal virtual void BootstrapEnter( ref Action<Object, TContext, Boolean> traverse, StateMachineElement<TContext> next ) {
+		internal virtual void BootstrapEnter( ref Action<Object, TContext, Boolean> traverse, Element<TContext> next ) {
 			traverse += this.BeginEnter;
+		}
+
+		/// <summary>
+		/// Returns a string representation of the element.
+		/// </summary>
+		/// <returns>Returns the fully qualified name of the element.</returns>
+		public override String ToString() {
+			return this.QualifiedName;
 		}
 	}
 }

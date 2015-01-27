@@ -14,7 +14,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// A StateMachine is the root node of a hierarchical state machine model.
 	/// </summary>
 	/// <typeparam name="TContext">The type of the state machine context.</typeparam>
-	public sealed class StateMachine<TContext> : StateMachineElement<TContext> where TContext : IContext<TContext> {
+	public sealed class StateMachine<TContext> : Element<TContext> where TContext : IContext<TContext> {
 		/// <summary>
 		/// The name of the type without generic considerations
 		/// </summary>
@@ -34,7 +34,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>
 		/// A StateMachine will have no parent; this value will always be null.
 		/// </remarks>
-		public override StateMachineElement<TContext> Parent { get { return null; } }
+		public override Element<TContext> Parent { get { return null; } }
 
 		/// <summary>
 		/// Initialises a new instance of the StateMachine class.
