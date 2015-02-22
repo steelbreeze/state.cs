@@ -34,5 +34,3 @@ If you're using state.cs, please drop me a mail; I'd love to hear about how this
 state.cs is dual licenced under The MIT License (MIT) and GPL v3
 
 Copyright (c) 2014 Steelbreeze Limited
-
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/837a719cc38ffa18e895dc5f8f72768e "githalytics.com")](http://githalytics.com/steelbreeze/state.cs)
