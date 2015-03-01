@@ -116,6 +116,15 @@ namespace Steelbreeze.Behavior.StateMachines {
 			parent.Add( this );
 		}
 
+		/// <summary>
+		/// Tests the Region to determine if it is part of the current active state confuguration
+		/// </summary>
+		/// <param name="context">The state machine context.</param>
+		/// <returns>True if the element is active.</returns>
+		internal protected override Boolean IsActive( IContext<TContext> context ) {
+			return this.Parent.IsActive( context );
+		}
+
 		internal void Add( Vertex<TContext> vertex ) {
 			Trace.Assert( vertex != null, "Cannot add a null vertex" );
 			Trace.Assert( this.vertices.Where( v => v.Name == vertex.Name ).Count() == 0, "Vertices must have a unique name within the scope of their parent Region" );

@@ -31,6 +31,15 @@ namespace Steelbreeze.Behavior.StateMachines {
 		}
 
 		/// <summary>
+		/// Tests the vertex to determine if it is part of the current active state confuguration
+		/// </summary>
+		/// <param name="context">The state machine context.</param>
+		/// <returns>True if the element is active.</returns>
+		internal protected override Boolean IsActive( IContext<TContext> context ) {
+			return this.Parent.IsActive( context );
+		}
+
+		/// <summary>
 		/// Creates a new transition from this Vertex.
 		/// </summary>
 		/// <param name="target">The Vertex to transition to.</param>

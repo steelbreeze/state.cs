@@ -77,6 +77,13 @@ namespace Steelbreeze.Behavior.StateMachines {
 			this.Enter = null;
 		}
 
+		/// <summary>
+		/// Tests the element to determine if it is part of the current active state confuguration
+		/// </summary>
+		/// <param name="context">The state machine context.</param>
+		/// <returns>True if the element is active.</returns>
+		internal protected abstract Boolean IsActive( IContext<TContext> context );
+
 		internal virtual void BootstrapElement( Boolean deepHistoryAbove ) {
 #if DEBUG
 			this.Leave += ( message, context, history ) => Console.WriteLine( "{0} leave {1}", context, this.QualifiedName );

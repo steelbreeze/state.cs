@@ -48,6 +48,15 @@ namespace Steelbreeze.Behavior.StateMachines {
 			this.Root = this;
 		}
 
+		/// <summary>
+		/// Tests the StateMachine  to determine if it is part of the current active state confuguration
+		/// </summary>
+		/// <param name="context">The state machine context.</param>
+		/// <returns>True if the element is active.</returns>
+		internal protected override Boolean IsActive( IContext<TContext> context ) {
+			return true;
+		}
+
 		internal void Add( Region<TContext> region ) {
 			if( this.regions == null )
 				this.regions = new Region<TContext>[ 1 ] { region };
