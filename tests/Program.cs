@@ -21,6 +21,7 @@ namespace Steelbreeze.Behavior.StateMachines.Tests
 			// user test cases
 			Users.Muximise1.Test();
 			Users.Brice1.Test();
+			Users.P3pp3r.Test();
 		}
 	}
 }

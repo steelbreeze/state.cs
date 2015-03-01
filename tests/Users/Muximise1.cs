@@ -6,14 +6,9 @@
 using System;
 using System.Diagnostics;
 
-namespace Steelbreeze.Behavior.StateMachines.Tests.Users
-{
-	public class Muximise1
-	{
-		public static void Test()
-		{
-//			try
-	//		{
+namespace Steelbreeze.Behavior.StateMachines.Tests.Users {
+	public class Muximise1 {
+		public static void Test() {
 			var model = new StateMachine<DictionaryContext>( "muximise1" );
 
 			var initial = new PseudoState<DictionaryContext>( "initial", model );
@@ -33,33 +28,27 @@ namespace Steelbreeze.Behavior.StateMachines.Tests.Users
 			var f1 = new FinalState<DictionaryContext>( "f1", r1 );
 			var f2 = new FinalState<DictionaryContext>( "f2", r2 );
 
-				initial.To( ortho );
+			initial.To( ortho );
 
-				i1.To( s1 );
-				i2.To( s2 );
+			i1.To( s1 );
+			i2.To( s2 );
 
-				ortho.To( final ); // This should happen once all regions in ortho are complete?
+			ortho.To( final ); // This should happen once all regions in ortho are complete?
 
-				s1.To( f1 ).When<String>( c => c == "complete1" );
-				s2.To( f2 ).When<String>( c => c == "complete2" );
+			s1.To( f1 ).When<String>( c => c == "complete1" );
+			s2.To( f2 ).When<String>( c => c == "complete2" );
 
-				ortho.To( simple ).When<String>( c => c == "jump" );
-				simple.To( ortho ).When<String>( c => c == "back" );
+			ortho.To( simple ).When<String>( c => c == "jump" );
+			simple.To( ortho ).When<String>( c => c == "back" );
 
-				var instance = new DictionaryContext();
+			var instance = new DictionaryContext();
 
-				model.Initialise( instance );
+			model.Initialise( instance );
 
-				model.Evaluate( "complete1", instance );
-				model.Evaluate( "complete2", instance );
+			model.Evaluate( "complete1", instance );
+			model.Evaluate( "complete2", instance );
 
-				Trace.Assert( model.IsComplete( instance ) );
-
-//			}
-//			catch( Exception x )
-	//		{
-		//		Trace.Fail( x.Message );
-		//	}
+			Trace.Assert( model.IsComplete( instance ) );
 		}
 	}
 }

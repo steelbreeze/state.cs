@@ -71,6 +71,15 @@ namespace Steelbreeze.Behavior.StateMachines {
 		internal State( String name, Region<TContext> parent, Func<Transition<TContext>[], Object, TContext, Transition<TContext>> selector ) : base( name, parent, selector ) { }
 
 		/// <summary>
+		/// Tests the state to determine if it is part of the current active state confuguration
+		/// </summary>
+		/// <param name="context">The state machine context.</param>
+		/// <returns>True if the element is active.</returns>
+		internal protected override Boolean IsActive( IContext<TContext> context ) {
+			return base.IsActive( context ) && context[ this.Region ] == this;
+		}
+
+		/// <summary>
 		/// Sets optional exit behavior that is called when leaving the State.
 		/// </summary>
 		/// <typeparam name="TMessage">The type of the message that triggered the state transition.</typeparam>
@@ -301,8 +310,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 			if( this.IsComposite )
 				for( int i = 0, l = this.regions.Length; i < l; ++i )
-					if( this.regions[ i ].Evaluate( message, context ) )
-						processed = true;
+					if( this.IsActive( context ) == true )
+						if( this.regions[ i ].Evaluate( message, context ) )
+							processed = true;
 
 			if( !processed )
 				processed = base.Evaluate( message, context );
