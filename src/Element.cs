@@ -50,7 +50,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <summary>
 		/// The parent state machine that this element forms a part of.
 		/// </summary>
-		public StateMachine<TInstance> Root { get; protected set; }
+		public virtual StateMachine<TInstance> Root { get { return Parent.Root; } }
 
 		/// <summary>
 		/// Returns the elements ancestors.
@@ -65,9 +65,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 		internal Element (String name, Element<TInstance> parent) {
 			this.Name = name;
 			this.QualifiedName = parent != null ? parent.QualifiedName + NamespaceSeperator + name : name;
-
-			if (parent != null)
-				this.Root = parent.Root;
 		}
 
 		internal void Reset () {

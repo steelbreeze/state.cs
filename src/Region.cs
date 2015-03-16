@@ -32,18 +32,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 		}
 
 		/// <summary>
-		/// Provides an implicit conversion from a StateMachine to a Region, initialising a new instance of the Region class if required under this State.
-		/// </summary>
-		/// <param name="stateMachine">The StateMachine to return the default region for.</param>
-		/// <returns>The default Region of the StateMAchine.</returns>
-		/// <remarks>
-		/// The default Region of a StateMachine is one that has the same name as defined by Region.DefaultName.
-		/// </remarks>
-		public static implicit operator Region<TInstance> (StateMachine<TInstance> stateMachine) {
-			return (stateMachine.regions == null ? null : stateMachine.regions.SingleOrDefault (r => r.Name == Region<TInstance>.DefaultName)) ?? new Region<TInstance> (Region<TInstance>.DefaultName, stateMachine);
-		}
-
-		/// <summary>
 		/// Provides an implicit conversion from a State to a Region, initialising a new instance of the Region class if required under this State.
 		/// </summary>
 		/// <param name="state">The State to return the default region for.</param>
@@ -80,22 +68,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		internal PseudoState<TInstance> Initial = null;
 
 		private readonly HashSet<Vertex<TInstance>> vertices = new HashSet<Vertex<TInstance>> ();
-		private readonly Element<TInstance> parent;
-
-		/// <summary>
-		/// Initialises a new instance of the Region class within a StateMachine.
-		/// </summary>
-		/// <param name="name">The name of the Region.</param>
-		/// <param name="parent">The parent StateMachine.</param>
-		public Region (String name, StateMachine<TInstance> parent)
-			: base (name, parent) {
-			Trace.Assert (name != null, "Regions must have a name");
-			Trace.Assert (parent != null, "Regions must have a parent");
-
-			this.parent = parent;
-
-			parent.Add (this);
-		}
+		private readonly State<TInstance> parent;
 
 		/// <summary>
 		/// Initialises a new instance of the Region class within a composite State.
@@ -110,7 +83,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 			Trace.Assert (name != null, "Regions must have a name");
 			Trace.Assert (parent != null, "Regions must have a parent");
 
-			this.Root = parent.Root;
 			this.parent = parent;
 
 			parent.Add (this);

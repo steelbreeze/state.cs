@@ -64,11 +64,11 @@ namespace Steelbreeze.Behavior.StateMachines {
 		public State (String name, Region<TInstance> parent)
 			: base (name, parent, Transition<TInstance>.State) {
 			Trace.Assert (name != null, "States must have a name");
-			Trace.Assert (parent != null, "States must have a parent Region");
+//			Trace.Assert (parent != null, "States must have a parent Region");
 		}
 
 		// Constructor used by FinalState
-		internal State (String name, Region<TInstance> parent, Func<Transition<TInstance>[], Object, TInstance, Transition<TInstance>> selector) : base (name, parent, selector) { }
+//		internal State (String name, Region<TInstance> parent, Func<Transition<TInstance>[], Object, TInstance, Transition<TInstance>> selector) : base (name, parent, selector) { }
 
 		/// <summary>
 		/// Tests the state to determine if it is part of the current active state confuguration
@@ -283,7 +283,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 			if (this.entry != null)
 				this.BeginEnter += this.OnEntry;
 
-			this.BeginEnter += (message, instance, history) => instance[ this.Region ] = this;
+			this.BeginEnter += (message, instance, history) => { if (this.Region != null) instance[ this.Region ] = this; };
 
 			this.Enter = this.BeginEnter + this.EndEnter;
 		}

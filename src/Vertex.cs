@@ -27,7 +27,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 			this.Region = parent;
 			this.selector = selector;
 
-			parent.Add (this);
+			if( parent != null )
+				parent.Add (this);
 		}
 
 		/// <summary>

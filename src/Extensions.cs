@@ -45,10 +45,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 			return new PseudoState<TInstance> (name, state, kind);
 		}
 
-		public static PseudoState<TInstance> CreatePseudoState<TInstance> (this StateMachine<TInstance> stateMachine, String name, PseudoStateKind kind = PseudoStateKind.Initial) where TInstance : IActiveStateConfiguration<TInstance> {
-			return new PseudoState<TInstance> (name, stateMachine, kind);
-		}
-
 		/// <summary>
 		/// Creates a new instance of the State class under the parent Region.
 		/// </summary>
@@ -70,10 +66,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>Note that the State will be created under the parent state's default region.</remarks>
 		public static State<TInstance> CreateState<TInstance> (this State<TInstance> state, String name) where TInstance : IActiveStateConfiguration<TInstance> {
 			return new State<TInstance> (name, state);
-		}
-
-		public static State<TInstance> CreateState<TInstance> (this StateMachine<TInstance> stateMachine, String name) where TInstance : IActiveStateConfiguration<TInstance> {
-			return new State<TInstance> (name, stateMachine);
 		}
 
 		/// <summary>
@@ -98,10 +90,5 @@ namespace Steelbreeze.Behavior.StateMachines {
 		public static FinalState<TInstance> CreateFinalState<TInstance> (this State<TInstance> state, String name) where TInstance : IActiveStateConfiguration<TInstance> {
 			return new FinalState<TInstance> (name, state);
 		}
-
-		public static FinalState<TInstance> CreateFinalState<TInstance> (this StateMachine<TInstance> stateMachine, String name) where TInstance : IActiveStateConfiguration<TInstance> {
-			return new FinalState<TInstance> (name, stateMachine);
-		}
-
 	}
 }
