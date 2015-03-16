@@ -8,28 +8,28 @@ using System.Diagnostics;
 
 namespace Steelbreeze.Behavior.StateMachines.Tests.Users {
 	public class Brice1 {
-		public static void Test() {
-			var model = new StateMachine<DictionaryContext>( "brice1" );
+		public static void Test () {
+			var model = new StateMachine<StateMachineInstance> ("model");
 
-			var initial1 = new PseudoState<DictionaryContext>( "initial", model );
-			var myComposite1 = new State<DictionaryContext>( "myComposite1", model );
-			var myComposite2 = new State<DictionaryContext>( "myComposite2", model );
+			var initial1 = model.CreatePseudoState ("initial");
+			var myComposite1 = model.CreateState ("myComposite1");
+			var myComposite2 = model.CreateState ("myComposite2");
 
-			var initial2 = new PseudoState<DictionaryContext>( "initial", myComposite1 );
-			var myState1 = new State<DictionaryContext>( "myState1", myComposite1 );
-			var myState2 = new State<DictionaryContext>( "myState2", myComposite1 );
+			var initial2 = myComposite1.CreatePseudoState ("initial");
+			var myState1 = myComposite1.CreateState ("myState1");
+			var myState2 = myComposite1.CreateState ("myState2");
 
-			initial1.To( myComposite1 );
-			initial2.To( myState1 );
+			initial1.To (myComposite1);
+			initial2.To (myState1);
 
-			myComposite1.To( myComposite2 ).When<String>( message => message == "A" ).Effect( () => System.Diagnostics.Trace.Fail( "Outer transition fired" ) );
-			myState1.To( myState2 ).When<String>( message => message == "A" );
+			myComposite1.To (myComposite2).When<String> (message => message == "A").Effect (() => System.Diagnostics.Trace.Fail ("Outer transition fired"));
+			myState1.To (myState2).When<String> (message => message == "A");
 
-			var instance = new DictionaryContext();
+			var instance = new StateMachineInstance ("brice1");
 
-			model.Initialise( instance );
+			model.Initialise (instance);
 
-			model.Evaluate( "A", instance );
+			model.Evaluate ("A", instance);
 		}
 	}
 }

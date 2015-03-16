@@ -8,47 +8,52 @@ using System.Diagnostics;
 
 namespace Steelbreeze.Behavior.StateMachines.Tests.Users {
 	public class Muximise1 {
-		public static void Test() {
-			var model = new StateMachine<DictionaryContext>( "muximise1" );
+		public static StateMachine<StateMachineInstance> Model { get; private set; }
 
-			var initial = new PseudoState<DictionaryContext>( "initial", model );
-			var ortho = new State<DictionaryContext>( "ortho", model );
-			var simple = new State<DictionaryContext>( "simple", model );
-			var final = new FinalState<DictionaryContext>( "final", model );
+		static Muximise1 () {
+			Model = new StateMachine<StateMachineInstance> ("model");
 
-			var r1 = new Region<DictionaryContext>( "r1", ortho );
-			var r2 = new Region<DictionaryContext>( "r2", ortho );
+			var initial = Model.CreatePseudoState ("initial");
+			var ortho = Model.CreateState ("ortho");
+			var simple = Model.CreateState ("simple");
+			var final = Model.CreateFinalState ("final");
 
-			var i1 = new PseudoState<DictionaryContext>( "initial", r1, PseudoStateKind.ShallowHistory );
-			var i2 = new PseudoState<DictionaryContext>( "initial", r2, PseudoStateKind.ShallowHistory );
+			var r1 = ortho.CreateRegion ("r1");
+			var r2 = ortho.CreateRegion ("r2");
 
-			var s1 = new State<DictionaryContext>( "s1", r1 );
-			var s2 = new State<DictionaryContext>( "s2", r2 );
 
-			var f1 = new FinalState<DictionaryContext>( "f1", r1 );
-			var f2 = new FinalState<DictionaryContext>( "f2", r2 );
+			var i1 = r1.CreatePseudoState ("initial", PseudoStateKind.ShallowHistory);
+			var i2 = r2.CreatePseudoState ("initial", PseudoStateKind.ShallowHistory);
 
-			initial.To( ortho );
+			var s1 = r1.CreateState ("s1");
+			var s2 = r2.CreateState ("s2");
 
-			i1.To( s1 );
-			i2.To( s2 );
+			var f1 = r1.CreateFinalState ("f1");
+			var f2 = r2.CreateFinalState ("f2");
 
-			ortho.To( final ); // This should happen once all regions in ortho are complete?
+			initial.To (ortho);
 
-			s1.To( f1 ).When<String>( c => c == "complete1" );
-			s2.To( f2 ).When<String>( c => c == "complete2" );
+			i1.To (s1);
+			i2.To (s2);
 
-			ortho.To( simple ).When<String>( c => c == "jump" );
-			simple.To( ortho ).When<String>( c => c == "back" );
+			ortho.To (final); // This should happen once all regions in ortho are complete?
 
-			var instance = new DictionaryContext();
+			s1.To (f1).When<String> (c => c == "complete1");
+			s2.To (f2).When<String> (c => c == "complete2");
 
-			model.Initialise( instance );
+			ortho.To (simple).When<String> (c => c == "jump");
+			simple.To (ortho).When<String> (c => c == "back");
+		}
 
-			model.Evaluate( "complete1", instance );
-			model.Evaluate( "complete2", instance );
+		public static void Test () {
+			var instance = new StateMachineInstance ("muximise1");
 
-			Trace.Assert( model.IsComplete( instance ) );
+			Model.Initialise (instance);
+
+			Model.Evaluate ("complete1", instance);
+			Model.Evaluate ("complete2", instance);
+
+			Trace.Assert (Model.IsComplete (instance));
 		}
 	}
 }

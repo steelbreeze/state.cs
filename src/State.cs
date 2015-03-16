@@ -12,11 +12,11 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
 	/// A state models a situation during which some (usually implicit) invariant condition holds.
 	/// </summary>
-	/// <typeparam name="TContext">The type of the state machine instance.</typeparam>
+	/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
 	/// <remarks>
 	/// The invariant may represent a static situation such as an object waiting for some external event to occur.
 	/// </remarks>
-	public class State<TContext> : Vertex<TContext> where TContext : IContext<TContext> {
+	public class State<TInstance> : Vertex<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
 		/// <summary>
 		/// The name of the type without generic considerations
 		/// </summary>
@@ -49,46 +49,46 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <summary>
 		/// The child Regions where the State is composite.
 		/// </summary>
-		public IEnumerable<Region<TContext>> Regions { get { return this.regions; } }
+		public IEnumerable<Region<TInstance>> Regions { get { return this.regions; } }
 
-		internal Region<TContext>[] regions;
+		internal Region<TInstance>[] regions;
 
-		private event Action<Object, TContext> exit;
-		private event Action<Object, TContext> entry;
+		private event Action<Object, TInstance> exit;
+		private event Action<Object, TInstance> entry;
 
 		/// <summary>
 		/// Creates a new instance of the State class.
 		/// </summary>
 		/// <param name="name">The name of the state.</param>
 		/// <param name="parent">The parent Region.</param>
-		public State( String name, Region<TContext> parent )
-			: base( name, parent, Transition<TContext>.State ) {
-			Trace.Assert( name != null, "States must have a name" );
-			Trace.Assert( parent != null, "States must have a parent Region" );
+		public State (String name, Region<TInstance> parent)
+			: base (name, parent, Transition<TInstance>.State) {
+			Trace.Assert (name != null, "States must have a name");
+			Trace.Assert (parent != null, "States must have a parent Region");
 		}
 
 		// Constructor used by FinalState
-		internal State( String name, Region<TContext> parent, Func<Transition<TContext>[], Object, TContext, Transition<TContext>> selector ) : base( name, parent, selector ) { }
+		internal State (String name, Region<TInstance> parent, Func<Transition<TInstance>[], Object, TInstance, Transition<TInstance>> selector) : base (name, parent, selector) { }
 
 		/// <summary>
 		/// Tests the state to determine if it is part of the current active state confuguration
 		/// </summary>
-		/// <param name="context">The state machine context.</param>
+		/// <param name="instance">The state machine instance.</param>
 		/// <returns>True if the element is active.</returns>
-		internal protected override Boolean IsActive( IContext<TContext> context ) {
-			return base.IsActive( context ) && context[ this.Region ] == this;
+		internal protected override Boolean IsActive (IActiveStateConfiguration<TInstance> instance) {
+			return base.IsActive (instance) && instance[ this.Region ] == this;
 		}
 
 		/// <summary>
 		/// Sets optional exit behavior that is called when leaving the State.
 		/// </summary>
 		/// <typeparam name="TMessage">The type of the message that triggered the state transition.</typeparam>
-		/// <param name="behavior">One or more actions that take both the state machine context and the triggering message as parameters.</param>
+		/// <param name="behavior">One or more actions that take both the state machine instance and the triggering message as parameters.</param>
 		/// <returns>Returns the State itself.</returns>
 		/// <remarks>If the type of the triggering message does not match TMessage the behavior will not be called.</remarks>
-		public State<TContext> Exit<TMessage>( params Action<TMessage, TContext>[] behavior ) where TMessage : class {
-			foreach( var exit in behavior )
-				this.exit += ( message, context ) => { if( message is TMessage ) exit( message as TMessage, context ); };
+		public State<TInstance> Exit<TMessage> (params Action<TMessage, TInstance>[] behavior) where TMessage : class {
+			foreach (var exit in behavior)
+				this.exit += (message, instance) => { if (message is TMessage) exit (message as TMessage, instance); };
 
 			this.Root.Clean = false;
 
@@ -102,9 +102,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="behavior">One or more actions that takes the triggering message as a parameter.</param>
 		/// <returns></returns>
 		/// <remarks>If the type of the triggering message does not match TMessage the behavior will not be called.</remarks>
-		public State<TContext> Exit<TMessage>( params Action<TMessage>[] behavior ) where TMessage : class {
-			foreach( var exit in behavior )
-				this.exit += ( message, context ) => { if( message is TMessage ) exit( message as TMessage ); };
+		public State<TInstance> Exit<TMessage> (params Action<TMessage>[] behavior) where TMessage : class {
+			foreach (var exit in behavior)
+				this.exit += (message, instance) => { if (message is TMessage) exit (message as TMessage); };
 
 			this.Root.Clean = false;
 
@@ -114,11 +114,11 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <summary>
 		/// Sets optional exit behabiour that is called when leaving the State.
 		/// </summary>
-		/// <param name="behavior">One or more actions that takes the state machine context as a parameter.</param>
+		/// <param name="behavior">One or more actions that takes the state machine instance as a parameter.</param>
 		/// <returns>Returns the State itself.</returns>
-		public State<TContext> Exit( params Action<TContext>[] behavior ) {
-			foreach( var exit in behavior )
-				this.exit += ( message, context ) => exit( context );
+		public State<TInstance> Exit (params Action<TInstance>[] behavior) {
+			foreach (var exit in behavior)
+				this.exit += (message, instance) => exit (instance);
 
 			this.Root.Clean = false;
 
@@ -130,9 +130,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		/// <param name="behavior">One or more actions that take no parameters.</param>
 		/// <returns>Returns the State itself.</returns>
-		public State<TContext> Exit( params Action[] behavior ) {
-			foreach( var exit in behavior )
-				this.exit += ( message, context ) => exit();
+		public State<TInstance> Exit (params Action[] behavior) {
+			foreach (var exit in behavior)
+				this.exit += (message, instance) => exit ();
 
 			this.Root.Clean = false;
 
@@ -143,12 +143,12 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// Sets optional entry behavior that is called when entering the State.
 		/// </summary>
 		/// <typeparam name="TMessage">The type of the message that triggered the state transition.</typeparam>
-		/// <param name="behavior">One or more actions that take both the state machine context and the triggering message as parameters.</param>
+		/// <param name="behavior">One or more actions that take both the state machine instance and the triggering message as parameters.</param>
 		/// <returns>Returns the State itself.</returns>
 		/// <remarks>If the type of the triggering message does not match TMessage the behavior will not be called.</remarks>
-		public State<TContext> Entry<TMessage>( params Action<TMessage, TContext>[] behavior ) where TMessage : class {
-			foreach( var entry in behavior )
-				this.entry += ( message, context ) => { if( message is TMessage ) entry( message as TMessage, context ); };
+		public State<TInstance> Entry<TMessage> (params Action<TMessage, TInstance>[] behavior) where TMessage : class {
+			foreach (var entry in behavior)
+				this.entry += (message, instance) => { if (message is TMessage) entry (message as TMessage, instance); };
 
 			this.Root.Clean = false;
 
@@ -162,9 +162,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="behavior">One or more actions that takes the triggering message as a parameter.</param>
 		/// <returns>Returns the State itself.</returns>
 		/// <remarks>If the type of the triggering message does not match TMessage the behavior will not be called.</remarks>
-		public State<TContext> Entry<TMessage>( params Action<TMessage>[] behavior ) where TMessage : class {
-			foreach( var entry in behavior )
-				this.entry += ( message, context ) => { if( message is TMessage ) entry( message as TMessage ); };
+		public State<TInstance> Entry<TMessage> (params Action<TMessage>[] behavior) where TMessage : class {
+			foreach (var entry in behavior)
+				this.entry += (message, instance) => { if (message is TMessage) entry (message as TMessage); };
 
 			this.Root.Clean = false;
 
@@ -174,11 +174,11 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <summary>
 		/// Sets optional entry behavior that is called when entering the State.
 		/// </summary>
-		/// <param name="behavior">One or more actions that takes the state machine context as a parameter.</param>
+		/// <param name="behavior">One or more actions that takes the state machine instance as a parameter.</param>
 		/// <returns>Returns the State itself.</returns>
-		public State<TContext> Entry( params Action<TContext>[] behavior ) {
-			foreach( var entry in behavior )
-				this.entry += ( message, context ) => entry( context );
+		public State<TInstance> Entry (params Action<TInstance>[] behavior) {
+			foreach (var entry in behavior)
+				this.entry += (message, instance) => entry (instance);
 
 			this.Root.Clean = false;
 
@@ -190,9 +190,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		/// <param name="behavior">One or more actions that takes no parameters.</param>
 		/// <returns>Returns the State itself.</returns>
-		public State<TContext> Entry( params Action[] behavior ) {
-			foreach( var entry in behavior )
-				this.entry += ( message, context ) => entry();
+		public State<TInstance> Entry (params Action[] behavior) {
+			foreach (var entry in behavior)
+				this.entry += (message, instance) => entry ();
 
 			this.Root.Clean = false;
 
@@ -208,8 +208,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>
 		/// An internal transition does not exit or enter any states, however the transitions effect will be invoked if the guard condition of the transition is met
 		/// </remarks>
-		public Transition<TContext> When<TMessage>( Func<TMessage, TContext, Boolean> guard ) where TMessage : class {
-			return this.To( null ).When( guard );
+		public Transition<TInstance> When<TMessage> (Func<TMessage, TInstance, Boolean> guard) where TMessage : class {
+			return this.To (null).When (guard);
 		}
 
 		/// <summary>
@@ -218,43 +218,43 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <typeparam name="TMessage">The type of the messaage that the internal transition will react to.</typeparam>
 		/// <param name="guard">The guard condition that must be met for hte transition to be traversed.</param>
 		/// <returns>The internal transition.</returns>
-		public Transition<TContext> When<TMessage>( Func<TMessage, Boolean> guard ) where TMessage : class {
-			return this.To( null ).When( guard );
+		public Transition<TInstance> When<TMessage> (Func<TMessage, Boolean> guard) where TMessage : class {
+			return this.To (null).When (guard);
 		}
 
 		/// <summary>
 		/// Invokes the Exit behavior upon exiting a State.
 		/// </summary>
-		/// <param name="context">The state machine context.</param>
+		/// <param name="instance">The state machine instance.</param>
 		/// <param name="message">The message that triggered the state transition.</param>
 		/// <param name="history">A flag denoting if history semantics were in play during the transition.</param>
-		protected virtual void OnExit( Object message, TContext context, Boolean history ) {
-			this.exit( message, context );
+		protected virtual void OnExit (Object message, TInstance instance, Boolean history) {
+			this.exit (message, instance);
 		}
 
 		/// <summary>
 		/// Invokes the Entry behavior upon entering a State.
 		/// </summary>
-		/// <param name="context">The state machine context.</param>
+		/// <param name="instance">The state machine instance.</param>
 		/// <param name="message">The message that triggered the state transition.</param>
 		/// <param name="history">A flag denoting if history semantics were in play during the transition.</param>
-		protected virtual void OnEntry( Object message, TContext context, Boolean history ) {
-			this.entry( message, context );
+		protected virtual void OnEntry (Object message, TInstance instance, Boolean history) {
+			this.entry (message, instance);
 		}
 
-		internal override Boolean IsComplete( TContext context ) {
-			return this.IsSimple || this.regions.All( region => region.IsComplete( context ) );
+		public override Boolean IsComplete (TInstance instance) {
+			return this.IsSimple || this.regions.All (region => region.IsComplete (instance));
 		}
 
-		internal virtual void Add( Region<TContext> region ) {
-			if( this.regions == null )
-				this.regions = new Region<TContext>[ 1 ] { region };
+		internal virtual void Add (Region<TInstance> region) {
+			if (this.regions == null)
+				this.regions = new Region<TInstance>[ 1 ] { region };
 			else {
-				Trace.Assert( this.regions.Where( r => r.Name == region.Name ).Count() == 0, "Regions must have a unique name within the scope of their parent State" );
+				Trace.Assert (this.regions.Where (r => r.Name == region.Name).Count () == 0, "Regions must have a unique name within the scope of their parent State");
 
-				var regions = new Region<TContext>[ this.regions.Length + 1 ];
+				var regions = new Region<TInstance>[ this.regions.Length + 1 ];
 
-				this.regions.CopyTo( regions, 0 );
+				this.regions.CopyTo (regions, 0);
 
 				regions[ this.regions.Length ] = region;
 
@@ -264,61 +264,61 @@ namespace Steelbreeze.Behavior.StateMachines {
 			region.Root.Clean = false;
 		}
 
-		internal override void BootstrapElement( Boolean deepHistoryAbove ) {
-			if( this.IsComposite ) {
-				foreach( var region in this.regions ) {
-					region.Reset();
-					region.BootstrapElement( deepHistoryAbove );
+		internal override void BootstrapElement (Boolean deepHistoryAbove) {
+			if (this.IsComposite) {
+				foreach (var region in this.regions) {
+					region.Reset ();
+					region.BootstrapElement (deepHistoryAbove);
 
-					this.Leave += ( message, context, history ) => region.Leave( message, context, history );
+					this.Leave += (message, instance, history) => region.Leave (message, instance, history);
 					this.EndEnter += region.Enter;
 				}
 			}
 
-			base.BootstrapElement( deepHistoryAbove );
+			base.BootstrapElement (deepHistoryAbove);
 
-			if( this.exit != null )
+			if (this.exit != null)
 				this.Leave += this.OnExit;
 
-			if( this.entry != null )
+			if (this.entry != null)
 				this.BeginEnter += this.OnEntry;
 
-			this.BeginEnter += ( message, context, history ) => context[ this.Region ] = this;
+			this.BeginEnter += (message, instance, history) => instance[ this.Region ] = this;
 
 			this.Enter = this.BeginEnter + this.EndEnter;
 		}
 
-		internal override void BootstrapTransitions() {
-			if( this.IsComposite )
-				foreach( var region in this.regions )
-					region.BootstrapTransitions();
+		internal override void BootstrapTransitions () {
+			if (this.IsComposite)
+				foreach (var region in this.regions)
+					region.BootstrapTransitions ();
 
-			base.BootstrapTransitions();
+			base.BootstrapTransitions ();
 		}
 
-		internal override void BootstrapEnter( ref Action<Object, TContext, Boolean> traverse, Element<TContext> next ) {
-			base.BootstrapEnter( ref traverse, next );
+		internal override void BootstrapEnter (ref Action<Object, TInstance, Boolean> traverse, Element<TInstance> next) {
+			base.BootstrapEnter (ref traverse, next);
 
-			if( this.IsOrthogonal )
-				foreach( var region in this.regions )
-					if( region != next )
+			if (this.IsOrthogonal)
+				foreach (var region in this.regions)
+					if (region != next)
 						traverse += region.Enter;
 		}
 
-		internal override Boolean Evaluate( Object message, TContext context ) {
+		internal override Boolean Evaluate (Object message, TInstance instance) {
 			var processed = false;
 
-			if( this.IsComposite )
-				for( int i = 0, l = this.regions.Length; i < l; ++i )
-					if( this.IsActive( context ) == true )
-						if( this.regions[ i ].Evaluate( message, context ) )
+			if (this.IsComposite)
+				for (int i = 0, l = this.regions.Length; i < l; ++i)
+					if (this.IsActive (instance) == true)
+						if (this.regions[ i ].Evaluate (message, instance))
 							processed = true;
 
-			if( !processed )
-				processed = base.Evaluate( message, context );
+			if (!processed)
+				processed = base.Evaluate (message, instance);
 
-			if( processed == true && message != this )
-				this.EvaluateCompletions( this, context, false );
+			if (processed == true && message != this)
+				this.EvaluateCompletions (this, instance, false);
 
 			return processed;
 		}

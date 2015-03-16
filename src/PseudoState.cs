@@ -11,11 +11,11 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
 	/// A PseudoState is an abstraction that encompasses different types of transient vertices in the state machine.
 	/// </summary>
-	/// <typeparam name="TContext">The type of the state machine instance.</typeparam>
+	/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
 	/// <remarks>
 	/// Pseudostates are typically used to connect multiple transitions into more complex state transitions path.
 	/// </remarks>
-	public sealed class PseudoState<TContext> : Vertex<TContext> where TContext : IContext<TContext> {
+	public sealed class PseudoState<TInstance> : Vertex<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
 		/// <summary>
 		/// The name of the type without generic considerations
 		/// </summary>
@@ -41,14 +41,14 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>
 		/// The kind of the PseudoState dictates is use and semantics; see the documentation of PseudoStateKind.
 		/// </remarks>
-		public PseudoState( String name, Region<TContext> parent, PseudoStateKind kind = PseudoStateKind.Initial )
-			: base( name, parent, Transition<TContext>.PseudoState( kind ) ) {
-			Trace.Assert( name != null, "PseudoStates must have a name" );
-			Trace.Assert( parent != null, "PseudoStates must have a parent Region" );
+		public PseudoState (String name, Region<TInstance> parent, PseudoStateKind kind = PseudoStateKind.Initial)
+			: base (name, parent, Transition<TInstance>.PseudoState (kind)) {
+			Trace.Assert (name != null, "PseudoStates must have a name");
+			Trace.Assert (parent != null, "PseudoStates must have a parent Region");
 
 			this.Kind = kind;
 
-			if( this.IsInitial )
+			if (this.IsInitial)
 				this.Region.Initial = this;
 		}
 
@@ -57,16 +57,16 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		/// <param name="target">The Vertex to transition to.</param>
 		/// <returns>An intance of the Transition class.</returns>
-		public override Transition<TContext> To( Vertex<TContext> target ) {
-			Trace.Assert( target != null, "Transitions from PseudoStates must have a target" );
-			return base.To( target );
+		public override Transition<TInstance> To (Vertex<TInstance> target) {
+			Trace.Assert (target != null, "Transitions from PseudoStates must have a target");
+			return base.To (target);
 		}
 
-		internal override void BootstrapElement( bool deepHistoryAbove ) {
-			base.BootstrapElement( deepHistoryAbove );
+		internal override void BootstrapElement (bool deepHistoryAbove) {
+			base.BootstrapElement (deepHistoryAbove);
 
-			if( this.Kind == PseudoStateKind.Terminate )
-				this.Enter += ( message, context, history ) => context.IsTerminated = true;
+			if (this.Kind == PseudoStateKind.Terminate)
+				this.Enter += (message, instance, history) => instance.IsTerminated = true;
 		}
 	}
 }

@@ -6,48 +6,46 @@
 using System;
 using System.Diagnostics;
 
-namespace Steelbreeze.Behavior.StateMachines.Tests.Transitions
-{
-	public class Completions
-	{
-		public class Activity<TState> : State<TState> where TState : class, IContext<TState>
-		{
-			public Activity( String name, Region<TState> region )
-				: base(  name, region )
-			{
-				new PseudoState<TState>( "initial", this ).To( new FinalState<TState>( "final", this ) );
-			}
+namespace Steelbreeze.Behavior.StateMachines.Tests.Transitions {
+	public class Activity<TInstance> : State<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
+		public Activity (String name, Region<TInstance> region)
+			: base (name, region) {
+			this.CreatePseudoState ("initial", PseudoStateKind.Initial).To (this.CreateFinalState ("final"));
 		}
+	}
 
-		public static void Test()
-		{
-			try
-			{
-				var model = new StateMachine<DictionaryContext>( "continuation" );
-				var initial = new PseudoState<DictionaryContext>( "initial", model );
-				var activity1 = new State<DictionaryContext>( "activity1", model );
-				var activity2 = new Activity<DictionaryContext>( "activity2", model );
-				var junction1 = new PseudoState<DictionaryContext>( "junction1", model, PseudoStateKind.Junction );
-				var junction2 = new PseudoState<DictionaryContext>( "junction2", model, PseudoStateKind.Junction );
-				var activity3 = new State<DictionaryContext>( "activity3", model );
-				var final = new FinalState<DictionaryContext>( "final", model );
+	public static class ActivityEx {
+		public static Activity<TInstance> CreateActivity<TInstance> (this StateMachine<TInstance> stateMachine, String name) where TInstance : IActiveStateConfiguration<TInstance> {
+			return new Activity<TInstance> (name, stateMachine);
+		}
+	}
 
-				initial.To( activity1 );
-				activity1.To( activity2 );
-				activity2.To( junction1 );
-				junction1.To( junction2 );
-				junction2.To( activity3 );
-				activity3.To( final );
+	public class Completions {
+		public static void Test () {
+			try {
+				var model = new StateMachine<StateMachineInstance> ("model");
+				var initial = model.CreatePseudoState("initial");
+				var activity1 = model.CreateState ("activity1");
+				var activity2 = model.CreateActivity ("activity2");
+				var junction1 = model.CreatePseudoState("junction1", PseudoStateKind.Junction);
+				var junction2 = model.CreatePseudoState ("junction2", PseudoStateKind.Junction);
+				var activity3 = model.CreateState ("activity3");
+				var final = model.CreateFinalState ("final");
 
-				var instance = new DictionaryContext();
+				initial.To (activity1);
+				activity1.To (activity2);
+				activity2.To (junction1);
+				junction1.To (junction2);
+				junction2.To (activity3);
+				activity3.To (final);
 
-				model.Initialise( instance );
+				var instance = new StateMachineInstance ("completion");
 
-				Trace.Assert( model.IsComplete( instance ) );
-			}
-			catch( Exception x )
-			{
-				Trace.Fail( x.Message );
+				model.Initialise (instance);
+
+				Trace.Assert (model.IsComplete (instance));
+			} catch (Exception x) {
+				Trace.Fail (x.Message);
 			}
 		}
 	}

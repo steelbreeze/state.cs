@@ -10,9 +10,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
 	/// A special kind of State signifying that its parent Region is completed.
 	/// </summary>
-	/// <typeparam name="TContext">The type of the state machine context.</typeparam>
+	/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
 	/// <remarks>To be complete, final states cannot have any child model structure beneath them (Region's) or outgoing transitions.</remarks>
-	public sealed class FinalState<TContext> : State<TContext> where TContext : IContext<TContext> {
+	public sealed class FinalState<TInstance> : State<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
 		/// <summary>
 		/// The name of the type without generic considerations
 		/// </summary>
@@ -23,19 +23,20 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		/// <param name="name">The name of the FinalState.</param>
 		/// <param name="parent">The parent Region of the FinalState.</param>
-		public FinalState( String name, Region<TContext> parent ) : base( name, parent, Transition<TContext>.Terminate ){
-			Trace.Assert( name != null, "FinalStates must have a name" );
-			Trace.Assert( parent != null, "FinalStates must have a parent Region" );
+		public FinalState (String name, Region<TInstance> parent)
+			: base (name, parent, Transition<TInstance>.Terminate) {
+			Trace.Assert (name != null, "FinalStates must have a name");
+			Trace.Assert (parent != null, "FinalStates must have a parent Region");
 		}
 
 		// override State's implementation of IsComplete
-		internal override Boolean IsComplete( TContext context ) {
+		public override Boolean IsComplete (TInstance instance) {
 			return true;
 		}
 
 		// do not allow FinalState's to become composite
-		internal override void Add( Region<TContext> region ) {
-			throw new NotSupportedException( "A FinalState may not be the parent of a Region" );
+		internal override void Add (Region<TInstance> region) {
+			throw new NotSupportedException ("A FinalState may not be the parent of a Region");
 		}
 
 		/// <summary>
@@ -46,8 +47,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>
 		/// FinalState's are not permitted to have outgoing transitions; this method will therefore throw an exception.
 		/// </remarks>
-		public override Transition<TContext> To( Vertex<TContext> target ) {
-			throw new NotSupportedException( "Transitions my not originate from a FinalState" );
+		public override Transition<TInstance> To (Vertex<TInstance> target) {
+			throw new NotSupportedException ("Transitions my not originate from a FinalState");
 		}
 	}
 }
