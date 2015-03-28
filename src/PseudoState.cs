@@ -15,12 +15,13 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// <remarks>
 	/// Pseudostates are typically used to connect multiple transitions into more complex state transitions path.
 	/// </remarks>
-	public sealed class PseudoState<TInstance> : Vertex<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
+	public sealed class PseudoState<TInstance> : Vertex<TInstance> where TInstance : class, IActiveStateConfiguration<TInstance> {
+		#region Static members
 		/// <summary>
-		/// The name of the type without generic considerations
+		/// For use in Choice pseudo states where multiple outbound transitions guards evaluate true.
 		/// </summary>
-		public override string Type { get { return "pseudoState"; } }
-
+		private static readonly Random random = new Random ();
+		#endregion
 		/// <summary>
 		/// Determines the precise type of the Pseudostate.
 		/// </summary>
@@ -29,7 +30,14 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </remarks>
 		public readonly PseudoStateKind Kind;
 
+		/// <summary>
+		/// True if the pseudo state is a DeepHistory or ShallowHistory kinds.
+		/// </summary>
 		internal Boolean IsHistory { get { return this.Kind == PseudoStateKind.DeepHistory || this.Kind == PseudoStateKind.ShallowHistory; } }
+
+		/// <summary>
+		/// True if the pseudo state is an Initial, DeepHistory or ShallowHistory kinds.
+		/// </summary>
 		internal Boolean IsInitial { get { return this.Kind == PseudoStateKind.Initial || this.IsHistory; } }
 
 		/// <summary>
@@ -42,7 +50,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// The kind of the PseudoState dictates is use and semantics; see the documentation of PseudoStateKind.
 		/// </remarks>
 		public PseudoState (String name, Region<TInstance> parent, PseudoStateKind kind = PseudoStateKind.Initial)
-			: base (name, parent, Transition<TInstance>.PseudoState (kind)) {
+			: base (name, parent) {
 			Trace.Assert (name != null, "PseudoStates must have a name");
 			Trace.Assert (parent != null, "PseudoStates must have a parent Region");
 
@@ -53,20 +61,76 @@ namespace Steelbreeze.Behavior.StateMachines {
 		}
 
 		/// <summary>
-		/// Creates a new transition from this PseudoState.
+		/// Tests the vertex to determine if it is part of the current active state confuguration
 		/// </summary>
-		/// <param name="target">The Vertex to transition to.</param>
-		/// <returns>An intance of the Transition class.</returns>
-		public override Transition<TInstance> To (Vertex<TInstance> target) {
-			Trace.Assert (target != null, "Transitions from PseudoStates must have a target");
-			return base.To (target);
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if the element is active.</returns>
+		public override Boolean IsActive (TInstance instance) {
+			return this.Parent.IsActive (instance);
 		}
 
-		internal override void BootstrapElement (bool deepHistoryAbove) {
-			base.BootstrapElement (deepHistoryAbove);
+		/// <summary>
+		/// Tests the pseudo state to determine if it is deemed to be complete.
+		/// </summary>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if the pseudo state is complete.</returns>
+		/// <remarks>Pseudo states are always deemed to be complete.</remarks>
+		public override bool IsComplete (TInstance instance) {
+			return true;
+		}
 
-			if (this.Kind == PseudoStateKind.Terminate)
-				this.Enter += (message, instance, history) => instance.IsTerminated = true;
+		/// <summary>
+		/// Selects a transition for a given message and state machine instance for the pseudo state.
+		/// </summary>
+		/// <param name="message">The message that may trigger a transition.</param>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>The selected transition.</returns>
+		/// <exception cref="System.ArgumentNullException">This exception is thown if no transition is found from the pseudo state.</exception>
+		protected internal override Transition<TInstance> Select (object message, TInstance instance) {
+			switch (this.Kind) {
+				case PseudoStateKind.Initial:
+				case PseudoStateKind.DeepHistory:
+				case PseudoStateKind.ShallowHistory:
+					return this.Transitions.Single ();
+
+				case PseudoStateKind.Choice:
+				case PseudoStateKind.Junction:
+					var transitions = this.Transitions.Where (t => t.Predicate (message, instance));
+
+					switch (transitions.Count ()) {
+						case 1:
+							return transitions.Single ();
+
+						case 0:
+							transitions = this.Transitions.Where (t => t.Predicate.Equals( Transition<TInstance>.IsElse));
+
+							if( transitions.Count() == 0 )
+								throw new Exception (String.Format ("No transitions found from {0} for message {1} on instance {2}", this, message, instance));
+
+							return transitions.Single ();
+
+						default:
+							if( this.Kind == PseudoStateKind.Junction )
+								throw new Exception( String.Format( "Multiple transitions possble from {0} for message {1} on instance {2}", this, message, instance));
+
+							return transitions.ElementAt (random.Next (transitions.Count ()));
+					}
+
+				default:
+					return null;
+			}
+		}
+
+		/// <summary>
+		/// Accepts a visitor
+		/// </summary>
+		/// <param name="visitor">The visitor to visit.</param>
+		/// <param name="param">A parameter passed to the visitor when visiting elements.</param>
+		/// <remarks>
+		/// A visitor will walk the state machine model from this element to all child elements including transitions calling the approritate visit method on the visitor.
+		/// </remarks>
+		public override void Accept<TParam> (Visitor<TInstance, TParam> visitor, TParam param) {
+			visitor.VisitPseudoState (this, param);
 		}
 	}
 }

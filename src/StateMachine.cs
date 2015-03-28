@@ -4,16 +4,29 @@
  * Licensed under MIT and GPL v3 licences
  */
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+//using System.Collections.Generic;
 
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
 	/// A StateMachine is the root node of a hierarchical state machine model.
 	/// </summary>
 	/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
-	public class StateMachine<TInstance> : State<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
+	public class StateMachine<TInstance> : State<TInstance> where TInstance : class, IActiveStateConfiguration<TInstance> {
+		#region Static members
+		/// <summary>
+		/// The visitor used to bootstrap the state machine model.
+		/// </summary>
+		private static Bootstrap<TInstance> Bootstrap = new Bootstrap<TInstance> ();
+		#endregion
+		
+		/// <summary>
+		/// Initialises a state machine instance to its initial state.
+		/// </summary>
+		internal Action<Object, TInstance, Boolean> initialise = null;
+
+		/// <summary>
+		/// Flag to denote that a state machine model requires bootstrapping.
+		/// </summary>
 		internal Boolean Clean { get; set; }
 
 		/// <summary>
@@ -41,8 +54,13 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </remarks>
 		public override Element<TInstance> Parent { get { return null; } }
 
-		protected internal override bool IsActive (IActiveStateConfiguration<TInstance> instance) {
-			return true;
+		/// <summary>
+		/// Tests the element to determine if it is part of the current active state confuguration
+		/// </summary>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if the element is active.</returns>
+		public override bool IsActive (TInstance instance) {
+			return Parent == null ? true : base.IsActive (instance);
 		}
 
 		/// <summary>
@@ -54,11 +72,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// If you want to take greater control of when this happens, pass autoInitialise = false to StateMachine.Initialise or StateMachine.Process and call Initialise as required instead.
 		/// </remarks>
 		public void Initialise () {
-			this.Reset ();
 			this.Clean = true;
 
-			this.BootstrapElement (false);
-			this.BootstrapTransitions ();
+			this.Accept (Bootstrap, false);
 		}
 
 		/// <summary>
@@ -70,15 +86,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 			if (!this.Clean && autoInitialise)
 				this.Initialise ();
 
-			this.Enter (null, instance, false);
-		}
-
-		internal override void BootstrapElement (bool deepHistoryAbove) {
-			base.Reset ();
-			this.Clean = true;
-
-			base.BootstrapElement (deepHistoryAbove);
-			base.BootstrapTransitions ();
+			this.initialise (null, instance, false);
 		}
 
 		/// <summary>
@@ -99,6 +107,18 @@ namespace Steelbreeze.Behavior.StateMachines {
 				return false;
 
 			return base.Evaluate (message, instance);
+		}
+
+		/// <summary>
+		/// Accepts a visitor
+		/// </summary>
+		/// <param name="visitor">The visitor to visit.</param>
+		/// <param name="param">A parameter passed to the visitor when visiting elements.</param>
+		/// <remarks>
+		/// A visitor will walk the state machine model from this element to all child elements including transitions calling the approritate visit method on the visitor.
+		/// </remarks>
+		public override void Accept<TParam> (Visitor<TInstance, TParam> visitor, TParam param) {
+			visitor.VisitStateMachine (this, param);
 		}
 	}
 }

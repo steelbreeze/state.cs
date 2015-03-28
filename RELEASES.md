@@ -15,3 +15,7 @@ Removed XContext and XContextBase
 Added Create... extension methods to main classes to faciltate simpler model building.
 
 Changed StateMachine to inherit from State 
+
+Added a visitor pattern implementation
+
+Moved the bootstrapping to use the visitor

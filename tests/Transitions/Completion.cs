@@ -7,7 +7,7 @@ using System;
 using System.Diagnostics;
 
 namespace Steelbreeze.Behavior.StateMachines.Tests.Transitions {
-	public class Activity<TInstance> : State<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
+	public class Activity<TInstance> : State<TInstance> where TInstance : class, IActiveStateConfiguration<TInstance> {
 		public Activity (String name, Region<TInstance> region)
 			: base (name, region) {
 			this.CreatePseudoState ("initial", PseudoStateKind.Initial).To (this.CreateFinalState ("final"));
@@ -15,7 +15,7 @@ namespace Steelbreeze.Behavior.StateMachines.Tests.Transitions {
 	}
 
 	public static class ActivityEx {
-		public static Activity<TInstance> CreateActivity<TInstance> (this StateMachine<TInstance> stateMachine, String name) where TInstance : IActiveStateConfiguration<TInstance> {
+		public static Activity<TInstance> CreateActivity<TInstance> (this StateMachine<TInstance> stateMachine, String name) where TInstance : class, IActiveStateConfiguration<TInstance> {
 			return new Activity<TInstance> (name, stateMachine);
 		}
 	}

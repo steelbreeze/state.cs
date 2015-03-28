@@ -11,7 +11,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// A structural element of a state machine model.
 	/// </summary>
 	/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
-	public abstract class Element<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
+	public abstract class Element<TInstance> where TInstance : class, IActiveStateConfiguration<TInstance> {
+		#region Static members
 		/// <summary>
 		/// The string used to seperate names within a fully qualified namespace.
 		/// </summary>
@@ -23,6 +24,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		static Element () {
 			NamespaceSeperator = ".";
 		}
+		#endregion
 
 		/// <summary>
 		/// The name of the NamedElement
@@ -38,40 +40,40 @@ namespace Steelbreeze.Behavior.StateMachines {
 		public readonly String QualifiedName;
 
 		/// <summary>
-		/// The name of the type without generic considerations
+		/// Creates a new instance of a subtype of the Element class.
 		/// </summary>
-		public abstract String Type { get; }
-
-		/// <summary>
-		/// Returns the elements parent.
-		/// </summary>
-		public abstract Element<TInstance> Parent { get; }
-
-		/// <summary>
-		/// The parent state machine that this element forms a part of.
-		/// </summary>
-		public virtual StateMachine<TInstance> Root { get { return Parent.Root; } }
-
-		/// <summary>
-		/// Returns the elements ancestors.
-		/// </summary>
-		public IEnumerable<Element<TInstance>> Ancestors { get { if (this.Parent != null) foreach (var namedElement in this.Parent.Ancestors) yield return namedElement; yield return this; } } // yield! please...
-
-		internal Action<Object, TInstance, Boolean> Leave;
-		internal Action<Object, TInstance, Boolean> BeginEnter;
-		internal Action<Object, TInstance, Boolean> EndEnter;
-		internal Action<Object, TInstance, Boolean> Enter;
-
-		internal Element (String name, Element<TInstance> parent) {
+		/// <param name="name">The name of the element.</param>
+		/// <param name="parent">The parent of the element.</param>
+		internal protected Element (String name, Element<TInstance> parent = null) {
 			this.Name = name;
 			this.QualifiedName = parent != null ? parent.QualifiedName + NamespaceSeperator + name : name;
 		}
 
-		internal void Reset () {
-			this.Leave = null;
-			this.BeginEnter = null;
-			this.EndEnter = null;
-			this.Enter = null;
+		/// <summary>
+		/// Returns the elements parent element.
+		/// </summary>
+		public abstract Element<TInstance> Parent { get; }
+
+		/// <summary>
+		/// Returns the state machine model root element.
+		/// </summary>
+		public virtual StateMachine<TInstance> Root {
+			get {
+				return this.Parent.Root;
+			}
+		}
+
+		/// <summary>
+		/// Returns the elements ancestors back from the state machines root element.
+		/// </summary>
+		public IEnumerable<Element<TInstance>> Ancestors {
+			get {
+				if (this.Parent != null)
+					foreach (var namedElement in this.Parent.Ancestors) // yield! would be great...
+						yield return namedElement;
+
+				yield return this;
+			}
 		}
 
 		/// <summary>
@@ -79,21 +81,25 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		/// <param name="instance">The state machine instance.</param>
 		/// <returns>True if the element is active.</returns>
-		internal protected abstract Boolean IsActive (IActiveStateConfiguration<TInstance> instance);
+		/// <remarks>An element is part of the active state configuration if it has been entered but not yet exited.</remarks>
+		public abstract Boolean IsActive (TInstance instance);
 
-		internal virtual void BootstrapElement (Boolean deepHistoryAbove) {
-#if DEBUG
-			this.Leave += (message, instance, history) => Console.WriteLine ("{0} leave {1}", instance, this.QualifiedName);
-			this.BeginEnter += (message, instance, history) => Console.WriteLine ("{0} enter {1}", instance, this.QualifiedName);
-#endif
-			this.Enter = this.BeginEnter + this.EndEnter;
-		}
+		/// <summary>
+		/// Tests the element to determine if it is deemed to be complete.
+		/// </summary>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if the element is complete.</returns>
+		public abstract Boolean IsComplete (TInstance instance);
 
-		internal abstract void BootstrapTransitions ();
-
-		internal virtual void BootstrapEnter (ref Action<Object, TInstance, Boolean> traverse, Element<TInstance> next) {
-			traverse += this.BeginEnter;
-		}
+		/// <summary>
+		/// Accepts a visitor
+		/// </summary>
+		/// <param name="visitor">The visitor to visit.</param>
+		/// <param name="param">A parameter passed to the visitor when visiting elements.</param>
+		/// <remarks>
+		/// A visitor will walk the state machine model from this element to all child elements including transitions calling the approritate visit method on the visitor.
+		/// </remarks>
+		public abstract void Accept<TParam> (Visitor<TInstance, TParam> visitor, TParam param);
 
 		/// <summary>
 		/// Returns a string representation of the element.

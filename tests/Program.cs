@@ -9,8 +9,6 @@ using System.Diagnostics;
 namespace Steelbreeze.Behavior.StateMachines.Tests {
 	public class Program {
 		public static void Main (String[] args) {
-			Trace.WriteLine ("Running unit tests for Steelbreeze.Alamo.StateMachines");
-
 			// TODO: add more transition tests (incl. else)
 			Transitions.Completions.Test ();
 			History.Shallow.Test ();

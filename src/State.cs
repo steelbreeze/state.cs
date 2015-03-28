@@ -16,45 +16,21 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// <remarks>
 	/// The invariant may represent a static situation such as an object waiting for some external event to occur.
 	/// </remarks>
-	public class State<TInstance> : Vertex<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
-		/// <summary>
-		/// The name of the type without generic considerations
-		/// </summary>
-		public override string Type { get { return "state"; } }
-
-		/// <summary>
-		/// True if the State is a simple State.
-		/// </summary>
-		/// <remarks>
-		/// A simple State is one that has no child Regions.
-		/// </remarks>
-		public Boolean IsSimple { get { return this.regions == null || this.regions.Length == 0; } }
-
-		/// <summary>
-		/// True if the State is a composite State.
-		/// </summary>
-		/// <remarks>
-		/// A composite State is one that has one or more child Regions.
-		/// </remarks>
-		public Boolean IsComposite { get { return this.regions != null && this.regions.Length > 0; } }
-
-		/// <summary>
-		/// True if the State is an orthogonal State.
-		/// </summary>
-		/// <remarks>
-		/// A composite State is one that has more than one child Regions.
-		/// </remarks>
-		public Boolean IsOrthogonal { get { return this.regions != null && this.regions.Length > 1; } }
-
+	public class State<TInstance> : Vertex<TInstance> where TInstance : class, IActiveStateConfiguration<TInstance> {
 		/// <summary>
 		/// The child Regions where the State is composite.
 		/// </summary>
-		public IEnumerable<Region<TInstance>> Regions { get { return this.regions; } }
+		private readonly HashSet<Region<TInstance>> regions = new HashSet<Region<TInstance>>();
 
-		internal Region<TInstance>[] regions;
+		/// <summary>
+		/// The behaviour to execute when exiting the state.
+		/// </summary>
+		internal Action<Object, TInstance> exit;
 
-		private event Action<Object, TInstance> exit;
-		private event Action<Object, TInstance> entry;
+		/// <summary>
+		/// The behaviour to execute when entering the state.
+		/// </summary>
+		internal Action<Object, TInstance> entry;
 
 		/// <summary>
 		/// Creates a new instance of the State class.
@@ -62,17 +38,73 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="name">The name of the state.</param>
 		/// <param name="parent">The parent Region.</param>
 		public State (String name, Region<TInstance> parent)
-			: base (name, parent, Transition<TInstance>.State) {
+			: base (name, parent) {
 			Trace.Assert (name != null, "States must have a name");
 		}
+
+		/// <summary>
+		/// The child Regions where the State is composite.
+		/// </summary>
+		public IEnumerable<Region<TInstance>> Regions {
+			get {
+				return this.regions;
+			}
+		}
+
+		/// <summary>
+		/// True if the State is a simple State.
+		/// </summary>
+		/// <remarks>
+		/// A simple State is one that has no child Regions.
+		/// </remarks>
+		public Boolean IsSimple {
+			get {
+				return this.regions == null || this.regions.Count == 0;
+			}
+		}
+
+		/// <summary>
+		/// True if the State is a composite State.
+		/// </summary>
+		/// <remarks>
+		/// A composite State is one that has one or more child Regions.
+		/// </remarks>
+		public Boolean IsComposite {
+			get {
+				return this.regions != null && this.regions.Count > 0;
+			}
+		}
+
+		/// <summary>
+		/// True if the State is an orthogonal State.
+		/// </summary>
+		/// <remarks>
+		/// A composite State is one that has more than one child Regions.
+		/// </remarks>
+		public Boolean IsOrthogonal {
+			get {
+				return this.regions != null && this.regions.Count > 1;
+			}
+		}
+
+		/// <summary>
+		/// Test the state to see if it is a final state
+		/// </summary>
+		/// <remarks>Final states are oned that have no outbound transitions.</remarks>
+		public Boolean IsFinal {
+			get {
+				return this.Transitions.Count () == 0;
+			}
+		}
+
 
 		/// <summary>
 		/// Tests the state to determine if it is part of the current active state confuguration
 		/// </summary>
 		/// <param name="instance">The state machine instance.</param>
 		/// <returns>True if the element is active.</returns>
-		internal protected override Boolean IsActive (IActiveStateConfiguration<TInstance> instance) {
-			return base.IsActive (instance) && instance[ this.Region ] == this;
+		public override Boolean IsActive (TInstance instance) {
+			return this.Parent.IsActive (instance) && instance[ this.Region ] == this;
 		}
 
 		/// <summary>
@@ -224,7 +256,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="instance">The state machine instance.</param>
 		/// <param name="message">The message that triggered the state transition.</param>
 		/// <param name="history">A flag denoting if history semantics were in play during the transition.</param>
-		protected virtual void OnExit (Object message, TInstance instance, Boolean history) {
+		public virtual void OnExit (Object message, TInstance instance, Boolean history) {
 			this.exit (message, instance);
 		}
 
@@ -234,89 +266,75 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="instance">The state machine instance.</param>
 		/// <param name="message">The message that triggered the state transition.</param>
 		/// <param name="history">A flag denoting if history semantics were in play during the transition.</param>
-		protected virtual void OnEntry (Object message, TInstance instance, Boolean history) {
+		public virtual void OnEntry (Object message, TInstance instance, Boolean history) {
 			this.entry (message, instance);
 		}
 
+		/// <summary>
+		/// Tests the element to determine if it is deemed to be complete.
+		/// </summary>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if the state is complete</returns>
+		/// <remarks>Simple states are always deemed to be complete; composite states are complete if all child regions are complete.</remarks>
 		public override Boolean IsComplete (TInstance instance) {
 			return this.IsSimple || this.regions.All (region => region.IsComplete (instance));
 		}
 
+		/// <summary>
+		/// Adds a new child region to the state.
+		/// </summary>
+		/// <param name="region">The child region to add to the state.</param>
+		/// <remarks>Adding regions to a state turns the state in to a composite state.</remarks>
 		internal virtual void Add (Region<TInstance> region) {
-			if (this.regions == null)
-				this.regions = new Region<TInstance>[ 1 ] { region };
-			else {
-				Trace.Assert (this.regions.Where (r => r.Name == region.Name).Count () == 0, "Regions must have a unique name within the scope of their parent State");
-
-				var regions = new Region<TInstance>[ this.regions.Length + 1 ];
-
-				this.regions.CopyTo (regions, 0);
-
-				regions[ this.regions.Length ] = region;
-
-				this.regions = regions;
-			}
+			this.regions.Add (region);
 
 			region.Root.Clean = false;
 		}
 
-		internal override void BootstrapElement (Boolean deepHistoryAbove) {
-			if (this.IsComposite) {
-				foreach (var region in this.regions) {
-					region.Reset ();
-					region.BootstrapElement (deepHistoryAbove);
-
-					this.Leave += (message, instance, history) => region.Leave (message, instance, history);
-					this.EndEnter += region.Enter;
-				}
-			}
-
-			base.BootstrapElement (deepHistoryAbove);
-
-			if (this.exit != null)
-				this.Leave += this.OnExit;
-
-			if (this.entry != null)
-				this.BeginEnter += this.OnEntry;
-
-			this.BeginEnter += (message, instance, history) => { if (this.Region != null) instance[ this.Region ] = this; };
-
-			this.Enter = this.BeginEnter + this.EndEnter;
+		/// <summary>
+		/// Algorithm for selecting the transitions
+		/// </summary>
+		/// <param name="message">The message that may trigger a transition.</param>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>Returns a single transition whose predicate evaluates true for the message and state machine instance, or null.</returns>
+		/// <exception cref="System.ArgumentNullException">If more than one transitions predicate evaluates true the model is deemed to be malformed.</exception>
+		protected internal override Transition<TInstance> Select (object message, TInstance instance) {
+			return this.Transitions.SingleOrDefault( t => t.Predicate( message, instance ) );
 		}
 
-		internal override void BootstrapTransitions () {
-			if (this.IsComposite)
-				foreach (var region in this.regions)
-					region.BootstrapTransitions ();
-
-			base.BootstrapTransitions ();
-		}
-
-		internal override void BootstrapEnter (ref Action<Object, TInstance, Boolean> traverse, Element<TInstance> next) {
-			base.BootstrapEnter (ref traverse, next);
-
-			if (this.IsOrthogonal)
-				foreach (var region in this.regions)
-					if (region != next)
-						traverse += region.Enter;
-		}
-
+		/// <summary>
+		/// Evaluates a state to determine if a transition should be traversed.
+		/// </summary>
+		/// <param name="message">The message that may cause a state transition.</param>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if a state transition occured.</returns>
 		internal override Boolean Evaluate (Object message, TInstance instance) {
 			var processed = false;
 
-			if (this.IsComposite)
-				for (int i = 0, l = this.regions.Length; i < l; ++i)
-					if (this.IsActive (instance) == true)
-						if (this.regions[ i ].Evaluate (message, instance))
-							processed = true;
+			foreach (var region in this.regions)
+				if (this.IsActive (instance) == true)
+					if (region.Evaluate (message, instance))
+						processed = true;
 
 			if (!processed)
 				processed = base.Evaluate (message, instance);
 
 			if (processed == true && message != this)
-				this.EvaluateCompletions (this, instance, false);
+				this.Completion (this, instance, false);
 
 			return processed;
+		}
+
+		/// <summary>
+		/// Accepts a visitor
+		/// </summary>
+		/// <param name="visitor">The visitor to visit.</param>
+		/// <param name="param">A parameter passed to the visitor when visiting elements.</param>
+		/// <remarks>
+		/// A visitor will walk the state machine model from this element to all child elements including transitions calling the approritate visit method on the visitor.
+		/// </remarks>
+		public override void Accept<TParam> (Visitor<TInstance, TParam> visitor, TParam param) {
+			visitor.VisitState (this, param);
 		}
 	}
 }

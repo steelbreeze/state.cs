@@ -4,9 +4,7 @@
  * Licensed under MIT and GPL v3 licences
  */
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
@@ -18,87 +16,42 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// Completion transitions are evaluated when a vertex has been entered and is deemed to be complete; this is the default for newly created transitions.
 	/// Message based transitions have an additional guard condition that a message (event) and the current state machine instance will be evaluated against; this is defined by the Transition.When method thereby turning a completion transition into a message based transition.
 	/// </remarks>
-	public class Transition<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
+	public class Transition<TInstance> where TInstance : class, IActiveStateConfiguration<TInstance> {
 		#region Static members
-		private static Func<Object, TInstance, Boolean> IsElse = (message, instance) => false;
-
-		internal static Func<Transition<TInstance>[], Object, TInstance, Transition<TInstance>> PseudoState (PseudoStateKind kind) {
-			switch (kind) {
-				case PseudoStateKind.Initial:
-				case PseudoStateKind.DeepHistory:
-				case PseudoStateKind.ShallowHistory:
-					return Transition<TInstance>.Initial;
-
-				case PseudoStateKind.Junction:
-					return Transition<TInstance>.Junction;
-
-				case PseudoStateKind.Choice:
-					return Transition<TInstance>.Choice;
-
-				case PseudoStateKind.Terminate:
-					return Transition<TInstance>.Terminate;
-
-				default: // NOTE: all PseudoStateKinds dealt with above so should not be an issue
-					return null;
-			}
-		}
-
-		internal static Transition<TInstance> State (Transition<TInstance>[] transitions, Object message, TInstance instance) {
-			Transition<TInstance> result = null;
-
-			if (transitions != null) {
-				for (int i = 0, l = transitions.Length; i < l; ++i) {
-					if (transitions[ i ].Predicate (message, instance)) {
-						if (result != null)
-							throw new InvalidOperationException ("Multiple outbound transitions evaluated true");
-
-						result = transitions[ i ];
-					}
-				}
-			}
-
-			return result;
-		}
-
-		private static Transition<TInstance> Initial (Transition<TInstance>[] transitions, Object message, TInstance instance) {
-			if (transitions.Length == 1)
-				return transitions[ 0 ];
-			else
-				throw new InvalidOperationException ("Initial transition must have a single outbound transition");
-		}
-
-		private static Transition<TInstance> Junction (Transition<TInstance>[] transitions, Object message, TInstance instance) {
-			return transitions.SingleOrDefault (t => t.Predicate (message, instance)) ?? transitions.Single (transition => transition.Predicate.Equals (Transition<TInstance>.IsElse));
-		}
-
-		private static readonly Random random = new Random ();
-
-		private static Transition<TInstance> Choice (Transition<TInstance>[] transitions, Object message, TInstance instance) {
-			var transition = default (Transition<TInstance>);
-			var items = transitions.Where (t => t.Predicate (message, instance));
-			var count = items.Count ();
-
-			if (count == 1)
-				transition = items.First ();
-
-			else if (count > 1)
-				transition = items.ElementAt (random.Next (count));
-
-			return transition ?? transitions.Single (t => t.Predicate.Equals (Transition<TInstance>.IsElse));
-		}
-
-		internal static Transition<TInstance> Terminate (Transition<TInstance>[] transitions, Object message, TInstance instance) {
-			return null;
-		}
+		internal static Func<Object, TInstance, Boolean> IsElse = (message, instance) => false;
 		#endregion
-		internal readonly Vertex<TInstance> Source;
-		internal readonly Vertex<TInstance> Target;
-		internal Func<Object, TInstance, Boolean> Predicate;
+		/// <summary>
+		/// The source vertex of the transition.
+		/// </summary>
+		public readonly Vertex<TInstance> Source;
+
+		/// <summary>
+		/// The target vertex of the transition. 
+		/// </summary>
+		/// <remarks>The target may be null for internal transitions.</remarks>
+		public readonly Vertex<TInstance> Target;
+
+		/// <summary>
+		/// The predicate that must evaluate true before a transition may be traversed.
+		/// </summary>
+		public Func<Object, TInstance, Boolean> Predicate;
+
+		/// <summary>
+		/// The complete bootstrapped behaviour performed when traversing a transition.
+		/// </summary>
 		internal Action<Object, TInstance, Boolean> Traverse;
 
-		private event Action<Object, TInstance> effect;
+		/// <summary>
+		/// The user defined behaviour for transition traversal.
+		/// </summary>
+		internal Action<Object, TInstance> effect;
 
-		internal Transition (Vertex<TInstance> source, Vertex<TInstance> target) {
+		/// <summary>
+		/// Creates a new instance of the Transition class
+		/// </summary>
+		/// <param name="source">The source vertex</param>
+		/// <param name="target">The target vertex</param>
+		public Transition (Vertex<TInstance> source, Vertex<TInstance> target = null) {
 			Trace.Assert (source != null, "Transitions must have a source Vertex");
 
 			this.Source = source;
@@ -240,64 +193,8 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>
 		/// For completion transitions, the message is the source vertex that was completed.
 		/// </remarks>
-		protected void OnEffect (Object message, TInstance instance, Boolean history) {
+		public void OnEffect (Object message, TInstance instance, Boolean history) { // TODO: sort out protection models 
 			this.effect (message, instance);
-		}
-
-		internal void BootstrapTransitions () {
-			// reset the traverse operation to cater for re-initialisation
-			this.Traverse = null;
-
-			// internal transitions
-			if (this.Target == null) {
-				// just perform the transition effect; no actual transition
-				if (this.effect != null)
-					this.Traverse += this.OnEffect;
-
-				// local transitions
-			} else if (this.Target.Region == this.Source.Region) {
-				// leave the source
-				this.Traverse += this.Source.Leave;
-
-				// perform the transition effect
-				if (this.effect != null)
-					this.Traverse += this.OnEffect;
-
-				// enter the target
-				this.Traverse += this.Target.Enter;
-
-				// complex (external) transitions
-			} else {
-				var sourceAncestors = this.Source.Ancestors;
-				var targetAncestors = this.Target.Ancestors;
-				var sourceAncestorsCount = sourceAncestors.Count ();
-				var targetAncestorsCount = targetAncestors.Count ();
-				int i = 0, l = Math.Min (sourceAncestorsCount, sourceAncestorsCount);
-
-				// find the index of the first uncommon ancestor
-				while ((i < l) && sourceAncestors.ElementAt (i) == targetAncestors.ElementAt (i)) ++i;
-
-				// validation rule (not in the UML spec currently)
-				Trace.Assert (sourceAncestors.ElementAt (i) is Region<TInstance> == false, "Transitions may not cross sibling orthogonal regions");
-
-				// leave the first uncommon ancestor
-				this.Traverse = (i < sourceAncestorsCount ? sourceAncestors.ElementAt (i) : this.Source).Leave;
-
-				// perform the transition effect
-				if (this.effect != null)
-					this.Traverse += this.OnEffect;
-
-				// edge case when transitioning to a state in the vertex ancestry
-				if (i >= targetAncestorsCount)
-					this.Traverse += this.Target.BeginEnter;
-
-				// enter the target ancestry
-				while (i < targetAncestorsCount)
-					targetAncestors.ElementAt (i++).BootstrapEnter (ref this.Traverse, i < targetAncestorsCount ? targetAncestors.ElementAt (i) : null);
-
-				// trigger cascade
-				this.Traverse += this.Target.EndEnter;
-			}
 		}
 	}
 }

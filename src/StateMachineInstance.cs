@@ -4,7 +4,6 @@
  * Licensed under MIT and GPL v3 licences
  */
 using System;
-using System.Collections.Generic;
 
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>

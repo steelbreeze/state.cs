@@ -24,10 +24,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		DeepHistory,
 
-		// TODO: EntryPoint
-
-		// TODO: ExitPoint
-
 		/// <summary>
 		/// ShallowHistory represents the most recent active substate of its containing state (but not the substates of that substate).
 		/// A Region can have at most one shallow history vertex.

@@ -16,7 +16,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// <remarks>
 	/// All state machines and composite states will contain at least one Region; orthogonal composite states will contain more than one.
 	/// </remarks>
-	public sealed class Region<TInstance> : Element<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
+	public sealed class Region<TInstance> : Element<TInstance> where TInstance : class, IActiveStateConfiguration<TInstance> {
 		#region Static members
 		/// <summary>
 		/// The name used for default regions.
@@ -40,34 +40,23 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// The default Region of a composite State is one that has the same name as defined by Region.DefaultName.
 		/// </remarks>
 		public static implicit operator Region<TInstance> (State<TInstance> state) {
-			if (state.regions != null) {
-				var region = state.regions.SingleOrDefault (r => r.Name == Region<TInstance>.DefaultName);
-
-				if (region != null)
-					return region;
-			}
-
-			return new Region<TInstance> (Region<TInstance>.DefaultName, state);
+			return state.Regions.SingleOrDefault (r => r.Name == Region<TInstance>.DefaultName) ?? new Region<TInstance> (Region<TInstance>.DefaultName, state);
 		}
 		#endregion
 		/// <summary>
-		/// The name of the type without generic considerations
+		/// The initial stating state for the region.
 		/// </summary>
-		public override string Type { get { return "region"; } }
-
-		/// <summary>
-		/// Returns the Region's parent element.
-		/// </summary>
-		public override Element<TInstance> Parent { get { return this.parent; } }
-
-		/// <summary>
-		/// The child Vertices
-		/// </summary>
-		public IEnumerable<Vertex<TInstance>> Vertices { get { return this.vertices; } }
-
+		/// <remarks>Note that all regions do not have to have an initial state if all entry is via external transitions.</remarks>
 		internal PseudoState<TInstance> Initial = null;
 
+		/// <summary>
+		/// The vertices owned by this region.
+		/// </summary>
 		private readonly HashSet<Vertex<TInstance>> vertices = new HashSet<Vertex<TInstance>> ();
+
+		/// <summary>
+		/// The regions parement state.
+		/// </summary>
 		private readonly State<TInstance> parent;
 
 		/// <summary>
@@ -88,50 +77,80 @@ namespace Steelbreeze.Behavior.StateMachines {
 			parent.Add (this);
 		}
 
+
+		/// <summary>
+		/// Returns the Region's parent element.
+		/// </summary>
+		public override Element<TInstance> Parent {
+			get {
+				return this.parent;
+			}
+		}
+
+		/// <summary>
+		/// The child Vertices
+		/// </summary>
+		public IEnumerable<Vertex<TInstance>> Vertices {
+			get {
+				return this.vertices;
+			}
+		}
+
 		/// <summary>
 		/// Tests the Region to determine if it is part of the current active state confuguration
 		/// </summary>
 		/// <param name="instance">The state machine instance.</param>
 		/// <returns>True if the element is active.</returns>
-		internal protected override Boolean IsActive (IActiveStateConfiguration<TInstance> instance) {
+		public override Boolean IsActive (TInstance instance) {
 			return this.Parent.IsActive (instance);
 		}
 
+		/// <summary>
+		/// Adds a child vertex to the region
+		/// </summary>
+		/// <param name="vertex"></param>
 		internal void Add (Vertex<TInstance> vertex) {
+			// some validation
 			Trace.Assert (vertex != null, "Cannot add a null vertex");
 			Trace.Assert (this.vertices.Where (v => v.Name == vertex.Name).Count () == 0, "Vertices must have a unique name within the scope of their parent Region");
 
+			// add the vertex
 			this.vertices.Add (vertex);
 
+			// invalidate the model
 			vertex.Root.Clean = false;
 		}
 
-		internal Boolean IsComplete (TInstance instance) {
+		/// <summary>
+		/// Tests the region to determine if it is deemed to be complete.
+		/// </summary>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if the region is complete.</returns>
+		/// <remarks>A region is deemed to be complete if it current active state is complete.</remarks>
+		public override Boolean IsComplete (TInstance instance) {
 			return instance[ this ].IsFinal;
 		}
 
-		internal override void BootstrapElement (Boolean deepHistoryAbove) {
-			foreach (var vertex in this.vertices) {
-				vertex.Reset ();
-				vertex.BootstrapElement (deepHistoryAbove || (this.Initial != null && this.Initial.Kind == PseudoStateKind.DeepHistory));
-			}
-
-			this.Leave += (message, instance, history) => { var current = instance[ this ]; if (current.Leave != null) current.Leave (message, instance, history); };
-
-			if (deepHistoryAbove || this.Initial == null || this.Initial.IsHistory)
-				this.EndEnter += (message, instance, history) => (history || this.Initial.IsHistory ? instance[ this ] ?? this.Initial : this.Initial).Enter (message, instance, history || this.Initial.Kind == PseudoStateKind.DeepHistory);
-			else this.EndEnter += this.Initial.Enter;
-
-			base.BootstrapElement (deepHistoryAbove);
-		}
-
-		internal override void BootstrapTransitions () {
-			foreach (var vertex in this.vertices)
-				vertex.BootstrapTransitions ();
-		}
-
+		/// <summary>
+		/// Evaluate a message to trigger a state transition.
+		/// </summary>
+		/// <param name="message">The messaege that may trigger a state transition.</param>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if a transition was triggered.</returns>
 		internal Boolean Evaluate (Object message, TInstance instance) {
 			return instance[ this ].Evaluate (message, instance);
+		}
+
+		/// <summary>
+		/// Accepts a visitor
+		/// </summary>
+		/// <param name="visitor">The visitor to visit.</param>
+		/// <param name="param">A parameter passed to the visitor when visiting elements.</param>
+		/// <remarks>
+		/// A visitor will walk the state machine model from this element to all child elements including transitions calling the approritate visit method on the visitor.
+		/// </remarks>
+		public override void Accept<TParam> (Visitor<TInstance, TParam> visitor, TParam param) {
+			visitor.VisitRegion (this, param);
 		}
 	}
 }

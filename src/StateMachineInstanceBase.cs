@@ -16,9 +16,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// Note that properties and methods have been explicitly implemented to hide the members from use other than via the IContext interface.
 	/// Should you need persistence, or other such behaviour relating to the instance class, create a custom class implementing IActiveStateConfiguration.
 	/// </remarks>
-	public abstract class StateMachineInstanceBase<TInstance> : IActiveStateConfiguration<TInstance> where TInstance : IActiveStateConfiguration<TInstance> {
+	public abstract class StateMachineInstanceBase<TInstance> : IActiveStateConfiguration<TInstance> where TInstance : class, IActiveStateConfiguration<TInstance> {
 		// use a dictionary to store the last known state of a Region
-		private readonly Dictionary<Region<TInstance>, Vertex<TInstance>> active = new Dictionary<Region<TInstance>, Vertex<TInstance>> ();
+		private readonly Dictionary<Region<TInstance>, State<TInstance>> active = new Dictionary<Region<TInstance>, State<TInstance>> ();
 
 		/// <summary>
 		/// Indicates that the state machine instance has been terminated.
@@ -27,13 +27,13 @@ namespace Steelbreeze.Behavior.StateMachines {
 		public Boolean IsTerminated { get; set; }
 
 		// sets and gets the current state of a specified Region
-		Vertex<TInstance> IActiveStateConfiguration<TInstance>.this[ Region<TInstance> region ] {
+		State<TInstance> IActiveStateConfiguration<TInstance>.this[ Region<TInstance> region ] {
 			set {
 				this.active[ region ] = value;
 			}
 
 			get {
-				var value = default (Vertex<TInstance>);
+				var value = default (State<TInstance>);
 
 				this.active.TryGetValue (region, out value);
 
