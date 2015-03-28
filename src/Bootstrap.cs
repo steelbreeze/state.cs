@@ -10,41 +10,47 @@ using System.Linq;
 
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
+	/// Holds the behaviour for a given element used within the bootstrapping process
+	/// </summary>
+	/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
+	internal class ElementBehaviour<TInstance> where TInstance : class, IActiveStateConfiguration<TInstance> {
+		internal Action<Object, TInstance, Boolean> Leave;
+		internal Action<Object, TInstance, Boolean> BeginEnter;
+		internal Action<Object, TInstance, Boolean> EndEnter;
+		internal Action<Object, TInstance, Boolean> Enter;
+	}
+
+	/// <summary>
 	/// Bootstraps a state machine model.
 	/// </summary>
 	/// <typeparam name="TInstance">The type of the state machine instnce.</typeparam>
 	/// <remarks>Bootstrapping a state machine model pre-determines all operations and evaluations required when traversing a transition; the results are then cached within the transition.</remarks>
 	internal class Bootstrap<TInstance> : Visitor<TInstance, Boolean> where TInstance : class, IActiveStateConfiguration<TInstance> {
-		private class Actions {
-			internal Action<Object, TInstance, Boolean> Leave;
-			internal Action<Object, TInstance, Boolean> BeginEnter;
-			internal Action<Object, TInstance, Boolean> EndEnter;
-			internal Action<Object, TInstance, Boolean> Enter;
-		}
+		private static BootstrapTransitions<TInstance> bootstrapTransitions = new BootstrapTransitions<TInstance> ();
 
 		/// <summary>
 		/// Cache of the behaviour required within the state machine model.
 		/// </summary>
-		private Dictionary<Element<TInstance>, Actions> behaviour;
+		private Dictionary<Element<TInstance>, ElementBehaviour<TInstance>> behaviour;
 
 		/// <summary>
 		/// Returns the behaviour for a given element within the state machine model.
 		/// </summary>
 		/// <param name="element">The element to return the behaviour for.</param>
 		/// <returns>The state machine behaviour for a given model element.</returns>
-		private Actions Behaviour (Element<TInstance> element) {
-			Actions result = null;
+		private ElementBehaviour<TInstance> ElementBehaviour (Element<TInstance> element) {
+			ElementBehaviour<TInstance> result = null;
 
 			if (!behaviour.TryGetValue (element, out result))
-				behaviour.Add (element, result = new Actions ());
+				behaviour.Add (element, result = new ElementBehaviour<TInstance> ());
 
 			return result;
 		}
 
 		public override void VisitElement (Element<TInstance> element, Boolean deepHistoryAbove) {
 #if DEBUG
-			Behaviour (element).Leave += (message, instance, history) => Console.WriteLine ("{0} leave {1}", instance, element);
-			Behaviour (element).BeginEnter += (message, instance, history) => Console.WriteLine ("{0} enter {1}", instance, element);
+			ElementBehaviour (element).Leave += (message, instance, history) => Console.WriteLine ("{0} leave {1}", instance, element);
+			ElementBehaviour (element).BeginEnter += (message, instance, history) => Console.WriteLine ("{0} enter {1}", instance, element);
 #endif
 		}
 
@@ -52,16 +58,16 @@ namespace Steelbreeze.Behavior.StateMachines {
 			foreach (var vertex in region.Vertices)
 				vertex.Accept (this, deepHistoryAbove || (region.Initial != null && region.Initial.Kind == PseudoStateKind.DeepHistory));
 
-			Behaviour (region).Leave += (message, instance, history) => {
+			ElementBehaviour (region).Leave += (message, instance, history) => {
 				State<TInstance> current = instance[ region ];
 
-				if (Behaviour (current).Leave != null) {
-					Behaviour (current).Leave (message, instance, history);
+				if (ElementBehaviour (current).Leave != null) {
+					ElementBehaviour (current).Leave (message, instance, history);
 				}
 			};
 
 			if (deepHistoryAbove || region.Initial == null || region.Initial.IsHistory) {
-				Behaviour (region).EndEnter += (message, instance, history) => {
+				ElementBehaviour (region).EndEnter += (message, instance, history) => {
 					Vertex<TInstance> initial = region.Initial;
 
 					if (history || region.Initial.IsHistory) {
@@ -71,63 +77,71 @@ namespace Steelbreeze.Behavior.StateMachines {
 							initial = region.Initial;
 					}
 
-					Behaviour (initial).Enter (message, instance, history || region.Initial.Kind == PseudoStateKind.DeepHistory);
+					ElementBehaviour (initial).Enter (message, instance, history || region.Initial.Kind == PseudoStateKind.DeepHistory);
 				};
 			} else
-				Behaviour (region).EndEnter += Behaviour (region.Initial).Enter;
+				ElementBehaviour (region).EndEnter += ElementBehaviour (region.Initial).Enter;
 
 			this.VisitElement (region, deepHistoryAbove);
 
-			Behaviour (region).Enter = Behaviour (region).BeginEnter + Behaviour (region).EndEnter;
+			ElementBehaviour (region).Enter = ElementBehaviour (region).BeginEnter + ElementBehaviour (region).EndEnter;
 		}
 
 		public override void VisitVertex (Vertex<TInstance> vertex, Boolean deepHistoryAbove) {
 			this.VisitElement (vertex, deepHistoryAbove);
 	
-			Behaviour (vertex).EndEnter += vertex.Completion;
-			Behaviour (vertex).Enter = Behaviour (vertex).BeginEnter + Behaviour (vertex).EndEnter;
+			ElementBehaviour (vertex).EndEnter += vertex.Completion;
+			ElementBehaviour (vertex).Enter = ElementBehaviour (vertex).BeginEnter + ElementBehaviour (vertex).EndEnter;
 		}
 
 		public override void VisitPseudoState (PseudoState<TInstance> pseudoState, Boolean deepHistoryAbove) {
 			this.VisitVertex (pseudoState, deepHistoryAbove);
 
 			if (pseudoState.Kind == PseudoStateKind.Terminate)
-				Behaviour (pseudoState).Enter += (message, instance, history) => instance.IsTerminated = true;
+				ElementBehaviour (pseudoState).Enter += (message, instance, history) => instance.IsTerminated = true;
 		}
 
 		public override void VisitState (State<TInstance> state, Boolean deepHistoryAbove) {
 			foreach (var region in state.Regions) {
 				region.Accept (this, deepHistoryAbove);
 
-				Behaviour (state).Leave += Behaviour (region).Leave;
-				Behaviour (state).EndEnter += Behaviour (region).Enter;
+				ElementBehaviour (state).Leave += ElementBehaviour (region).Leave;
+				ElementBehaviour (state).EndEnter += ElementBehaviour (region).Enter;
 			}
 
 			this.VisitVertex (state, deepHistoryAbove);
 
 			if (state.exit != null)
-				Behaviour (state).Leave += state.OnExit;
+				ElementBehaviour (state).Leave += state.OnExit;
 
 			if (state.entry != null)
-				Behaviour (state).BeginEnter += state.OnEntry;
+				ElementBehaviour (state).BeginEnter += state.OnEntry;
 
-			Behaviour (state).BeginEnter += (message, instance, history) => {
+			ElementBehaviour (state).BeginEnter += (message, instance, history) => {
 				if (state.Region != null)
 					instance[ state.Region ] = state;
 			};
 
-			Behaviour (state).Enter = Behaviour (state).BeginEnter + Behaviour (state).EndEnter;
+			ElementBehaviour (state).Enter = ElementBehaviour (state).BeginEnter + ElementBehaviour (state).EndEnter;
 		}
 
-		public override void VisitStateMachine (StateMachine<TInstance> stateMachine, bool param) {
-			behaviour = new Dictionary<Element<TInstance>, Actions> ();
+		public override void VisitStateMachine (StateMachine<TInstance> stateMachine, Boolean param) {
+			behaviour = new Dictionary<Element<TInstance>, ElementBehaviour<TInstance>> ();
 
 			base.VisitStateMachine (stateMachine, param);
 
-			stateMachine.initialise = Behaviour (stateMachine).Enter;
-		}
+			stateMachine.initialise = ElementBehaviour (stateMachine).Enter;
 
-		public override void VisitTransition (Transition<TInstance> transition, Boolean deepHistoryAbove) {
+			stateMachine.Accept (bootstrapTransitions, ElementBehaviour); ;
+		}
+	}
+
+	/// <summary>
+	/// Bootstraps the transitions after all elements have been bootstrapped
+	/// </summary>
+	/// <typeparam name="TInstance">The type of the state machine instance</typeparam>
+	internal class BootstrapTransitions<TInstance> : Visitor<TInstance, Func<Element<TInstance>, ElementBehaviour<TInstance>>> where TInstance : class, IActiveStateConfiguration<TInstance> {
+		public override void VisitTransition (Transition<TInstance> transition, Func<Element<TInstance>, ElementBehaviour<TInstance>> Behaviour) {
 			// reset the traverse operation to cater for re-initialisation
 			transition.Traverse = null;
 
@@ -181,7 +195,7 @@ namespace Steelbreeze.Behavior.StateMachines {
 
 					transition.Traverse += Behaviour (element).BeginEnter;
 
-					if (element is State<TInstance>) {
+					if (element is State<TInstance>) { // TODO: find a way to remove the is/as code
 						var state = element as State<TInstance>;
 
 						if (state.IsOrthogonal) {

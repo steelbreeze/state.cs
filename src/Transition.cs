@@ -196,5 +196,17 @@ namespace Steelbreeze.Behavior.StateMachines {
 		public void OnEffect (Object message, TInstance instance, Boolean history) { // TODO: sort out protection models 
 			this.effect (message, instance);
 		}
+
+		/// <summary>
+		/// Accepts a visitor
+		/// </summary>
+		/// <param name="visitor">The visitor to visit.</param>
+		/// <param name="param">A parameter passed to the visitor when visiting the transition.</param>
+		/// <remarks>
+		/// A visitor will walk the state machine model from this element to all child elements including transitions calling the approritate visit method on the visitor.
+		/// </remarks>
+		public void Accept<TParam> (Visitor<TInstance, TParam> visitor, TParam param) {
+			visitor.VisitTransition (this, param);
+		}
 	}
 }

@@ -39,6 +39,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="param">The parameter passed to the visitor.</param>
 		public virtual void VisitVertex (Vertex<TInstance> vertex, TParam param) {
 			this.VisitElement (vertex, param);
+
+			foreach (var transition in vertex.Transitions)
+				transition.Accept (this, param);
 		}
 
 		/// <summary>
@@ -78,26 +81,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <param name="param">The parameter passed to the visitor.</param>
 		public virtual void VisitStateMachine (StateMachine<TInstance> stateMachine, TParam param) {
 			this.VisitState (stateMachine, param);
-
-			this.VisitTransition (stateMachine as Vertex<TInstance>, param);
-		}
-
-		private void VisitTransition (Region<TInstance> region, TParam param) {
-			foreach (var vertex in region.Vertices)
-				this.VisitTransition (vertex, param);
-		}
-
-		private void VisitTransition (Vertex<TInstance> vertex, TParam param) {
-			foreach (var transition in vertex.Transitions)
-				this.VisitTransition (transition, param);
-
-			if (vertex is State<TInstance>) {
-				var state = vertex as State<TInstance>;
-
-				if (state.IsComposite)
-					foreach (var region in state.Regions)
-						this.VisitTransition (region, param);
-			}
 		}
 
 		/// <summary>
