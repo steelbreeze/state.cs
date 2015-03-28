@@ -10,8 +10,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
 	/// A structural element of a state machine model.
 	/// </summary>
-	/// <typeparam name="TContext">The type of the state machine instance.</typeparam>
-	public abstract class Element<TContext> where TContext : IContext<TContext> {
+	/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
+	public abstract class Element<TInstance> where TInstance : class, IActiveStateConfiguration<TInstance> {
+		#region Static members
 		/// <summary>
 		/// The string used to seperate names within a fully qualified namespace.
 		/// </summary>
@@ -20,9 +21,10 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <summary>
 		/// Initialises the static members of NamedElement.
 		/// </summary>
-		static Element() {
+		static Element () {
 			NamespaceSeperator = ".";
 		}
+		#endregion
 
 		/// <summary>
 		/// The name of the NamedElement
@@ -38,71 +40,72 @@ namespace Steelbreeze.Behavior.StateMachines {
 		public readonly String QualifiedName;
 
 		/// <summary>
-		/// The name of the type without generic considerations
+		/// Creates a new instance of a subtype of the Element class.
 		/// </summary>
-		public abstract String Type { get; }
-	
-		/// <summary>
-		/// Returns the elements parent.
-		/// </summary>
-		public abstract Element<TContext> Parent { get; }
-
-		/// <summary>
-		/// The parent state machine that this element forms a part of.
-		/// </summary>
-		public StateMachine<TContext> Root { get; protected set; }
-
-		/// <summary>
-		/// Returns the elements ancestors.
-		/// </summary>
-		public IEnumerable<Element<TContext>> Ancestors { get { if( this.Parent != null ) foreach( var namedElement in this.Parent.Ancestors ) yield return namedElement; yield return this; } } // yield! please...
-
-		internal Action<Object, TContext, Boolean> Leave;
-		internal Action<Object, TContext, Boolean> BeginEnter;
-		internal Action<Object, TContext, Boolean> EndEnter;
-		internal Action<Object, TContext, Boolean> Enter;
-
-		internal Element( String name, Element<TContext> parent ) {
+		/// <param name="name">The name of the element.</param>
+		/// <param name="parent">The parent of the element.</param>
+		internal protected Element (String name, Element<TInstance> parent = null) {
 			this.Name = name;
 			this.QualifiedName = parent != null ? parent.QualifiedName + NamespaceSeperator + name : name;
-
-			if( parent != null )
-				this.Root = parent.Root;
 		}
 
-		internal void Reset() {
-			this.Leave = null;
-			this.BeginEnter = null;
-			this.EndEnter = null;
-			this.Enter = null;
+		/// <summary>
+		/// Returns the elements parent element.
+		/// </summary>
+		public abstract Element<TInstance> Parent { get; }
+
+		/// <summary>
+		/// Returns the state machine model root element.
+		/// </summary>
+		public virtual StateMachine<TInstance> Root {
+			get {
+				return this.Parent.Root;
+			}
+		}
+
+		/// <summary>
+		/// Returns the elements ancestors back from the state machines root element.
+		/// </summary>
+		public IEnumerable<Element<TInstance>> Ancestors {
+			get {
+				if (this.Parent != null)
+					foreach (var namedElement in this.Parent.Ancestors) // yield! would be great...
+						yield return namedElement;
+
+				yield return this;
+			}
 		}
 
 		/// <summary>
 		/// Tests the element to determine if it is part of the current active state confuguration
 		/// </summary>
-		/// <param name="context">The state machine context.</param>
+		/// <param name="instance">The state machine instance.</param>
 		/// <returns>True if the element is active.</returns>
-		internal protected abstract Boolean IsActive( IContext<TContext> context );
+		/// <remarks>An element is part of the active state configuration if it has been entered but not yet exited.</remarks>
+		public abstract Boolean IsActive (TInstance instance);
 
-		internal virtual void BootstrapElement( Boolean deepHistoryAbove ) {
-#if DEBUG
-			this.Leave += ( message, context, history ) => Console.WriteLine( "{0} leave {1}", context, this.QualifiedName );
-			this.BeginEnter += ( message, context, history ) => Console.WriteLine( "{0} enter {1}", context, this.QualifiedName );
-#endif
-			this.Enter = this.BeginEnter + this.EndEnter;
-		}
+		/// <summary>
+		/// Tests the element to determine if it is deemed to be complete.
+		/// </summary>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if the element is complete.</returns>
+		public abstract Boolean IsComplete (TInstance instance);
 
-		internal abstract void BootstrapTransitions();
-
-		internal virtual void BootstrapEnter( ref Action<Object, TContext, Boolean> traverse, Element<TContext> next ) {
-			traverse += this.BeginEnter;
-		}
+		/// <summary>
+		/// Accepts a visitor
+		/// </summary>
+		/// <param name="visitor">The visitor to visit.</param>
+		/// <param name="param">A parameter passed to the visitor when visiting elements.</param>
+		/// <remarks>
+		/// A visitor will walk the state machine model from this element to all child elements including transitions calling the approritate visit method on the visitor.
+		/// </remarks>
+		public abstract void Accept<TParam> (Visitor<TInstance, TParam> visitor, TParam param);
 
 		/// <summary>
 		/// Returns a string representation of the element.
 		/// </summary>
 		/// <returns>Returns the fully qualified name of the element.</returns>
-		public override String ToString() {
+		public override String ToString () {
 			return this.QualifiedName;
 		}
 	}

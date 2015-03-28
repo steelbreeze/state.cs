@@ -4,39 +4,44 @@
  * Licensed under MIT and GPL v3 licences
  */
 using System;
+using System.Collections.Generic;
 
 namespace Steelbreeze.Behavior.StateMachines {
 	/// <summary>
 	/// A Vertex is an abstraction of a node in a state machine graph; it can be the source or destination of any number of transitions.
 	/// </summary>
-	/// <typeparam name="TContext">The type of the state machine instance.</typeparam>
-	public abstract class Vertex<TContext> : Element<TContext> where TContext : IContext<TContext> {
-		internal readonly Region<TContext> Region;
-		internal Boolean IsFinal { get { return this.transitions == null; } }
+	/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
+	public abstract class Vertex<TInstance> : Element<TInstance> where TInstance : class, IActiveStateConfiguration<TInstance> {
+		/// <summary>
+		/// The parent region that owns this Vertex.
+		/// </summary>
+		internal readonly Region<TInstance> Region;
 
-		private Transition<TContext>[] transitions; // trading off model building performance for runtime performance
-		private readonly Func<Transition<TContext>[], Object, TContext, Transition<TContext>> selector;
+		/// <summary>
+		/// The outgoing transitions from the vertex.
+		/// </summary>
+		internal protected readonly HashSet<Transition<TInstance>> Transitions = new HashSet<Transition<TInstance>> ();
+
+		/// <summary>
+		/// Creates a new instance of a the Vertex abstract class.
+		/// </summary>
+		/// <param name="name">The name of the vertex.</param>
+		/// <param name="region">The parent region that the new vertex is a child of.</param>
+		internal protected Vertex (String name, Region<TInstance> region = null)
+			: base (name, region) {
+			this.Region = region;
+
+			if (region != null)
+				region.Add (this);
+		}
 
 		/// <summary>
 		/// Returns the Vertex's parent element.
 		/// </summary>
-		public override Element<TContext> Parent { get { return this.Region; } }
-
-		internal Vertex( String name, Region<TContext> parent, Func<Transition<TContext>[], Object, TContext, Transition<TContext>> selector )
-			: base( name, parent ) {			
-			this.Region = parent;
-			this.selector = selector;
-
-			parent.Add( this );
-		}
-
-		/// <summary>
-		/// Tests the vertex to determine if it is part of the current active state confuguration
-		/// </summary>
-		/// <param name="context">The state machine context.</param>
-		/// <returns>True if the element is active.</returns>
-		internal protected override Boolean IsActive( IContext<TContext> context ) {
-			return this.Parent.IsActive( context );
+		public override Element<TInstance> Parent {
+			get {
+				return this.Region;
+			}
 		}
 
 		/// <summary>
@@ -47,55 +52,48 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// <remarks>
 		/// To specify an internal transition, specify a null target.
 		/// </remarks>
-		public virtual Transition<TContext> To( Vertex<TContext> target ) {
-			var transition = new Transition<TContext>( this, target );
+		public virtual Transition<TInstance> To (Vertex<TInstance> target) {
+			var transition = new Transition<TInstance> (this, target);
 
-			if( this.transitions == null )
-				this.transitions = new Transition<TContext>[ 1 ] { transition };
-			else {
-				var transitions = new Transition<TContext>[ this.transitions.Length + 1 ];
-
-				this.transitions.CopyTo( transitions, 0 );
-
-				transitions[ this.transitions.Length ] = transition;
-
-				this.transitions = transitions;
-			}
+			this.Transitions.Add (transition);
 
 			this.Root.Clean = false;
 
 			return transition;
 		}
 
-		internal override void BootstrapElement( Boolean deepHistoryAbove ) {
-			base.BootstrapElement( deepHistoryAbove );
-
-			this.EndEnter += this.EvaluateCompletions;
-			this.Enter = this.BeginEnter + this.EndEnter;
+		/// <summary>
+		/// Triggers completion events if the vertex is deemed to be complete.
+		/// </summary>
+		/// <param name="message">The origional message that caused the vertex to be entered.</param>
+		/// <param name="instance">The state machine instance.</param>
+		/// <param name="history">The history semantic that was in force when the vertex was entered.</param>
+		internal void Completion (Object message, TInstance instance, Boolean history) {
+			if (this.IsComplete (instance))
+				this.Evaluate (this, instance);
 		}
 
-		internal override void BootstrapTransitions() {
-			if( this.transitions != null )
-				foreach( var transition in this.transitions )
-					transition.BootstrapTransitions();
-		}
+		/// <summary>
+		/// Selects a transition for a given message and state machine instance for the vertex.
+		/// </summary>
+		/// <param name="message">The message that may trigger a transition.</param>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>A transition if found, or null.</returns>
+		internal protected abstract Transition<TInstance> Select (Object message, TInstance instance);
 
-		internal void EvaluateCompletions( Object message, TContext context, Boolean history ) {
-			if( this.IsComplete( context ) )
-				this.Evaluate( this, context );
-		}
+		/// <summary>
+		/// Evaluates a message to determine if a state transition is viable.
+		/// </summary>
+		/// <param name="message">The message that may trigger a state transition.</param>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if the message triggered a state transition.</returns>
+		internal virtual Boolean Evaluate (Object message, TInstance instance) {
+			var transition = this.Select( message, instance);
 
-		internal virtual Boolean IsComplete( TContext context ) {
-			return true;
-		}
-
-		internal virtual Boolean Evaluate( Object message, TContext context ) {
-			var transition = this.selector( this.transitions, message, context );
-
-			if( transition == null )
+			if (transition == null)
 				return false;
 
-			transition.Traverse( message, context, false );
+			transition.Traverse (message, instance, false);
 
 			return true;
 		}

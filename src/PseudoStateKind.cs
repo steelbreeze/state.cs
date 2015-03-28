@@ -24,10 +24,6 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// </summary>
 		DeepHistory,
 
-		// TODO: EntryPoint
-
-		// TODO: ExitPoint
-
 		/// <summary>
 		/// ShallowHistory represents the most recent active substate of its containing state (but not the substates of that substate).
 		/// A Region can have at most one shallow history vertex.
@@ -52,9 +48,9 @@ namespace Steelbreeze.Behavior.StateMachines {
 		/// Choice vertices should be distinguished from static branch points that are based on junction points.
 		/// </summary>
 		Choice,
-		
+
 		/// <summary>
-		/// Entering a Terminate pseudostate implies that the execution of this state machine by means of its context object is terminated.
+		/// Entering a Terminate pseudostate implies that the execution of this state machine instance is terminated.
 		/// The state machine does not exit any states nor does it perform any exit actions other than those associated with the transition leading to the terminate pseudostate.
 		/// </summary>
 		Terminate
