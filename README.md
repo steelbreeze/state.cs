@@ -1,8 +1,6 @@
-# Welcome to state.cs
+  [![state.js Logo](http://state.software/images/logos/state_50.png)](http://www.steelbreeze.net/state.js/)
 
-The current stable release is 5.2.0.
-
-If you're using state.cs I'd love to hear about it; please e-mail me at mesmo@steelbreeze.net 
+  Hierarchical finite state machine for C#.
 
 ## Introduction
 State.js provides a hierarchical state machine capable of managing orthogonal regions; a variety of pseudo state kinds are implemented including initial, shallow & deep history, choice, junction and entry & exit points.
