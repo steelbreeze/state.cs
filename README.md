@@ -1,6 +1,6 @@
   [![state.js Logo](http://state.software/images/logos/state_50.png)](http://www.steelbreeze.net/state.js/)
 
-Hierarchical finite state machine for .NET.
+Executable finite state machine for .NET.
   
 If you like state.cs, please star it.
 
