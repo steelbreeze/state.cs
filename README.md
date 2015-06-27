@@ -1,6 +1,8 @@
   [![state.js Logo](http://state.software/images/logos/state_50.png)](http://www.steelbreeze.net/state.js/)
 
-  Hierarchical finite state machine for C#.
+Hierarchical finite state machine for C#.
+  
+If you like state.cs, please star it.
 
 ## Introduction
 State.js provides a hierarchical state machine capable of managing orthogonal regions; a variety of pseudo state kinds are implemented including initial, shallow & deep history, choice, junction and entry & exit points.
