@@ -1,4 +1,4 @@
-  [![state.js Logo](http://state.software/images/logos/state_50.png)](http://www.steelbreeze.net/state.js/)
+  [![state.js Logo](http://state.software/images/logos/state_55.png)](http://www.steelbreeze.net/state.js/)
 
 Executable finite state machine for .NET.
   
