@@ -1,9 +1,13 @@
-# Release notes
+## Version 5.6.0
+Harmonise codebase and versioning with the JavaScript version.
 
-# Version 5.0.0
-Version 5.0 is a complete re-write of the state machine. It makes large use of multicast delegates to pre-evaulate the steps required to perform state transitions. This leads to considerable performance benefits no evaluations are made relating to the structure of the model at runtime as it does not change at runtime.
+## Version 5.2.1
+Create the elements qualified name in the bootstrap operation.
 
-# Version 5.2.0
+## Version 5.2.0
+Changed the array method for getting and setting current state in IActiveStateConfiguration to GetCurrent and SetCurrent.
+
+## Version 5.2.0
 Renamed IContext to IActiveStateConfiguration: this is more in line with the terminology in the UML specification.
 
 Renamed Context to StateMachineInstance and ContextBase to StateMachineInstanceBase.
@@ -19,3 +23,6 @@ Implemented a Visitor patten with the introcuction of the Visitor class and Acce
 Moved the bootstrapping code to use the visitor and refactored a little.
 
 Migrated array-based code to use HashSets for simpler, cleaner code.
+
+## Version 5.0.0
+Version 5.0 is a complete re-write of the state machine. It makes large use of multicast delegates to pre-evaulate the steps required to perform state transitions. This leads to considerable performance benefits no evaluations are made relating to the structure of the model at runtime as it does not change at runtime.

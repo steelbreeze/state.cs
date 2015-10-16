@@ -4,19 +4,26 @@
  * Licensed under MIT and GPL v3 licences
  */
 using System;
-using System.Diagnostics;
 
-namespace Steelbreeze.Behavior.StateMachines.Tests {
+namespace Steelbreeze.StateMachines.Tests {
 	public class Program {
-		public static void Main (String[] args) {
-			// TODO: add more transition tests (incl. else)
-			Transitions.Completions.Test ();
-			History.Shallow.Test ();
+		public static int Main (String[] args) {
 
-			// user test cases
-			Users.Muximise1.Test ();
-			Users.Brice1.Test ();
-			Users.P3pp3r.Test ();
+			Brice.Run();
+			Callbacks.Run();
+			Choice.Run();
+			Dynamic.Run();
+			Else.Run();
+			History.Run();
+			Internal.Run();
+			Local.Run();
+			Muximise.Run();
+			p3pp3r.Run();
+			Static.Run();
+			Terminate.Run();
+			Transitions.Run();
+
+			return 0;
 		}
 	}
 }
