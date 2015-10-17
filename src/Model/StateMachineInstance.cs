@@ -7,6 +7,10 @@
 using System.Collections.Generic;
 
 namespace Steelbreeze.StateMachines.Model {
+	/// <summary>
+	/// Represents a state machine instance at runtime.
+	/// </summary>
+	/// <typeparam name="TInstance">The derived type of the state machine instance.</typeparam>
 	public abstract class StateMachineInstance<TInstance> : IInstance<TInstance> where TInstance : IInstance<TInstance> {
 		private Dictionary<Region<TInstance>, State<TInstance>> current = new Dictionary<Region<TInstance>, State<TInstance>>();
 

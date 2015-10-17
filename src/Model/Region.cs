@@ -53,6 +53,9 @@ namespace Steelbreeze.StateMachines.Model {
 			this.State.Root.Clean = false;
 		}
 
+		/// <summary>
+		/// Returns the state machine that this region is a part of.
+		/// </summary>
 		public StateMachine<TInstance> Root {
 			get {
 				return this.State.Root;

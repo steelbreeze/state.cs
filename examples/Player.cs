@@ -40,8 +40,8 @@ namespace Steelbreeze.StateMachines.Examples {
 			counter.Stop();
 		}
 
-		public void ResetCounter () {
-			Interlocked.Exchange(ref count, 0);
+		public void ResetCounter (long value = 0) {
+			Interlocked.Exchange(ref count, value);
 		}
 	}
 }

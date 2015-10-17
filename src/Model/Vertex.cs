@@ -31,6 +31,9 @@ namespace Steelbreeze.StateMachines.Model {
 			return ancestors;
 		}
 
+		/// <summary>
+		/// Returns the state machine that this vertex is a part of.
+		/// </summary>
 		public virtual StateMachine<TInstance> Root {
 			get {
 				return this.Region.Root;

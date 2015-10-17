@@ -13,7 +13,8 @@ namespace Steelbreeze.StateMachines.Examples {
 	/// A controller for a simple cassette player
 	/// </summary>
 	/// <remarks>
-	/// The player now inherits from a Region, so can be used in isolation, or as a region in a larger device.
+	/// The player 
+	/// now inherits from a Region, so can be used in isolation, or as a region in a larger device.
 	/// The player now implements an 'operational' composite state so the off command can be used while in any sub-state.
 	/// </remarks>
 	public class Program {
@@ -48,7 +49,7 @@ namespace Steelbreeze.StateMachines.Examples {
 			choice.To(operational).Effect(() => Console.WriteLine("- transition B back to operational"));
 			operational.To(flipped).When<string>(command => command == "flip");
 			flipped.To(operational).When<string>(command => command == "flip");
-			model.To().When<string>(command => command.StartsWith("reset")).Effect(i => i.ResetCounter());
+			model.To().When<string>(command => command.StartsWith("reset")).Effect<string>(Reset);
 
 			model.Validate();
 
@@ -66,6 +67,17 @@ namespace Steelbreeze.StateMachines.Examples {
 				// process lines read from the console
 				model.Evaluate(player, Console.ReadLine());
 			}
+		}
+
+		private static void Reset (string command, Player player) {
+			var reset = 0;
+
+			try {
+				reset = Convert.ToInt16(command.Replace("reset", ""));
+			} catch { }
+
+			player.ResetCounter(reset);
+
 		}
 	}
 }

@@ -11,6 +11,10 @@ namespace Steelbreeze.StateMachines.Model {
 
 		public StateMachine (string name) : base(name, null) { }
 
+		/// <summary>
+		/// Returns the state machine that this state machine is a part of.
+		/// </summary>
+		/// <remarks>A state machine may be embedded within another state machine; in this circumstance it behaves as any other state.</remarks>
 		public override StateMachine<TInstance> Root {
 			get {
 				return this.Region != null ? this.Region.Root : this;
