@@ -15,7 +15,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// Flag indicating if the state machine instance has been terminated.
 		/// </summary>
 		/// <remarks>A state machine instance is terminated as soon as it reaches a terminate pseudo state.</remarks>
-		bool IsTerminated { get; set; }
+		bool IsTerminated { get; set; } // TODO: remove set
 
 		/// <summary>
 		/// Sets or updates the current active child state of a region.

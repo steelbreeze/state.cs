@@ -5,10 +5,19 @@
  * http://www.steelbreeze.net/state.cs
  */
 namespace Steelbreeze.StateMachines.Model {
+	/// <summary>
+	/// Represents the root element of a state machine model.
+	/// </summary>
+	/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
+	/// <remarks>A state machine may be embedded within another state machine; in this circumstance it behaves as any other state.</remarks>
 	public class StateMachine<TInstance> : State<TInstance> where TInstance : IInstance<TInstance> {
 		internal bool Clean;
 		internal Behavior<TInstance> OnInitialise;
 
+		/// <summary>
+		/// Creates a new instance of the StateMachine class.
+		/// </summary>
+		/// <param name="name">The name of the state machine.</param>
 		public StateMachine (string name) : base(name, null) { }
 
 		/// <summary>

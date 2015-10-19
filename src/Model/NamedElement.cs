@@ -36,7 +36,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <summary>
 		/// Returns the fully qualified name of the element.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>The fully qualified name of the element.</returns>
 		public override string ToString () {
 			return this.QualifiedName;
 		}
