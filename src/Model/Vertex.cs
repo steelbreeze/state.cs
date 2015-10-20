@@ -7,8 +7,19 @@
 using System.Collections.Generic;
 
 namespace Steelbreeze.StateMachines.Model {
+	/// <summary>
+	/// Represents an element that can be the child of a region.
+	/// </summary>
+	/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
 	public class Vertex<TInstance> : NamedElement where TInstance : IInstance<TInstance> {
+		/// <summary>
+		/// The parent region that this vertex belongs to
+		/// </summary>
 		public readonly Region<TInstance> Region;
+
+		/// <summary>
+		/// The set of transitions that this vertex is the source of.
+		/// </summary>
 		public readonly ICollection<Transition<TInstance>> Outgoing = new HashSet<Transition<TInstance>>();
 
 		internal Vertex (string name, Region<TInstance> parent)
@@ -40,6 +51,12 @@ namespace Steelbreeze.StateMachines.Model {
 			}
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="target"></param>
+		/// <param name="kind"></param>
+		/// <returns></returns>
 		public Transition<TInstance> To (Vertex<TInstance> target = null, TransitionKind kind = TransitionKind.External) {
 			return new Transition<TInstance>(this, target, kind);
 		}

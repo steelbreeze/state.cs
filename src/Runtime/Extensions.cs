@@ -9,14 +9,30 @@ using System.Linq;
 using Steelbreeze.StateMachines.Model;
 
 namespace Steelbreeze.StateMachines.Runtime {
+	/// <summary>
+	/// The runtime API is formed of a set of extensions applied to the state machine model classes.
+	/// </summary>
 	public static class Extensions {
 		private static Random random = new Random();
+
+		/// <summary>
+		/// The method used to randomly select a transition choice pseudo states when multiple outbound transtions guard conditions evaluate true.
+		/// </summary>
+		/// <remarks>Set this </remarks>
 		public static Func<int, int> RandomSelector { get; set; }
 
 		static Extensions () {
 			RandomSelector = (maxValue) => random.Next(maxValue);
 		}
 
+		/// <summary>
+		/// Initialise a state machine instance for use with a particular state machine model.
+		/// </summary>
+		/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
+		/// <param name="model">The state machine model.</param>
+		/// <param name="instance">The state machine instance.</param>
+		/// <param name="autoInitialiseModel">Set to false to prevent the model from being initialised automatically; when adding to models at runtime, it may be useful to explicitly control this.</param>
+		///<remarks>Initialising a state machine model causes it to enter its initial state.</remarks>
 		public static void Initialise<TInstance> (this StateMachine<TInstance> model, TInstance instance, Boolean autoInitialiseModel = true) where TInstance : IInstance<TInstance> {
 			// initialise the state machine model if necessary
 			if (model.Clean == false) {
@@ -30,6 +46,12 @@ namespace Steelbreeze.StateMachines.Runtime {
 			model.OnInitialise(null, instance, false);
 		}
 
+		/// <summary>
+		/// Initialise a state machine model.
+		/// </summary>
+		/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
+		/// <param name="model">The state machine model to initialise.</param>
+		/// <remarks>Initialising a state machine model precompiles all the transition behavior for performance. The root state machine maintains a clean/dirty flag to track if reinitialisation is required.</remarks>
 		public static void Initialise<TInstance> (this StateMachine<TInstance> model) where TInstance : IInstance<TInstance> {
 			// log as required
 			Console.WriteLine("initialise " + model);
@@ -39,14 +61,30 @@ namespace Steelbreeze.StateMachines.Runtime {
 			model.Clean = true;
 		}
 
-		public static bool IsComplete<TInstance> (this Region<TInstance> region, TInstance instance) where TInstance : IInstance<TInstance> {
-			return instance.GetCurrent(region).IsFinal;
-		}
-
+		/// <summary>
+		/// Tests state to see if it is complete in the context of a given state machine instance.
+		/// </summary>
+		/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
+		/// <param name="state">The state to test completeness for.</param>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if the state is complete in the context of a given state machine intance.</returns>
+		/// <remarks>
+		/// A state is complete if: the state is a simple state; all the child regions of a composite state are complete.
+		/// A region is complete if the current active child of the region is a final state.
+		/// A state is deemed to be a final state if it is an instance of the FinalState class, or if it has no outgoing transitions.
+		/// </remarks>
 		public static bool IsComplete<TInstance> (this State<TInstance> state, TInstance instance) where TInstance : IInstance<TInstance> {
-			return state.Regions.All(region => IsComplete(region, instance));
+			return state.Regions.All(region => instance.GetCurrent(region).IsFinal);
 		}
 
+		/// <summary>
+		/// Tests a state to see if it is active in the context of a given state machine instance.
+		/// </summary>
+		/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
+		/// <param name="state">The state to test activeness for.</param>
+		/// <param name="instance">The state machine instance.</param>
+		/// <returns>True if the state is active.</returns>
+		/// <remarks>A state is active if it has been entered but not yet exited.</remarks>
 		public static bool IsActive<TInstance> (this Vertex<TInstance> state, TInstance instance) where TInstance : IInstance<TInstance> {
 			return state.Region != null ? (IsActive(state.Region.State, instance) && (instance.GetCurrent(state.Region) == state)) : true;
 		}
