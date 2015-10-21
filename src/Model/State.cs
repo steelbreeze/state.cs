@@ -108,7 +108,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <typeparam name="TMessage">The type of the message that triggered the transition.</typeparam>
 		/// <param name="exitAction">An action that takes a single parameter of the message that triggered the transition to be called when hte state is exited.</param>
 		/// <returns>Returns the state; enabling a fluent style interface.</returns>
-		public State<TInstance> Exit<TMessage> (Action<TMessage> exitAction) where TMessage : class {
+		public State<TInstance> Exit<TMessage>(Action<TMessage> exitAction) where TMessage : class {
 			this.exitBehavior += (message, instance, history) => { if (message is TMessage) exitAction(message as TMessage); };
 
 			this.Root.Clean = false;
@@ -122,7 +122,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <typeparam name="TMessage">The type of the message that triggered the transition.</typeparam>
 		/// <param name="exitAction">An action that takes two parameters of the message that triggered the transition and the state machine instance to be called when hte state is exited.</param>
 		/// <returns>Returns the state; enabling a fluent style interface.</returns>
-		public State<TInstance> Exit<TMessage> (Action<TMessage, TInstance> exitAction) where TMessage : class {
+		public State<TInstance> Exit<TMessage>(Action<TMessage, TInstance> exitAction) where TMessage : class {
 			this.exitBehavior += (message, instance, history) => { if (message is TMessage) exitAction(message as TMessage, instance); };
 
 			this.Root.Clean = false;
@@ -162,7 +162,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <typeparam name="TMessage">The type of the message that triggered the transition.</typeparam>
 		/// <param name="entryAction">An action that takes a single parameter of the message that triggered the transition to be called when hte state is entered.</param>
 		/// <returns>Returns the state; enabling a fluent style interface.</returns>
-		public State<TInstance> Entry<TMessage> (Action<TMessage> entryAction) where TMessage : class {
+		public State<TInstance> Entry<TMessage>(Action<TMessage> entryAction) where TMessage : class {
 			this.entryBehavior += (message, instance, history) => { if (message is TMessage) entryAction(message as TMessage); };
 
 			this.Root.Clean = false;
@@ -176,7 +176,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <typeparam name="TMessage">The type of the message that triggered the transition.</typeparam>
 		/// <param name="entryAction">An action that takes two parameters of the message that triggered the transition and the state machine instance to be called when hte state is entered.</param>
 		/// <returns>Returns the state; enabling a fluent style interface.</returns>
-		public State<TInstance> Entry<TMessage> (Action<TMessage, TInstance> entryAction) where TMessage : class {
+		public State<TInstance> Entry<TMessage>(Action<TMessage, TInstance> entryAction) where TMessage : class {
 			this.entryBehavior += (message, instance, history) => { if (message is TMessage) entryAction(message as TMessage, instance); };
 
 			this.Root.Clean = false;
@@ -188,10 +188,9 @@ namespace Steelbreeze.StateMachines.Model {
 		/// Accepts a visitor.
 		/// </summary>
 		/// <param name="visitor">The visitor to accept.</param>
-		public override void Accept(Visitor<TInstance> visitor)
-        {
-            visitor.VisitState(this);
-        }
+		public override void Accept (Visitor<TInstance> visitor) {
+			visitor.VisitState(this);
+		}
 
 		/// <summary>
 		/// Accepts a visitor.
@@ -199,9 +198,8 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <typeparam name="TArg">The type of the argument passed into the visitor.</typeparam>
 		/// <param name="visitor">The visitor to accept.</param>
 		/// <param name="arg">The argument to pass to each element visited.</param>
-		public override void Accept<TArg>(Visitor<TInstance, TArg> visitor, TArg arg)
-        {
-            visitor.VisitState(this, arg);
-        }
-    }
+		public override void Accept<TArg>(Visitor<TInstance, TArg> visitor, TArg arg) {
+			visitor.VisitState(this, arg);
+		}
+	}
 }

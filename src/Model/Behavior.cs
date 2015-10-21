@@ -5,5 +5,6 @@
  * http://www.steelbreeze.net/state.cs
  */
 namespace Steelbreeze.StateMachines.Model {
+	// internal type for any transition behaviour
 	internal delegate void Behavior<TInstance>(object message, TInstance instance, bool history) where TInstance : IInstance<TInstance>;
 }

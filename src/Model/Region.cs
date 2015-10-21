@@ -23,7 +23,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// Implicit conversion from a state to a region facilitating simpler model creation; returns (and creates as required) the state's default region.
 		/// </summary>
 		/// <param name="state">The state to return the default region for.</param>
-		public static implicit operator Region<TInstance> (State<TInstance> state) {
+		public static implicit operator Region<TInstance>(State<TInstance> state) {
 			return state.Regions.SingleOrDefault(region => region.Name == Region<TInstance>.DefaultName) ?? new Region<TInstance>(Region<TInstance>.DefaultName, state);
 		}
 
@@ -66,10 +66,9 @@ namespace Steelbreeze.StateMachines.Model {
 		/// Accepts a visitor.
 		/// </summary>
 		/// <param name="visitor">The visitor to accept.</param>
-		public virtual void Accept(Visitor<TInstance> visitor)
-        {
-            visitor.VisitRegion(this);
-        }
+		public virtual void Accept (Visitor<TInstance> visitor) {
+			visitor.VisitRegion(this);
+		}
 
 		/// <summary>
 		/// Accepts a visitor.
@@ -77,9 +76,8 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <typeparam name="TArg">The type of the argument passed into the visitor.</typeparam>
 		/// <param name="visitor">The visitor to accept.</param>
 		/// <param name="arg">The argument to pass to each element visited.</param>
-		public virtual void Accept<TArg>(Visitor<TInstance, TArg> visitor, TArg arg)
-        {
-            visitor.VisitRegion(this, arg);
-        }
-    }
+		public virtual void Accept<TArg>(Visitor<TInstance, TArg> visitor, TArg arg) {
+			visitor.VisitRegion(this, arg);
+		}
+	}
 }

@@ -33,7 +33,7 @@ namespace Steelbreeze.StateMachines.Runtime {
 		/// <param name="instance">The state machine instance.</param>
 		/// <param name="autoInitialiseModel">Set to false to prevent the model from being initialised automatically; when adding to models at runtime, it may be useful to explicitly control this.</param>
 		///<remarks>Initialising a state machine model causes it to enter its initial state.</remarks>
-		public static void Initialise<TInstance> (this StateMachine<TInstance> model, TInstance instance, Boolean autoInitialiseModel = true) where TInstance : IInstance<TInstance> {
+		public static void Initialise<TInstance>(this StateMachine<TInstance> model, TInstance instance, Boolean autoInitialiseModel = true) where TInstance : IInstance<TInstance> {
 			// initialise the state machine model if necessary
 			if (model.Clean == false) {
 				model.Initialise();
@@ -52,7 +52,7 @@ namespace Steelbreeze.StateMachines.Runtime {
 		/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
 		/// <param name="model">The state machine model to initialise.</param>
 		/// <remarks>Initialising a state machine model precompiles all the transition behavior for performance. The root state machine maintains a clean/dirty flag to track if reinitialisation is required.</remarks>
-		public static void Initialise<TInstance> (this StateMachine<TInstance> model) where TInstance : IInstance<TInstance> {
+		public static void Initialise<TInstance>(this StateMachine<TInstance> model) where TInstance : IInstance<TInstance> {
 			// log as required
 			Console.WriteLine("initialise " + model);
 
@@ -73,7 +73,7 @@ namespace Steelbreeze.StateMachines.Runtime {
 		/// A region is complete if the current active child of the region is a final state.
 		/// A state is deemed to be a final state if it is an instance of the FinalState class, or if it has no outgoing transitions.
 		/// </remarks>
-		public static bool IsComplete<TInstance> (this State<TInstance> state, TInstance instance) where TInstance : IInstance<TInstance> {
+		public static bool IsComplete<TInstance>(this State<TInstance> state, TInstance instance) where TInstance : IInstance<TInstance> {
 			return state.Regions.All(region => instance.GetCurrent(region).IsFinal);
 		}
 
@@ -85,11 +85,20 @@ namespace Steelbreeze.StateMachines.Runtime {
 		/// <param name="instance">The state machine instance.</param>
 		/// <returns>True if the state is active.</returns>
 		/// <remarks>A state is active if it has been entered but not yet exited.</remarks>
-		public static bool IsActive<TInstance> (this Vertex<TInstance> state, TInstance instance) where TInstance : IInstance<TInstance> {
+		public static bool IsActive<TInstance>(this Vertex<TInstance> state, TInstance instance) where TInstance : IInstance<TInstance> {
 			return state.Region != null ? (IsActive(state.Region.State, instance) && (instance.GetCurrent(state.Region) == state)) : true;
 		}
 
-		public static bool Evaluate<TInstance> (this StateMachine<TInstance> model, TInstance instance, object message, bool autoInitialiseModel = true) where TInstance : IInstance<TInstance> {
+		/// <summary>
+		/// Passes a message to a state machine for evaluation; if appropriate, this may trigger a state transition.
+		/// </summary>
+		/// <typeparam name="TInstance">The type of the state machine instance.</typeparam>
+		/// <param name="model">The state machine model.</param>
+		/// <param name="instance">The state machine instance.</param>
+		/// <param name="message">The message to pass to the state machine for evaluation.</param>
+		/// <param name="autoInitialiseModel">Set to false to prevent the model from being initialised automatically; when adding to models at runtime, it may be useful to explicitly control this.</param>
+		/// <returns>True if the message triggered a state transistion.</returns>
+		public static bool Evaluate<TInstance>(this StateMachine<TInstance> model, TInstance instance, object message, bool autoInitialiseModel = true) where TInstance : IInstance<TInstance> {
 			// initialise the state machine model if necessary
 			if (autoInitialiseModel && model.Clean == false) {
 				model.Initialise();
@@ -104,7 +113,7 @@ namespace Steelbreeze.StateMachines.Runtime {
 		}
 
 		// evaluates messages against a state, executing transitions as appropriate
-		internal static bool EvaluateState<TInstance> (this State<TInstance> state, TInstance instance, object message) where TInstance : IInstance<TInstance> {
+		internal static bool EvaluateState<TInstance>(this State<TInstance> state, TInstance instance, object message) where TInstance : IInstance<TInstance> {
 			var result = false;
 
 			// delegate to child regions first
@@ -140,9 +149,8 @@ namespace Steelbreeze.StateMachines.Runtime {
 		}
 
 		// traverses a transition
-		internal static bool Traverse<TInstance> (this Transition<TInstance> transition, TInstance instance, object message) where TInstance : IInstance<TInstance> {
+		internal static bool Traverse<TInstance>(this Transition<TInstance> transition, TInstance instance, object message) where TInstance : IInstance<TInstance> {
 			var onTraverse = transition.onTraverse;
-//			var target = transition.Target;
 
 			// process static conditional branches
 			while (transition.Target != null && transition.Target is PseudoState<TInstance>) {
@@ -183,7 +191,7 @@ namespace Steelbreeze.StateMachines.Runtime {
 		}
 
 		// select next leg of composite transitions after choice and junction pseudo states
-		internal static Transition<TInstance> SelectTransition<TInstance> (this PseudoState<TInstance> pseudoState, TInstance instance, object message) where TInstance : IInstance<TInstance> {
+		internal static Transition<TInstance> SelectTransition<TInstance>(this PseudoState<TInstance> pseudoState, TInstance instance, object message) where TInstance : IInstance<TInstance> {
 			var results = pseudoState.Outgoing.Where(transition => transition.guard(message, instance));
 
 			if (pseudoState.Kind == PseudoStateKind.Choice) {
@@ -198,7 +206,7 @@ namespace Steelbreeze.StateMachines.Runtime {
 		}
 
 		// look for else transitins from a junction or choice
-		internal static Transition<TInstance> FindElse<TInstance> (this PseudoState<TInstance> pseudoState) where TInstance : IInstance<TInstance> {
+		internal static Transition<TInstance> FindElse<TInstance>(this PseudoState<TInstance> pseudoState) where TInstance : IInstance<TInstance> {
 			return pseudoState.Outgoing.Where(transition => transition.guard == Transition<TInstance>.FalseGuard).SingleOrDefault();
 		}
 	}

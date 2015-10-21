@@ -9,13 +9,21 @@ namespace Steelbreeze.StateMachines.Model {
 	/// Interface for state machine instance types to inherit from.
 	/// </summary>
 	/// <typeparam name="TInstance">The type of the state machine interface.</typeparam>
-	/// <remarks>While this interface can be directly implemented, it is recomended to use StateMachineInstance</remarks>
+	/// <remarks>
+	/// While this interface can be directly implemented, it is recomended to use StateMachineInstance.
+	/// The use of the template pattern here enables callbacks use for transition and state entry/exit behavior to access methods and properties of the derived 
+	/// </remarks>
 	public interface IInstance<TInstance> where TInstance : IInstance<TInstance> {
 		/// <summary>
 		/// Flag indicating if the state machine instance has been terminated.
 		/// </summary>
 		/// <remarks>A state machine instance is terminated as soon as it reaches a terminate pseudo state.</remarks>
-		bool IsTerminated { get; set; } // TODO: remove set
+		bool IsTerminated { get; }
+
+		/// <summary>
+		/// Sets the state machine instance to a terminated state.
+		/// </summary>
+		void Terminate ();
 
 		/// <summary>
 		/// Sets or updates the current active child state of a region.

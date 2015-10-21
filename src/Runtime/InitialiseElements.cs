@@ -57,7 +57,7 @@ namespace Steelbreeze.StateMachines.Runtime {
 				this.Behaviour(pseudoState).endEnter += (message, instance, history) => pseudoState.Outgoing.Single().Traverse(instance, null);
 			} else if (pseudoState.Kind == PseudoStateKind.Terminate) {
 				// terminate the state machine instance upon transition to a terminate pseudo state
-				this.Behaviour(pseudoState).beginEnter += (message, instance, history) => instance.IsTerminated = true;
+				this.Behaviour(pseudoState).beginEnter += (message, instance, history) => instance.Terminate();
 			}
 		}
 

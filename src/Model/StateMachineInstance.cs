@@ -12,20 +12,22 @@ namespace Steelbreeze.StateMachines.Model {
 	/// </summary>
 	/// <typeparam name="TInstance">The derived type of the state machine instance.</typeparam>
 	public abstract class StateMachineInstance<TInstance> : IInstance<TInstance> where TInstance : IInstance<TInstance> {
+		private bool terminated = false;
 		private Dictionary<Region<TInstance>, State<TInstance>> current = new Dictionary<Region<TInstance>, State<TInstance>>();
 
 		/// <summary>
 		/// Flag indicating if the state machine instance has been terminated.
 		/// </summary>
 		/// <remarks>A state machine instance is terminated as soon as it reaches a terminate pseudo state.</remarks>
-		public bool IsTerminated { get; set; }
+		public bool IsTerminated { get { return this.terminated; } }
 
-		/// <summary>
-		/// Sets or updates the current active child state of a region.
-		/// </summary>
-		/// <param name="region">The region to set the current active child state for.</param>
-		/// <param name="state">The state to set as the current active child of the region.</param>
-		public void SetCurrent (Region<TInstance> region, State<TInstance> state) {
+		// sets the state machine instance to a terminated state; use inheritance method to hide this interface from derived classes.
+		void IInstance<TInstance>.Terminate() {
+			this.terminated = true;
+		}
+
+		// sets or updates the child state for a region; use inheritance method to hide this interface from derived classes.
+		void IInstance<TInstance>.SetCurrent (Region<TInstance> region, State<TInstance> state) {
 			current[ region ] = state;
 		}
 
@@ -66,7 +68,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// </summary>
 		/// <returns>The name of the instance.</returns>
 		public override string ToString () {
-			return this.Name ;
+			return this.Name;
 		}
 	}
 }

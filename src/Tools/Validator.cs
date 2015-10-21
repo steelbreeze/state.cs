@@ -9,8 +9,8 @@ using System.Linq;
 using Steelbreeze.StateMachines.Model;
 
 namespace Steelbreeze.StateMachines.Tools {
-	internal class Validator<TInstance> : Visitor<TInstance> where TInstance : IInstance <TInstance> {
-		override public void VisitPseudoState(PseudoState<TInstance> pseudoState) {
+	internal class Validator<TInstance> : Visitor<TInstance> where TInstance : IInstance<TInstance> {
+		override public void VisitPseudoState (PseudoState<TInstance> pseudoState) {
 			base.VisitPseudoState(pseudoState);
 
 			if (pseudoState.Kind == PseudoStateKind.Choice || pseudoState.Kind == PseudoStateKind.Junction) {
@@ -45,26 +45,26 @@ namespace Steelbreeze.StateMachines.Tools {
 			}
 		}
 
-		override public void VisitRegion(Region<TInstance> region) {
+		override public void VisitRegion (Region<TInstance> region) {
 			base.VisitRegion(region);
 
 			// [1] A region can have at most one initial vertex.
 			// [2] A region can have at most one deep history vertex.
 			// [3] A region can have at most one shallow history vertex.
-			if(region.Vertices.OfType<PseudoState<TInstance>>().Where(pseudoState => pseudoState.IsInitial).Count() > 1 ) {
+			if (region.Vertices.OfType<PseudoState<TInstance>>().Where(pseudoState => pseudoState.IsInitial).Count() > 1) {
 				Console.Error.WriteLine(region + ": regions may have at most one initial pseudo state.");
 			}
 		}
 
-		override public void VisitState(State<TInstance> state) {
+		override public void VisitState (State<TInstance> state) {
 			base.VisitState(state);
 
-			if(state.Regions.Where(region => region.Name == Region<TInstance>.DefaultName).Count() > 1){
+			if (state.Regions.Where(region => region.Name == Region<TInstance>.DefaultName).Count() > 1) {
 				Console.Error.WriteLine(state + ": a state cannot have more than one region named " + Region<TInstance>.DefaultName);
 			}
 		}
 
-		override public void  VisitFinalState(FinalState<TInstance> finalState) {
+		override public void VisitFinalState (FinalState<TInstance> finalState) {
 			base.VisitFinalState(finalState);
 
 			// [1] A final state cannot have any outgoing transitions.
@@ -88,7 +88,7 @@ namespace Steelbreeze.StateMachines.Tools {
 			}
 		}
 
-		override public void VisitTransition( Transition<TInstance> transition) {
+		override public void VisitTransition (Transition<TInstance> transition) {
 			base.VisitTransition(transition);
 
 			// Local transition target vertices must be a child of the source vertex
@@ -100,4 +100,3 @@ namespace Steelbreeze.StateMachines.Tools {
 		}
 	}
 }
-

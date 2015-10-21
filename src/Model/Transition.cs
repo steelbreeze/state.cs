@@ -69,7 +69,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <typeparam name="TMessage">The type of the message that is to be evaluated.</typeparam>
 		/// <param name="guard">The guard condition callback taking the message and state machine instance.</param>
 		/// <returns>Returns the transition; enabling a fluent style interface.</returns>
-		public Transition<TInstance> When<TMessage> (Func<TMessage, TInstance, bool> guard) where TMessage : class {
+		public Transition<TInstance> When<TMessage>(Func<TMessage, TInstance, bool> guard) where TMessage : class {
 			this.guard = (message, instance) => { return message is TMessage && guard(message as TMessage, instance); };
 
 			return this;
@@ -81,7 +81,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <typeparam name="TMessage">The type of the message that is to be evaluated.</typeparam>
 		/// <param name="guard">The guard condition callback taking the message only.</param>
 		/// <returns>Returns the transition; enabling a fluent style interface.</returns>
-		public Transition<TInstance> When<TMessage> (Func<TMessage, bool> guard) where TMessage : class {
+		public Transition<TInstance> When<TMessage>(Func<TMessage, bool> guard) where TMessage : class {
 			this.guard = (message, instance) => { return message is TMessage && guard(message as TMessage); };
 
 			return this;
@@ -105,7 +105,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <param name="transitionAction">An action that takes two parameters of the message that triggered the transition and the state machine instance to be called when the transition is traversed.</param>
 		/// <returns>Returns the transition; enabling a fluent style interface.</returns>
 		/// <remarks>The callbacks are invoked after the source ancestry is exited and before the target ancestry is entered.</remarks>
-		public Transition<TInstance> Effect<TMessage> (Action<TMessage, TInstance> transitionAction) where TMessage : class {
+		public Transition<TInstance> Effect<TMessage>(Action<TMessage, TInstance> transitionAction) where TMessage : class {
 			this.transitionBehavior += (message, instance, history) => { if (message is TMessage) transitionAction(message as TMessage, instance); };
 
 			this.Source.Root.Clean = false;
@@ -120,7 +120,7 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <param name="transitionAction">An action that takes a single parameter of the message that triggered the transition when the transition is traversed.</param>
 		/// <returns>Returns the transition; enabling a fluent style interface.</returns>
 		/// <remarks>The callbacks are invoked after the source ancestry is exited and before the target ancestry is entered.</remarks>
-		public Transition<TInstance> Effect<TMessage> (Action<TMessage> transitionAction) where TMessage : class {
+		public Transition<TInstance> Effect<TMessage>(Action<TMessage> transitionAction) where TMessage : class {
 			this.transitionBehavior += (message, instance, history) => { if (message is TMessage) transitionAction(message as TMessage); };
 
 			this.Source.Root.Clean = false;
@@ -160,10 +160,9 @@ namespace Steelbreeze.StateMachines.Model {
 		/// Accepts a visitor.
 		/// </summary>
 		/// <param name="visitor">The visitor to accept.</param>
-		public void Accept(Visitor<TInstance> visitor)
-        {
-            visitor.VisitTransition(this);
-        }
+		public void Accept (Visitor<TInstance> visitor) {
+			visitor.VisitTransition(this);
+		}
 
 		/// <summary>
 		/// Accepts a visitor.
@@ -171,17 +170,16 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <typeparam name="TArg">The type of the argument passed into the visitor.</typeparam>
 		/// <param name="visitor">The visitor to accept.</param>
 		/// <param name="arg">The argument to pass to each element visited.</param>
-		public void Accept<TArg>(Visitor<TInstance, TArg> visitor, TArg arg)
-        {
-            visitor.VisitTransition(this, arg);
-        }
+		public void Accept<TArg>(Visitor<TInstance, TArg> visitor, TArg arg) {
+			visitor.VisitTransition(this, arg);
+		}
 
 		/// <summary>
 		/// Returns the name of the transition
 		/// </summary>
 		/// <returns>The name of the transition.</returns>
 		/// <remarks>The name of the transition is a composite of the source and target vertex names.</remarks>
-        public override string ToString () {
+		public override string ToString () {
 			return "[" + (this.Target != null ? (this.Source.ToString() + " -> " + this.Target.ToString()) : this.Source.ToString()) + "]";
 		}
 	}

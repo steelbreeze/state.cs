@@ -34,7 +34,7 @@ namespace Steelbreeze.StateMachines.Model {
 			}
 		}
 
-		internal List<Vertex<TInstance>> Ancestry() {
+		internal List<Vertex<TInstance>> Ancestry () {
 			var ancestors = this.Region != null ? this.Region.State.Ancestry() : new List<Vertex<TInstance>>();
 
 			ancestors.Add(this);
@@ -65,10 +65,9 @@ namespace Steelbreeze.StateMachines.Model {
 		/// Accepts a visitor.
 		/// </summary>
 		/// <param name="visitor">The visitor to accept.</param>
-		public virtual void Accept(Visitor<TInstance> visitor)
-        {
-            visitor.VisitVertex(this);
-        }
+		public virtual void Accept (Visitor<TInstance> visitor) {
+			visitor.VisitVertex(this);
+		}
 
 		/// <summary>
 		/// Accepts a visitor.
@@ -76,9 +75,8 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <typeparam name="TArg">The type of the argument passed into the visitor.</typeparam>
 		/// <param name="visitor">The visitor to accept.</param>
 		/// <param name="arg">The argument to pass to each element visited.</param>
-		public virtual void Accept<TArg>(Visitor<TInstance, TArg> visitor, TArg arg)
-        {
-            visitor.VisitVertex(this, arg);
-        }
-    }
+		public virtual void Accept<TArg>(Visitor<TInstance, TArg> visitor, TArg arg) {
+			visitor.VisitVertex(this, arg);
+		}
+	}
 }

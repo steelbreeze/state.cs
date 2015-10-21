@@ -53,10 +53,9 @@ namespace Steelbreeze.StateMachines.Model {
 		/// Accepts a visitor.
 		/// </summary>
 		/// <param name="visitor">The visitor to accept.</param>
-		public override void Accept(Visitor<TInstance> visitor)
-        {
-            visitor.VisitPseudoState(this);
-        }
+		public override void Accept (Visitor<TInstance> visitor) {
+			visitor.VisitPseudoState(this);
+		}
 
 		/// <summary>
 		/// Accepts a visitor.
@@ -64,9 +63,8 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <typeparam name="TArg">The type of the argument passed into the visitor.</typeparam>
 		/// <param name="visitor">The visitor to accept.</param>
 		/// <param name="arg">The argument to pass to each element visited.</param>
-		public override void Accept<TArg>(Visitor<TInstance, TArg> visitor, TArg arg)
-        {
-            visitor.VisitPseudoState(this, arg);
-        }
-    }
+		public override void Accept<TArg>(Visitor<TInstance, TArg> visitor, TArg arg) {
+			visitor.VisitPseudoState(this, arg);
+		}
+	}
 }
