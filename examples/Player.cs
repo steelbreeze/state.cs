@@ -12,20 +12,10 @@ namespace Steelbreeze.StateMachines.Examples {
 	/// Represents a cassette machine with a few primitive operations.
 	/// </summary>
 	public class Player : StateMachineInstance<Player> {
-		private long count = 0;
-		private System.Timers.Timer counter = new System.Timers.Timer(1000);
-
 		/// <summary>
-		/// The play counter; increments in seconds while the player is running.
+		/// Play counter for the player
 		/// </summary>
-		public long Count { get { return Interlocked.Read(ref count); } }
-
-		/// <summary>
-		/// Creates a new instance of the player class.
-		/// </summary>
-		public Player () {
-			this.counter.Elapsed += (s, e) => Interlocked.Increment(ref count);
-		}
+		public long Count { get; set; }
 
 		/// <summary>
 		/// Engages the players read head.
@@ -46,8 +36,6 @@ namespace Steelbreeze.StateMachines.Examples {
 		/// </summary>
 		public void StartMotor () {
 			Console.WriteLine("- starting motor");
-
-			counter.Start();
 		}
 
 		/// <summary>
@@ -55,16 +43,6 @@ namespace Steelbreeze.StateMachines.Examples {
 		/// </summary>
 		public void StopMotor () {
 			Console.WriteLine("- stopping motor");
-
-			counter.Stop();
-		}
-
-		/// <summary>
-		/// Resets the play counter.
-		/// </summary>
-		/// <param name="value"></param>
-		public void ResetCounter (long value = 0) {
-			Interlocked.Exchange(ref count, value);
 		}
 	}
 }

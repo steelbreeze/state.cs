@@ -42,6 +42,7 @@ namespace Steelbreeze.StateMachines.Examples {
 			stopped.To(running).When<string>(command => command == "play");
 			active.To(stopped).When<string>(command => command == "stop");
 			running.To(paused).When<string>(command => command == "pause");
+			running.To().When<string>(command => command == "tick").Effect((Player instance) => instance.Count++);
 			paused.To(running).When<string>(command => command == "play");
 			operational.To(final).When<string>(command => command == "off");
 			operational.To(choice).When<string>(command => command == "rand");
@@ -49,8 +50,8 @@ namespace Steelbreeze.StateMachines.Examples {
 			choice.To(operational).Effect(() => Console.WriteLine("- transition B back to operational"));
 			operational.To(flipped).When<string>(command => command == "flip");
 			flipped.To(operational).When<string>(command => command == "flip");
-			model.To().When<string>(command => command.StartsWith("reset")).Effect<string>(Reset);
 
+			// validate the model for correctness
 			model.Validate();
 
 			// create an instance of the player
@@ -59,25 +60,40 @@ namespace Steelbreeze.StateMachines.Examples {
 			// initialises the players initial state (enters the region for the first time, causing transition from the initial PseudoState)
 			model.Initialise(player);
 
-			// main event loop
-			while (!model.IsComplete(player)) {
-				// write a prompt
-				Console.Write("{0:0000}> ", player.Count);
+			// create a blocking collection make events from multiple sources thread-safe
+			var queue = new System.Collections.Concurrent.BlockingCollection<Object>();
 
-				// process lines read from the console
-				model.Evaluate(player, Console.ReadLine());
+			// create a task to capture commands from the console in another thread
+			System.Threading.Tasks.Task.Run(() => {
+				string command = "";
+
+				while (command.Trim().ToLower() != "exit") {
+					queue.Add(command = Console.ReadLine());
+				}
+
+				queue.CompleteAdding();
+			});
+
+			// create a task to tick in another thread
+			System.Threading.Tasks.Task.Run(() => {
+				while (!queue.IsAddingCompleted) {
+					queue.Add("tick");
+
+					System.Threading.Thread.Sleep(1000);
+				}
+			});
+
+			// process messages from the queue
+			foreach (var message in queue.GetConsumingEnumerable()) {
+				model.Evaluate(player, message);
+
+				var left = Math.Max(Console.CursorLeft, 6);
+				var top = Console.CursorTop;
+
+				Console.SetCursorPosition(0, top);
+				Console.Write("{0:0000}>", player.Count);
+				Console.SetCursorPosition(left, top);
 			}
-		}
-
-		private static void Reset (string command, Player player) {
-			var reset = 0;
-
-			try {
-				reset = Convert.ToInt16(command.Replace("reset", ""));
-			} catch { }
-
-			player.ResetCounter(reset);
-
 		}
 	}
 }

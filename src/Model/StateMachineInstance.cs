@@ -49,7 +49,7 @@ namespace Steelbreeze.StateMachines.Model {
 	/// <summary>
 	/// Represents a state machine instance at runtime.
 	/// </summary>
-	public class StateMachineInstance : StateMachineInstance<StateMachineInstance> {
+	public sealed class StateMachineInstance : StateMachineInstance<StateMachineInstance> {
 		/// <summary>
 		/// The name of the state machine instance.
 		/// </summary>
