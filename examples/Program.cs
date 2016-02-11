@@ -85,11 +85,12 @@ namespace Steelbreeze.StateMachines.Examples {
 
 			// process messages from the queue
 			foreach (var message in queue.GetConsumingEnumerable()) {
+				// process the message
 				model.Evaluate(player, message);
 
+				// manage the command prompt
 				var left = Math.Max(Console.CursorLeft, 6);
 				var top = Console.CursorTop;
-
 				Console.SetCursorPosition(0, top);
 				Console.Write("{0:0000}>", player.Count);
 				Console.SetCursorPosition(left, top);
