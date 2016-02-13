@@ -54,14 +54,14 @@ namespace Steelbreeze.StateMachines.Examples {
 			// validate the model for correctness
 			model.Validate();
 
-			// create an instance of the player
-			var player = new Player();
+			// create a blocking collection make events from multiple sources thread-safe
+			var queue = new System.Collections.Concurrent.BlockingCollection<Object>();
+
+			// create an instance of the player - enqueue a tick message for the machine while its playing
+			var player = new Player(() => queue.Add("tick"));
 
 			// initialises the players initial state (enters the region for the first time, causing transition from the initial PseudoState)
 			model.Initialise(player);
-
-			// create a blocking collection make events from multiple sources thread-safe
-			var queue = new System.Collections.Concurrent.BlockingCollection<Object>();
 
 			// create a task to capture commands from the console in another thread
 			System.Threading.Tasks.Task.Run(() => {
@@ -74,14 +74,8 @@ namespace Steelbreeze.StateMachines.Examples {
 				queue.CompleteAdding();
 			});
 
-			// create a task to tick in another thread
-			System.Threading.Tasks.Task.Run(() => {
-				while (!queue.IsAddingCompleted) {
-					queue.Add("tick");
-
-					System.Threading.Thread.Sleep(1000);
-				}
-			});
+			// write the initial command prompt
+			Console.Write("{0:0000}> ", player.Count);
 
 			// process messages from the queue
 			foreach (var message in queue.GetConsumingEnumerable()) {

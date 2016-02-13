@@ -12,10 +12,20 @@ namespace Steelbreeze.StateMachines.Examples {
 	/// Represents a cassette machine with a few primitive operations.
 	/// </summary>
 	public class Player : StateMachineInstance<Player> {
+		private System.Timers.Timer counterTimer = new System.Timers.Timer(1000);
+
 		/// <summary>
 		/// Play counter for the player
 		/// </summary>
 		public long Count { get; set; }
+
+		/// <summary>
+		/// Creates a player
+		/// </summary>
+		/// <param name="onTick">Callback when the players counter ticks over another second</param>
+		public Player (Action onTick) {
+			this.counterTimer.Elapsed += (s, e) => onTick();
+		}
 
 		/// <summary>
 		/// Engages the players read head.
@@ -36,6 +46,8 @@ namespace Steelbreeze.StateMachines.Examples {
 		/// </summary>
 		public void StartMotor () {
 			Console.WriteLine("- starting motor");
+
+			counterTimer.Start();
 		}
 
 		/// <summary>
@@ -43,6 +55,8 @@ namespace Steelbreeze.StateMachines.Examples {
 		/// </summary>
 		public void StopMotor () {
 			Console.WriteLine("- stopping motor");
+
+			counterTimer.Stop();
 		}
 	}
 }
