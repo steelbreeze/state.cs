@@ -40,7 +40,7 @@ namespace Steelbreeze.StateMachines.Runtime {
 			this.Behaviour(region).leave += (message, instance, history) => this.Behaviour(instance.GetCurrent(region)).leave(message, instance, history);
 
 			// enter the appropriate child vertex when entering the region
-			if (deepHistoryAbove || regionInitial != null || regionInitial.IsHistory) { // NOTE: history needs to be determined at runtime
+			if (deepHistoryAbove || regionInitial == null || regionInitial.IsHistory) { // NOTE: history needs to be determined at runtime
 				this.Behaviour(region).endEnter += (message, instance, history) => (this.Behaviour((history || regionInitial.IsHistory) ? (Vertex<TInstance>)instance.GetCurrent(region) ?? regionInitial : regionInitial)).Enter(message, instance, history || regionInitial.Kind == PseudoStateKind.DeepHistory);
 			} else {
 				this.Behaviour(region).endEnter += this.Behaviour(regionInitial).Enter;

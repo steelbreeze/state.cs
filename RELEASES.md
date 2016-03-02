@@ -1,3 +1,6 @@
+# Version 5.3.1
+Fix a bug in the bootstrap process for Regions.
+
 # Version 5.3.0
 Complete re-write taking all of the logic up to date when compared to the JavaScript version.
 
