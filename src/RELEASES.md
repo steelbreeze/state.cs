@@ -1,3 +1,9 @@
+## Version 5.6.2
+Fixs a bug where transition behaviour can be duplicated if the model is initialised more than once (this can happen when using dynamic models).
+
+## Version 5.6.1
+Fix a bug in the Region bootstrapping code.
+
 ## Version 5.6.0
 Harmonise codebase and versioning with the JavaScript version.
 

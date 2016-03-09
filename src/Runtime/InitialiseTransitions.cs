@@ -12,6 +12,8 @@ namespace Steelbreeze.StateMachines.Runtime {
 	internal class InitialiseTransitions<TInstance> : Visitor<TInstance, Func<NamedElement, ElementBehavior<TInstance>>> where TInstance : IInstance<TInstance> {
 
 		public override void VisitTransition (Transition<TInstance> transition, Func<NamedElement, ElementBehavior<TInstance>> behaviour) {
+			transition.onTraverse = null;
+
 			if (transition.Kind == TransitionKind.Internal) {
 				transition.onTraverse += transition.transitionBehavior;
 			} else if (transition.Kind == TransitionKind.Local) {
