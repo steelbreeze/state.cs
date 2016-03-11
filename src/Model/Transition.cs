@@ -49,6 +49,25 @@ namespace Steelbreeze.StateMachines.Model {
 
 			this.Source.Outgoing.Add(this);
 
+			if( this.Target != null) {
+				this.Target.Incoming.Add(this);
+			}
+
+			this.Source.Root.Clean = false;
+		}
+
+		/// <summary>
+		/// Removes the transition from the state machine model.
+		/// </summary>
+		public void Remove() {
+			this.Source.Outgoing.Remove(this);
+
+			if( this.Target != null ) {
+				this.Target.Incoming.Remove(this);
+			}
+
+			System.Console.WriteLine("remove " + this);
+
 			this.Source.Root.Clean = false;
 		}
 

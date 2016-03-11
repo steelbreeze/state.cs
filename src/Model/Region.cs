@@ -54,6 +54,23 @@ namespace Steelbreeze.StateMachines.Model {
 		}
 
 		/// <summary>
+		/// Removes the region from the state machine model.
+		/// </summary>
+		public void Remove() {
+			var vertices = this.Vertices.ToList();
+
+			foreach( var vertex in vertices) {
+				vertex.Remove();
+			}
+
+			this.State.Regions.Remove(this);
+
+			System.Console.WriteLine("remove" + this);
+
+			this.State.Root.Clean = false;
+		}
+
+		/// <summary>
 		/// Returns the state machine that this region is a part of.
 		/// </summary>
 		public StateMachine<TInstance> Root {

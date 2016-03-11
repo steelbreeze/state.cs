@@ -5,6 +5,7 @@
  * http://www.steelbreeze.net/state.cs
  */
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Steelbreeze.StateMachines.Model {
 	/// <summary>
@@ -22,6 +23,11 @@ namespace Steelbreeze.StateMachines.Model {
 		/// </summary>
 		public readonly ICollection<Transition<TInstance>> Outgoing = new HashSet<Transition<TInstance>>();
 
+		/// <summary>
+		/// The set of transitions that this vertex is the target of.
+		/// </summary>
+		public readonly ICollection<Transition<TInstance>> Incoming = new HashSet<Transition<TInstance>>();
+
 		internal Vertex (string name, Region<TInstance> parent)
 			: base(name, parent) {
 
@@ -30,8 +36,25 @@ namespace Steelbreeze.StateMachines.Model {
 			if (this.Region != null) {
 				this.Region.Vertices.Add(this);
 
-				this.Region.Root.Clean = false;
+				this.Root.Clean = false;
 			}
+		}
+
+		/// <summary>
+		/// Removes the vertex from the state machine model.
+		/// </summary>
+		public virtual void Remove() {
+			var transitions = this.Outgoing.Union(this.Incoming).ToList();
+
+			foreach (var transition in transitions) {
+				transition.Remove();
+			}
+
+			this.Region.Vertices.Remove(this);
+
+			System.Console.WriteLine("remove " + this);
+
+			this.Root.Clean = false;
 		}
 
 		internal List<Vertex<TInstance>> Ancestry () {

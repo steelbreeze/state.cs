@@ -21,13 +21,17 @@ namespace Steelbreeze.StateMachines.Model {
 		/// <remarks>A state machine instance is terminated as soon as it reaches a terminate pseudo state.</remarks>
 		public bool IsTerminated { get { return this.terminated; } }
 
-		// sets the state machine instance to a terminated state; use inheritance method to hide this interface from derived classes.
-		void IInstance<TInstance>.Terminate() {
+		/// <summary>
+		/// sets the state machine instance to a terminated state; use inheritance method to hide this interface from derived classes.
+		/// </summary>
+		public void Terminate() {
 			this.terminated = true;
 		}
 
-		// sets or updates the child state for a region; use inheritance method to hide this interface from derived classes.
-		void IInstance<TInstance>.SetCurrent (Region<TInstance> region, State<TInstance> state) {
+		/// <summary>
+		/// sets or updates the child state for a region; use inheritance method to hide this interface from derived classes.
+		/// </summary>
+		public void SetCurrent (Region<TInstance> region, State<TInstance> state) {
 			current[ region ] = state;
 		}
 

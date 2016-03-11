@@ -31,6 +31,19 @@ namespace Steelbreeze.StateMachines.Model {
 		public State (string name, Region<TInstance> region) : base(name, region) { }
 
 		/// <summary>
+		/// Removes the state from the state machine model.
+		/// </summary>
+		public override void Remove () {
+			var regions = this.Regions.ToList();
+
+			foreach (var region in regions) {
+				region.Remove();
+			}
+
+			base.Remove();
+		}
+
+		/// <summary>
 		/// Returns the default region for the state.
 		/// </summary>
 		public Region<TInstance> DefaultRegion {
