@@ -13,17 +13,38 @@ namespace Steelbreeze.StateMachines.Tools {
 		override public void VisitPseudoState (PseudoState<TInstance> pseudoState) {
 			base.VisitPseudoState(pseudoState);
 
-			if (pseudoState.Kind == PseudoStateKind.Choice || pseudoState.Kind == PseudoStateKind.Junction) {
-				// [7] In a complete statemachine, a junction vertex must have at least one incoming and one outgoing transition.
-				// [8] In a complete statemachine, a choice vertex must have at least one incoming and one outgoing transition.
-				if (pseudoState.Outgoing.Count == 0) {
-					Console.Error.WriteLine(pseudoState + ": " + pseudoState.Kind + " pseudo states must have at least one outgoing transition.");
-				}
+			switch(pseudoState.Kind ) {
+				case PseudoStateKind.Choice:
+				case PseudoStateKind.Junction:
+					// [7] In a complete statemachine, a junction vertex must have at least one incoming and one outgoing transition.
+					// [8] In a complete statemachine, a choice vertex must have at least one incoming and one outgoing transition.
+					if (pseudoState.Outgoing.Count == 0) {
+						Console.Error.WriteLine(pseudoState + ": " + pseudoState.Kind + " pseudo states must have at least one outgoing transition.");
+					}
 
-				// choice and junction pseudo state can have at most one else transition
-				if (pseudoState.Outgoing.Where(transition => transition.guard == Transition<TInstance>.FalseGuard).Count() > 1) {
-					Console.Error.WriteLine(pseudoState + ": " + pseudoState.Kind + " pseudo states cannot have more than one Else transitions.");
-				}
+					// choice and junction pseudo state can have at most one else transition
+					if (pseudoState.Outgoing.Where(transition => transition.guard == Transition<TInstance>.FalseGuard).Count() > 1) {
+						Console.Error.WriteLine(pseudoState + ": " + pseudoState.Kind + " pseudo states cannot have more than one Else transitions.");
+					}
+
+					break;
+
+				case PseudoStateKind.DeepHistory:
+					break;
+
+				case PseudoStateKind.Initial:
+					break;
+
+				case PseudoStateKind.ShallowHistory:
+					break;
+
+				case PseudoStateKind.Terminate:
+					break;
+			}
+
+			/*
+			if (pseudoState.Kind == PseudoStateKind.Choice || pseudoState.Kind == PseudoStateKind.Junction) {
+
 			} else {
 				// non choice/junction pseudo state may not have else transitions
 				if (pseudoState.Outgoing.Where(transition => transition.guard == Transition<TInstance>.FalseGuard).Count() != 0) {
@@ -43,6 +64,7 @@ namespace Steelbreeze.StateMachines.Tools {
 					}
 				}
 			}
+			*/
 		}
 
 		override public void VisitRegion (Region<TInstance> region) {

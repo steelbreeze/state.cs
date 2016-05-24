@@ -54,7 +54,15 @@ namespace Steelbreeze.StateMachines.Runtime {
 
 			// evaluate comppletion transitions once vertex entry is complete
 			if (pseudoState.IsInitial) {
-				this.Behaviour(pseudoState).endEnter += (message, instance, history) => pseudoState.Outgoing.Single().Traverse(instance, null);
+				this.Behaviour(pseudoState).endEnter += (message, instance, history) => {
+					if (pseudoState.IsHistory && instance.GetCurrent(pseudoState.Region) != null) {
+						this.Behaviour(pseudoState).leave(message, instance, history | pseudoState.Kind == PseudoStateKind.DeepHistory);
+						this.Behaviour(instance.GetCurrent(pseudoState.Region)).Enter(message, instance, history | pseudoState.Kind == PseudoStateKind.DeepHistory);
+
+					} else {
+						pseudoState.Outgoing.Single().Traverse(instance, null);
+					}
+				};
 			} else if (pseudoState.Kind == PseudoStateKind.Terminate) {
 				// terminate the state machine instance upon transition to a terminate pseudo state
 				this.Behaviour(pseudoState).beginEnter += (message, instance, history) => instance.Terminate();

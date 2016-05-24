@@ -15,11 +15,27 @@ namespace Steelbreeze.StateMachines.Runtime {
 			transition.onTraverse = null;
 
 			if (transition.Kind == TransitionKind.Internal) {
-				transition.onTraverse += transition.transitionBehavior;
+				VisitInternalTransition(transition, behaviour);
 			} else if (transition.Kind == TransitionKind.Local) {
 				this.VisitLocalTransition(transition, behaviour);
 			} else {
 				this.VisitExternalTransition(transition, behaviour);
+			}
+		}
+
+		public void VisitInternalTransition (Transition<TInstance> transition, Func<NamedElement, ElementBehavior<TInstance>> behaviour) {
+			transition.onTraverse += transition.transitionBehavior;
+
+			// add a test for completion
+			if( Settings.InternalTransitionsTriggerCompletion) {
+				transition.onTraverse += (message, instance, history) => {
+					var state = transition.Target as State<TInstance>;
+
+					// fire a completion transition as required
+					if (state.IsComplete(instance)) {
+						state.EvaluateState(instance, state);
+					}
+				};
 			}
 		}
 
