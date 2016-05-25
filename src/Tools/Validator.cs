@@ -12,39 +12,18 @@ namespace Steelbreeze.StateMachines.Tools {
 	internal class Validator<TInstance> : Visitor<TInstance> where TInstance : IInstance<TInstance> {
 		override public void VisitPseudoState (PseudoState<TInstance> pseudoState) {
 			base.VisitPseudoState(pseudoState);
-
-			switch(pseudoState.Kind ) {
-				case PseudoStateKind.Choice:
-				case PseudoStateKind.Junction:
-					// [7] In a complete statemachine, a junction vertex must have at least one incoming and one outgoing transition.
-					// [8] In a complete statemachine, a choice vertex must have at least one incoming and one outgoing transition.
-					if (pseudoState.Outgoing.Count == 0) {
-						Console.Error.WriteLine(pseudoState + ": " + pseudoState.Kind + " pseudo states must have at least one outgoing transition.");
-					}
-
-					// choice and junction pseudo state can have at most one else transition
-					if (pseudoState.Outgoing.Where(transition => transition.guard == Transition<TInstance>.FalseGuard).Count() > 1) {
-						Console.Error.WriteLine(pseudoState + ": " + pseudoState.Kind + " pseudo states cannot have more than one Else transitions.");
-					}
-
-					break;
-
-				case PseudoStateKind.DeepHistory:
-					break;
-
-				case PseudoStateKind.Initial:
-					break;
-
-				case PseudoStateKind.ShallowHistory:
-					break;
-
-				case PseudoStateKind.Terminate:
-					break;
-			}
-
-			/*
+			
 			if (pseudoState.Kind == PseudoStateKind.Choice || pseudoState.Kind == PseudoStateKind.Junction) {
+				// [7] In a complete statemachine, a junction vertex must have at least one incoming and one outgoing transition.
+				// [8] In a complete statemachine, a choice vertex must have at least one incoming and one outgoing transition.
+				if (pseudoState.Outgoing.Count == 0) {
+					Console.Error.WriteLine(pseudoState + ": " + pseudoState.Kind + " pseudo states must have at least one outgoing transition.");
+				}
 
+				// choice and junction pseudo state can have at most one else transition
+				if (pseudoState.Outgoing.Where(transition => transition.guard == Transition<TInstance>.FalseGuard).Count() > 1) {
+					Console.Error.WriteLine(pseudoState + ": " + pseudoState.Kind + " pseudo states cannot have more than one Else transitions.");
+				}
 			} else {
 				// non choice/junction pseudo state may not have else transitions
 				if (pseudoState.Outgoing.Where(transition => transition.guard == Transition<TInstance>.FalseGuard).Count() != 0) {
@@ -52,11 +31,11 @@ namespace Steelbreeze.StateMachines.Tools {
 				}
 
 				if (pseudoState.IsInitial) {
-					if (pseudoState.Outgoing.Count != 1) {
+					if (pseudoState.Outgoing.Count > 1) {
 						// [1] An initial vertex can have at most one outgoing transition.
 						// [2] History vertices can have at most one outgoing transition.
 						Console.Error.WriteLine(pseudoState + ": initial pseudo states must have one outgoing transition.");
-					} else {
+					} else if(pseudoState.Outgoing.Count == 1) {
 						// [9] The outgoing transition from an initial vertex may have a behavior, but not a trigger or guard.
 						if (pseudoState.Outgoing.Single().guard != Transition<TInstance>.TrueGuard) {
 							Console.Error.WriteLine(pseudoState + ": initial pseudo states cannot have a guard condition.");
@@ -64,17 +43,24 @@ namespace Steelbreeze.StateMachines.Tools {
 					}
 				}
 			}
-			*/
 		}
 
 		override public void VisitRegion (Region<TInstance> region) {
 			base.VisitRegion(region);
 
 			// [1] A region can have at most one initial vertex.
-			// [2] A region can have at most one deep history vertex.
-			// [3] A region can have at most one shallow history vertex.
-			if (region.Vertices.OfType<PseudoState<TInstance>>().Where(pseudoState => pseudoState.IsInitial).Count() > 1) {
+			if (region.Vertices.OfType<PseudoState<TInstance>>().Where(pseudoState => pseudoState.Kind == PseudoStateKind.Initial).Count() > 1) {
 				Console.Error.WriteLine(region + ": regions may have at most one initial pseudo state.");
+			}
+
+			// [2] A region can have at most one deep history vertex.
+			if (region.Vertices.OfType<PseudoState<TInstance>>().Where(pseudoState => pseudoState.Kind == PseudoStateKind.DeepHistory).Count() > 1) {
+				Console.Error.WriteLine(region + ": regions may have at most one deep history pseudo state.");
+			}
+
+			// [3] A region can have at most one shallow history vertex.
+			if (region.Vertices.OfType<PseudoState<TInstance>>().Where(pseudoState => pseudoState.Kind == PseudoStateKind.ShallowHistory).Count() > 1) {
+				Console.Error.WriteLine(region + ": regions may have at most one shallow hostory pseudo state.");
 			}
 		}
 
