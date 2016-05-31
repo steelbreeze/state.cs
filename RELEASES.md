@@ -1,3 +1,9 @@
+# Version 5.3.3
+Fix an omission in the history semantics (allow a history pseudo state to have no outbound transitions).
+
+# Version 5.3.2
+Fix a bug in dynamic models and enable the removal of model elements.
+
 # Version 5.3.1
 Fix a bug in the bootstrap process for Regions.
 

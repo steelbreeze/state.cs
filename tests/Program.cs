@@ -22,6 +22,7 @@ namespace Steelbreeze.StateMachines.Tests {
 			Static.Run();
 			Terminate.Run();
 			Transitions.Run();
+			Florent.Run();
 
 			return 0;
 		}

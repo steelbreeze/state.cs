@@ -34,7 +34,7 @@ namespace Steelbreeze.StateMachines.Tools {
 					if (pseudoState.Outgoing.Count > 1) {
 						// [1] An initial vertex can have at most one outgoing transition.
 						// [2] History vertices can have at most one outgoing transition.
-						Console.Error.WriteLine(pseudoState + ": initial pseudo states must have one outgoing transition.");
+						Console.Error.WriteLine(pseudoState + ": initial/history pseudo states can have at most one outgoing transition.");
 					} else if(pseudoState.Outgoing.Count == 1) {
 						// [9] The outgoing transition from an initial vertex may have a behavior, but not a trigger or guard.
 						if (pseudoState.Outgoing.Single().guard != Transition<TInstance>.TrueGuard) {

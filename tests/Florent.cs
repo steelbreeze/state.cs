@@ -1,16 +1,17 @@
-﻿using System;
+﻿/*
+ * Finite state machine library
+ * Copyright (c) 2014-5 Steelbreeze Limited
+ * Licensed under the MIT and GPL v3 licences
+ * http://www.steelbreeze.net/state.cs
+ */
+using System.Diagnostics;
 using Steelbreeze.StateMachines.Model;
+using Steelbreeze.StateMachines.Tools;
 using Steelbreeze.StateMachines.Runtime;
 
-namespace Steelbreeze.Behavior.StateMachines.Examples {
-	/// <summary>
-	/// Example machine showing history modelling.
-	/// </summary>
+namespace Steelbreeze.StateMachines.Tests {
 	public static class Florent {
-		/// <summary>
-		/// Entry point
-		/// </summary>
-		public static void Main() {
+		public static void Run () {
 			var model = new StateMachine<StateMachineInstance>("Model");
 			var initial = model.CreatePseudoState("Initial", PseudoStateKind.Initial);
 			var on = model.CreateState("On");
@@ -36,6 +37,8 @@ namespace Steelbreeze.Behavior.StateMachines.Examples {
 			showItemMovePattern.To(hideItemMovePattern).When<string>(s => s == "ReleaseInput");
 			hideItemMovePattern.To(idle);
 
+			model.Validate();
+
 			var instance = new StateMachineInstance("instance");
 
 			model.Initialise(instance);
@@ -44,8 +47,13 @@ namespace Steelbreeze.Behavior.StateMachines.Examples {
 			model.Evaluate(instance, "Disable");
 			model.Evaluate(instance, "Enable");
 
-			Console.WriteLine("Press any key...");
-			Console.ReadKey();
+			Trace.Assert(instance.GetCurrent(on.DefaultRegion) == showItemMovePattern, "History semantics should set current state to " + showItemMovePattern.Name);
+
+			model.Evaluate(instance, "ReleaseInput");
+			model.Evaluate(instance, "Disable");
+			model.Evaluate(instance, "Enable");
+
+			Trace.Assert(instance.GetCurrent(on.DefaultRegion) == idle, "History semantics should set current state to " + idle.Name);
 		}
 	}
 }
