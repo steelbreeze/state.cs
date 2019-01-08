@@ -29,4 +29,4 @@ If you're using state.cs, please drop me a mail; I'd love to hear about how this
 ## License
 state.cs is dual licenced under The MIT License (MIT) and GPL v3
 
-Copyright (c) 2014 Steelbreeze Limited
+Copyright (c) 2014-9 Steelbreeze Limited
